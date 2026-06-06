@@ -1,16 +1,148 @@
-# React + Vite
+# Ferreplast - Instalación y Ejecución
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Requisitos Previos
 
-Currently, two official plugins are available:
+Antes de ejecutar el proyecto, asegúrate de tener instalado:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* Node.js (versión 20 o superior recomendada)
+* npm (incluido con Node.js)
+* Visual Studio Code (opcional, recomendado)
 
-## React Compiler
+Verificar instalación:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+node -v
+npm -v
+```
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Clonar el Proyecto
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd ferreplast
+```
+
+---
+
+## Instalar Dependencias
+
+Ejecutar:
+
+```bash
+npm install
+```
+
+Esto instalará automáticamente todas las dependencias definidas en el archivo `package.json`, incluyendo:
+
+* React
+* React DOM
+* Vite
+* Supabase JS
+
+---
+
+## Configurar Variables de Entorno
+
+Crear un archivo `.env` en la raíz del proyecto:
+
+```env
+VITE_SUPABASE_URL=https://pddhzryhtbxilzuryoyy.supabase.co
+VITE_SUPABASE_ANON_KEY=TU_SUPABASE_ANON_KEY
+```
+
+> Solicitar la clave `VITE_SUPABASE_ANON_KEY` al administrador del proyecto.
+
+---
+
+## Ejecutar el Proyecto
+
+Iniciar el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+Debería aparecer algo similar a:
+
+```text
+Local: http://localhost:5173/
+```
+
+Abrir esa dirección en el navegador.
+
+---
+
+## Comandos Útiles
+
+### Ejecutar en modo desarrollo
+
+```bash
+npm run dev
+```
+
+### Generar versión de producción
+
+```bash
+npm run build
+```
+
+### Previsualizar versión de producción
+
+```bash
+npm run preview
+```
+
+---
+
+## Estructura Principal
+
+```text
+src/
+│
+├── componentes/
+│   └── SupabaseTest.jsx
+│
+├── lib/
+│   └── supabase.ts
+│
+├── App.jsx
+└── main.jsx
+```
+
+---
+
+## Solución de Problemas
+
+### Error: Cannot find module
+
+Ejecutar nuevamente:
+
+```bash
+npm install
+```
+
+### Error de Supabase
+
+Verificar:
+
+* Que el archivo `.env` exista.
+* Que la URL de Supabase sea correcta.
+* Que la API Key sea válida.
+* Reiniciar el servidor después de modificar variables de entorno:
+
+```bash
+npm run dev
+```
+
+---
+
+## Inicio Rápido
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+cd ferreplast
+npm install
+npm run dev
+```
