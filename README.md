@@ -1,148 +1,141 @@
-# Ferreplast - Instalación y Ejecución
+# 🧪 Ferreplast
 
-## Requisitos Previos
+**Ferreplast SpA** es una empresa dedicada a la comercialización de insumos para plásticos reforzados con fibra de vidrio (FRP), ofreciendo resinas epóxicas y poliéster, fibra de vidrio, gelcoats, catalizadores, herramientas e insumos para impermeabilización. Sus productos están orientados a aplicaciones industriales, náuticas, de construcción y reparación, proporcionando soluciones para laminado, moldeo e impermeabilización.
 
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
+---
 
-* Node.js (versión 20 o superior recomendada)
-* npm (incluido con Node.js)
-* Visual Studio Code (opcional, recomendado)
+## 👥 Equipo de Trabajo
 
-Verificar instalación:
+* 👩‍💻 **Ricardo Ojeda** – Gestión del proyecto, planificación de tareas, diseño de interfaces y experiencia de usuario (UI/UX).
+* 👨‍💻 **Alvaro Flores** – Desarrollo backend, integración de servicios y administración de base de datos.
+* 👨‍💻 **Kevin Vivanco** – Desarrollo backend, integración de servicios y administración de base de datos.
+* 🤖 **IA** – Apoyo técnico y asistencia durante el desarrollo.
+
+---
+
+## 🧩 Repositorios del Sistema
+
+| Módulo                         | Descripción                                                                                          | Repositorio |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------- | ----------- |
+| 🖥️ **main**               | Rama donde estará cargada las versiones estable y avances significativos respecto a la plataforma | Pendiente   |
+| 🖥️ **testing**               | Rama enfocada a pruebas durante el desarrollo | Pendiente   |
+| 📄 **Documentación Técnica**   | Diagramas, modelos de datos, manuales y documentación del proyecto.                                  | Pendiente   |
+
+---
+
+## ⚙️ Tecnologías Utilizadas
+
+* **Frontend:** React, JavaScript, HTML5 y CSS3.
+* **Build Tool:** Vite.
+* **Backend as a Service:** Supabase.
+* **Base de Datos:** PostgreSQL (gestionada mediante Supabase).
+* **Control de Versiones:** Git y GitHub.
+
+---
+
+## 🧪 Entornos de Desarrollo
+
+- Desarrollo realizado principalmente mediante Visual Studio Code.
+- Control de versiones utilizando Git y GitHub.
+- Ejecución local mediante Node.js y Vite.
+- Gestión de datos, autenticación y almacenamiento mediante Supabase.
+- Pruebas de funcionalidades realizadas en navegadores modernos (Google Chrome y Microsoft Edge).
+- Integración continua mediante ramas de desarrollo y pruebas antes de fusionar cambios a la rama principal.
+
+---
+
+## 📌 Funcionalidades Clave
+
+* Visualización de catálogo de productos.
+* Clasificación de productos por categorías.
+* Consulta de información detallada de productos.
+* Gestión centralizada de datos mediante Supabase.
+* Diseño responsive para dispositivos móviles y escritorio.
+* Escalabilidad para futuras funcionalidades de administración e inventario.
+
+---
+
+## 📦 Categorías de Productos
+
+* Resinas Epóxicas
+* Resinas Poliéster
+* Fibra de Vidrio
+* Gelcoats y Pinturas
+* Catalizadores
+* Solventes
+* Adhesivos
+* Herramientas
+* Impermeabilización
+* Especialidades Epóxicas
+
+---
+
+## 📄 Licencia
+
+Proyecto desarrollado con fines académicos y de aprendizaje. La utilización de la información y código debe respetar las políticas establecidas por los integrantes del proyecto.
+
+---
+
+## 🚀 Ejecución
+
+Para saltar algunos pasos verifica la instalación de las siguientes dependencias:
 
 ```bash
 node -v
 npm -v
 ```
 
----
-
-## Clonar el Proyecto
-
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd ferreplast
-```
-
----
-
-## Instalar Dependencias
-
-Ejecutar:
+### Instalar dependencias (Si no está instaladas)
 
 ```bash
 npm install
 ```
 
-Esto instalará automáticamente todas las dependencias definidas en el archivo `package.json`, incluyendo:
-
-* React
-* React DOM
-* Vite
-* Supabase JS
-
 ---
 
-## Configurar Variables de Entorno
+## 🔐 Configuración de la Base de datos
 
-Crear un archivo `.env` en la raíz del proyecto:
+Crear un archivo `supabase.ts` en la raíz del proyecto (src/lib):
 
-```env
-VITE_SUPABASE_URL=https://pddhzryhtbxilzuryoyy.supabase.co
-VITE_SUPABASE_ANON_KEY=TU_SUPABASE_ANON_KEY
+```
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = 'TU_SUPABASE_URL'
+const supabaseAnonKey = 'TU_SUPABASE_ANON_KEY'
+
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey
+)
 ```
 
-> Solicitar la clave `VITE_SUPABASE_ANON_KEY` al administrador del proyecto.
+> Solicitar las credenciales al administrador del proyecto.
 
 ---
 
-## Ejecutar el Proyecto
+## ▶️ Ejecución
 
-Iniciar el servidor de desarrollo:
+Iniciar entorno de desarrollo:
 
 ```bash
 npm run dev
 ```
 
-Debería aparecer algo similar a:
+La aplicación quedará disponible en:
 
 ```text
-Local: http://localhost:5173/
-```
-
-Abrir esa dirección en el navegador.
-
----
-
-## Comandos Útiles
-
-### Ejecutar en modo desarrollo
-
-```bash
-npm run dev
-```
-
-### Generar versión de producción
-
-```bash
-npm run build
-```
-
-### Previsualizar versión de producción
-
-```bash
-npm run preview
+http://localhost:5173
 ```
 
 ---
 
-## Estructura Principal
+## 🛠️ Comandos Disponibles
 
-```text
-src/
-│
-├── componentes/
-│   └── SupabaseTest.jsx
-│
-├── lib/
-│   └── supabase.ts
-│
-├── App.jsx
-└── main.jsx
-```
+| Comando         | Descripción                       |
+| --------------- | --------------------------------- |
+| npm run dev     | Inicia el servidor de desarrollo  |
+| npm run build   | Genera la versión de producción   |
+| npm run preview | Previsualiza la versión compilada |
 
 ---
 
-## Solución de Problemas
-
-### Error: Cannot find module
-
-Ejecutar nuevamente:
-
-```bash
-npm install
-```
-
-### Error de Supabase
-
-Verificar:
-
-* Que el archivo `.env` exista.
-* Que la URL de Supabase sea correcta.
-* Que la API Key sea válida.
-* Reiniciar el servidor después de modificar variables de entorno:
-
-```bash
-npm run dev
-```
-
----
-
-## Inicio Rápido
-
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd ferreplast
-npm install
-npm run dev
-```
