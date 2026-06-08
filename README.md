@@ -100,8 +100,8 @@ Crear un archivo `supabase.ts` en la raíz del proyecto (src/lib):
 ```
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'TU_SUPABASE_URL'
-const supabaseAnonKey = 'TU_SUPABASE_ANON_KEY'
+VITE_SUPABASE_URL=tu_url_aqui
+VITE_SUPABASE_ANON_KEY=tu_key_aqui
 
 export const supabase = createClient(
   supabaseUrl,
@@ -138,4 +138,64 @@ http://localhost:5173
 | npm run preview | Previsualiza la versión compilada |
 
 ---
+
+
+
+🔐 Configuración de Variables de Entorno (Actualización - 08/06/2026)
+Para garantizar la seguridad de las credenciales y la escalabilidad del proyecto, se implementó el uso de variables de entorno con Vite.
+
+📁 Estructura actual
+text
+ferreplast/
+├── .env                 ← Contiene las credenciales REALES (NO se sube a GitHub)
+├── .env.example         ← Plantilla con variables vacías (SÍ se sube a GitHub)
+├── src/
+│   ├── lib/
+│   │   └── supabase.ts  ← Conexión usando import.meta.env
+│   └── vite-env.d.ts    ← Tipos TypeScript para variables de entorno
+🔧 Pasos para configurar el entorno local
+Clonar el repositorio
+
+bash
+git clone <url-del-repo>
+cd ferreplast
+Instalar dependencias
+
+bash
+npm install
+Crear archivo .env (copiar desde .env.example)
+
+bash
+# En Linux/Mac/Git Bash
+cp .env.example .env
+
+# En Windows (PowerShell)
+Copy-Item .env.example .env
+Completar las credenciales en .env
+
+env
+VITE_SUPABASE_URL=https://tudominio.supabase.co
+VITE_SUPABASE_ANON_KEY=tu_clave_anonima_aqui
+⚠️ Importante: Solicitar las credenciales al administrador del proyecto. No compartir este archivo ni subirlo a GitHub.
+
+Verificar que .gitignore incluye (ya está configurado):
+
+gitignore
+.env
+.env.local
+.env.production
+Iniciar el servidor de desarrollo
+
+bash
+npm install react-router-dom @supabase/supabase-js
+npm run dev
+✅ Verificación de que todo funciona
+En la consola del navegador (F12), ejecutar:
+
+javascript
+console.log(import.meta.env.VITE_SUPABASE_URL)
+Debería mostrar la URL de Supabase configurada.
+
+📌 Nota importante
+No existe comando para "activar" el entorno virtual en React/Vite. Las variables de entorno se cargan automáticamente al ejecutar npm run dev siempre que el archivo .env exista en la raíz del proyecto.
 
