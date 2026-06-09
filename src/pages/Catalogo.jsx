@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 function Catalogo() {
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [agregandoId, setAgregandoId] = useState(null) // Para dar feedback visual en el botón
 
   useEffect(() => {
     cargarProductos()
@@ -23,6 +24,27 @@ function Catalogo() {
     setCargando(false)
   }
 
+  // NUEVA FUNCIÓN: Envía el producto seleccionado a la tabla carrito
+  const agregarAlCarrito = async (productoId) => {
+    setAgregandoId(productoId) // Cambia el texto del botón seleccionado a "Agregando..."
+    
+    // En una prueba simple, añadimos el producto con cantidad 1
+    const { data, error } = await supabase
+      .from('carrito')
+      .insert([
+        { id_producto: productoId, cantidad: 1 }
+      ])
+
+    if (error) {
+      console.error('Error al agregar al carrito:', error)
+      alert('Hubo un error al agregar el producto')
+    } else {
+      alert('¡Producto agregado al carrito con éxito!')
+    }
+    
+    setAgregandoId(null) // Restablece el botón
+  }
+
   if (cargando) return <p style={styles.center}>Cargando productos...</p>
 
   return (
@@ -40,6 +62,16 @@ function Catalogo() {
               <h3 style={styles.nombre}>{producto.nombre}</h3>
               <p style={styles.descripcion}>{producto.descripcion}</p>
               <p style={styles.precio}>${producto.precio.toLocaleString()}</p>
+              
+              {/* NUEVO BOTÓN DE PRUEBA */}
+              <button 
+                onClick={() => agregarAlCarrito(producto.id)}
+                disabled={agregandoId === producto.id}
+                style={agregandoId === producto.id ? {...styles.boton, ...styles.botonDeshabilitado} : styles.boton}
+              >
+                {agregandoId === producto.id ? 'Agregando...' : 'Añadir al carrito 🛒'}
+              </button>
+
             </div>
           ))
         )}
@@ -68,7 +100,10 @@ const styles = {
     borderRadius: '8px',
     padding: '1rem',
     textAlign: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between' // Para que el botón siempre quede abajo alineado
   },
   imagen: {
     width: '100%',
@@ -82,12 +117,29 @@ const styles = {
   },
   descripcion: {
     color: '#666',
-    fontSize: '0.9rem'
+    fontSize: '0.9rem',
+    marginBottom: '0.5rem'
   },
   precio: {
     fontWeight: 'bold',
     color: '#2c3e50',
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
+    marginBottom: '1rem'
+  },
+  boton: {
+    backgroundColor: '#27ae60',
+    color: 'white',
+    border: 'none',
+    padding: '0.6rem 1rem',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '1rem',
+    transition: 'background-color 0.2s'
+  },
+  botonDeshabilitado: {
+    backgroundColor: '#95a5a6',
+    cursor: 'not-allowed'
   },
   center: {
     textAlign: 'center',
