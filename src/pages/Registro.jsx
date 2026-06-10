@@ -17,6 +17,7 @@ function Registro() {
   const [comunas, setComunas] = useState([]);
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Cargar regiones al iniciar
   useEffect(() => {
@@ -70,18 +71,47 @@ function Registro() {
   const handleRegistro = async (e) => {
     e.preventDefault();
 
-    console.log({
-      nombre,
-      rut,
-      email,
-      password,
-      direccion,
-      telefono,
-      region,
-      comuna,
-    });
+    if (loading) return;
 
-    setMessage("Formulario enviado correctamente");
+    setLoading(true);
+
+    try {
+      const { data: authData, error: authError } =
+        await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+        });
+
+      if (authError) {
+        setMessage("Error al crear usuario");
+        return;
+      }
+
+      const { error: profileError } = await supabase
+        .from("est_user")
+        .insert([
+          {
+            id_auth: authData?.user?.id,
+            nombre,
+            rut,
+            direccion,
+            telefono,
+            id_region: region,
+            id_comuna: comuna,
+            estado_user: false,
+            rol_user: 0,
+          },
+        ]);
+
+      if (profileError) {
+        setMessage("Usuario creado, pero error en perfil");
+        return;
+      }
+
+      setMessage("Usuario registrado correctamente");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -148,7 +178,9 @@ function Registro() {
             </select>
           </div>
 
-          <button type="submit">Registrarse</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Creando cuenta..." : "Registrarse"}
+          </button>
         </form>
 
         {message && <p>{message}</p>}
