@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Catalogo from './pages/Catalogo'
 import AdminProductos from './pages/AdminProductos'
 import Carrito from './pages/Carrito'
+import Registro from './pages/Registro'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<Catalogo />} />
         <Route path="/admin/productos" element={<AdminProductos />} />
         <Route path="/carrito" element={<Carrito />} />
+        <Route path="/registro" element={<Registro />} />
       </Routes>
     </BrowserRouter>
   )
