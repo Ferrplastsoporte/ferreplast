@@ -72,7 +72,6 @@ function Registro() {
     e.preventDefault();
 
     if (loading) return;
-
     setLoading(true);
 
     try {
@@ -82,28 +81,28 @@ function Registro() {
           password,
         });
 
-      if (authError) {
+      if (authError || !authData?.user) {
         setMessage("Error al crear usuario");
         return;
       }
 
       const { error: profileError } = await supabase
-        .from("est_user")
+        .from("usuarios")
         .insert([
           {
-            id_auth: authData?.user?.id,
-            nombre,
-            rut,
-            direccion,
-            telefono,
-            id_region: region,
+            id_auth: authData.user.id,
+            nom_user: nombre,
+            rut_user: rut,
+            direc_user: direccion,
+            phone_user: telefono,
             id_comuna: comuna,
-            estado_user: false,
+            est_user: false,
             rol_user: 0,
           },
         ]);
 
       if (profileError) {
+        console.error(profileError);
         setMessage("Usuario creado, pero error en perfil");
         return;
       }
