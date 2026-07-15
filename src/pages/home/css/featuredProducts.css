@@ -1,0 +1,232 @@
+.featured{
+
+    padding:90px 8%;
+    background:white;
+
+}
+
+
+
+.featured-header{
+
+    text-align:center;
+    margin-bottom:50px;
+
+}
+
+
+
+.featured-header span{
+
+    color:#D52B1E;
+    font-weight:bold;
+    letter-spacing:2px;
+
+}
+
+
+
+.featured-header h2{
+
+    color:#0039A6;
+    font-size:38px;
+    margin:15px 0;
+
+}
+
+
+
+.featured-header p{
+
+    color:#555;
+    font-size:18px;
+
+}
+
+
+
+
+.products-grid{
+
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:25px;
+
+}
+
+
+
+.product-card{
+
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid #eee;
+    transition:.3s;
+
+}
+
+
+
+.product-card:hover{
+
+    transform:translateY(-8px);
+    box-shadow:0 15px 35px rgba(0,0,0,.12);
+
+}
+
+
+
+.product-image{
+
+    height:230px;
+    position:relative;
+
+}
+
+
+
+.product-image img{
+
+    width:100%;
+    height:100%;
+    object-fit:cover;
+
+}
+
+
+
+.discount{
+
+    position:absolute;
+    top:15px;
+    left:15px;
+
+    background:#D52B1E;
+    color:white;
+
+    padding:7px 14px;
+
+    border-radius:20px;
+
+    font-size:12px;
+    font-weight:bold;
+
+}
+
+
+
+
+.product-info{
+
+    padding:25px;
+
+}
+
+
+
+.product-info small{
+
+    color:#777;
+
+}
+
+
+
+.product-info h3{
+
+    color:#0039A6;
+    font-size:20px;
+    min-height:50px;
+
+}
+
+
+
+.prices{
+
+    margin:15px 0;
+
+}
+
+
+
+.prices strong{
+
+    color:#D52B1E;
+    font-size:24px;
+
+}
+
+
+
+.prices del{
+
+    margin-left:10px;
+    color:#999;
+
+}
+
+
+
+.stock{
+
+    font-size:14px;
+    color:#198754;
+
+}
+
+
+
+.product-info button{
+
+    width:100%;
+    margin-top:20px;
+
+    padding:13px;
+
+    border:none;
+
+    background:#0039A6;
+    color:white;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+
+
+.product-info button:hover{
+
+    background:#D52B1E;
+
+}
+
+
+
+
+@media(max-width:1000px){
+
+    .products-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
+
+
+@media(max-width:600px){
+
+    .products-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
