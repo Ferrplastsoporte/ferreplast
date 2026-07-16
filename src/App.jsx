@@ -6,7 +6,7 @@ import Catalogo from './pages/Catalogo'
 import AdminProductos from './pages/AdminProductos'
 import Registro from './pages/Registro'
 import Carrito from './pages/Carrito'
-
+import FloatingButtons from "./components/FloatingButtons";
 
 function App() {
 
@@ -15,7 +15,7 @@ function App() {
     <BrowserRouter>
 
       <Navbar />
-
+      <FloatingButtons />
       <Routes>
 
         <Route path="/" element={<Home />} />
@@ -27,6 +27,7 @@ function App() {
         <Route path="/carrito" element={<Carrito />} />
 
         <Route path="/registro" element={<Registro />} />
+        
 
 
       </Routes>
