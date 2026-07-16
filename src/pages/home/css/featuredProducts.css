@@ -1,204 +1,206 @@
-.featured{
+/* ===========================
+   Featured Products
+=========================== */
 
-    padding:90px 8%;
-    background:white;
-
+.featured-products{
+    width:100%;
+    padding:80px 8%;
+    background:#f7f8fa;
 }
 
-
-
-.featured-header{
-
+.section-title{
     text-align:center;
     margin-bottom:50px;
-
 }
 
-
-
-.featured-header span{
-
+.section-title span{
     color:#D52B1E;
-    font-weight:bold;
+    font-weight:700;
     letter-spacing:2px;
-
+    font-size:14px;
 }
 
-
-
-.featured-header h2{
-
+.section-title h2{
+    font-size:42px;
     color:#0039A6;
-    font-size:38px;
     margin:15px 0;
-
+    font-weight:800;
 }
 
-
-
-.featured-header p{
-
-    color:#555;
-    font-size:18px;
-
+.section-title p{
+    color:#666;
+    font-size:17px;
 }
 
-
-
-
-.products-grid{
-
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:25px;
-
-}
-
-
+/* ===========================
+   Tarjetas
+=========================== */
 
 .product-card{
 
-    background:white;
+    background:#fff;
+
     border-radius:18px;
+
     overflow:hidden;
-    border:1px solid #eee;
-    transition:.3s;
 
-}
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
 
+    transition:.35s;
 
-
-.product-card:hover{
-
-    transform:translateY(-8px);
-    box-shadow:0 15px 35px rgba(0,0,0,.12);
-
-}
-
-
-
-.product-image{
-
-    height:230px;
     position:relative;
 
 }
 
+.product-card:hover{
 
+    transform:translateY(-10px);
 
-.product-image img{
-
-    width:100%;
-    height:100%;
-    object-fit:cover;
+    box-shadow:0 20px 35px rgba(0,0,0,.15);
 
 }
 
+.product-card img{
 
+    width:100%;
 
-.discount{
+    height:260px;
+
+    object-fit:cover;
+
+    transition:.4s;
+
+}
+
+.product-card:hover img{
+
+    transform:scale(1.08);
+
+}
+
+/* ===========================
+   Etiqueta
+=========================== */
+
+.badge{
 
     position:absolute;
+
     top:15px;
+
     left:15px;
 
     background:#D52B1E;
+
     color:white;
 
-    padding:7px 14px;
+    padding:6px 14px;
 
-    border-radius:20px;
+    border-radius:30px;
 
     font-size:12px;
+
     font-weight:bold;
+
+    z-index:5;
 
 }
 
-
-
+/* ===========================
+   Información
+=========================== */
 
 .product-info{
 
-    padding:25px;
+    padding:20px;
 
 }
-
-
 
 .product-info small{
 
     color:#777;
 
+    font-size:13px;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
 }
-
-
 
 .product-info h3{
 
-    color:#0039A6;
-    font-size:20px;
-    min-height:50px;
+    color:#222;
+
+    margin:10px 0 18px;
+
+    font-size:22px;
+
+    min-height:60px;
 
 }
 
-
+/* ===========================
+   Precios
+=========================== */
 
 .prices{
 
-    margin:15px 0;
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    margin-bottom:20px;
 
 }
 
+.old-price{
 
-
-.prices strong{
-
-    color:#D52B1E;
-    font-size:24px;
-
-}
-
-
-
-.prices del{
-
-    margin-left:10px;
     color:#999;
 
-}
-
-
-
-.stock{
-
-    font-size:14px;
-    color:#198754;
+    text-decoration:line-through;
 
 }
 
+.price{
 
+    color:#0039A6;
+
+    font-size:28px;
+
+    font-weight:800;
+
+}
+
+/* ===========================
+   Botón
+=========================== */
 
 .product-info button{
 
     width:100%;
-    margin-top:20px;
 
-    padding:13px;
+    padding:14px;
 
     border:none;
 
+    border-radius:10px;
+
     background:#0039A6;
+
     color:white;
 
-    border-radius:8px;
+    font-size:16px;
+
+    font-weight:700;
 
     cursor:pointer;
 
-    font-weight:bold;
+    transition:.3s;
 
 }
-
-
 
 .product-info button:hover{
 
@@ -206,26 +208,103 @@
 
 }
 
+/* ===========================
+   Swiper
+=========================== */
 
+.swiper{
 
+    padding-bottom:55px;
 
-@media(max-width:1000px){
+}
 
-    .products-grid{
+.swiper-button-next,
+.swiper-button-prev{
 
-        grid-template-columns:repeat(2,1fr);
+    color:#0039A6;
+
+    font-weight:bold;
+
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover{
+
+    color:#D52B1E;
+
+}
+
+.swiper-pagination-bullet{
+
+    background:#0039A6;
+
+    opacity:.4;
+
+}
+
+.swiper-pagination-bullet-active{
+
+    opacity:1;
+
+    background:#D52B1E;
+
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media(max-width:992px){
+
+    .featured-products{
+
+        padding:60px 5%;
+
+    }
+
+    .section-title h2{
+
+        font-size:34px;
 
     }
 
 }
 
+@media(max-width:768px){
 
+    .product-card img{
 
-@media(max-width:600px){
+        height:220px;
 
-    .products-grid{
+    }
 
-        grid-template-columns:1fr;
+    .product-info h3{
+
+        font-size:20px;
+
+        min-height:auto;
+
+    }
+
+    .price{
+
+        font-size:24px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .section-title h2{
+
+        font-size:28px;
+
+    }
+
+    .section-title p{
+
+        font-size:15px;
 
     }
 

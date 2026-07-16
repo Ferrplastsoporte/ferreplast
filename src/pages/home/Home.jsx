@@ -1,5 +1,4 @@
 import Hero from "./Hero";
-import Categories from "./Categories";
 import FeaturedProducts from "./FeaturedProducts";
 import Brands from "./Brands";
 import Benefits from "./Benefits";
@@ -11,8 +10,6 @@ function Home() {
   return (
     <>
       <Hero />
-
-      <Categories />
 
       <FeaturedProducts />
 
