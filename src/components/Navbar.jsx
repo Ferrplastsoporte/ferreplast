@@ -1,182 +1,282 @@
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
+  FaBars,
+  FaBox,
+  FaChevronDown,
+  FaQuestionCircle,
   FaSearch,
   FaShoppingCart,
+  FaSignOutAlt,
   FaUser,
-  FaBars,
 } from "react-icons/fa";
+import { supabase } from "../lib/supabase";
+import "./css/navbar.css";
 
 function Navbar() {
+  const navigate = useNavigate();
+  const menuUsuarioRef = useRef(null);
+
+  const [sesion, setSesion] = useState(null);
+  const [usuario, setUsuario] = useState(null);
+  const [menuUsuarioAbierto, setMenuUsuarioAbierto] =
+    useState(false);
+  const [cargandoUsuario, setCargandoUsuario] =
+    useState(true);
+
+  useEffect(() => {
+    obtenerSesionInicial();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      async (_evento, nuevaSesion) => {
+        setSesion(nuevaSesion);
+
+        if (nuevaSesion?.user) {
+          await obtenerPerfil(nuevaSesion.user.id);
+        } else {
+          setUsuario(null);
+          setCargandoUsuario(false);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    function cerrarMenuAlHacerClickFuera(event) {
+      if (
+        menuUsuarioRef.current &&
+        !menuUsuarioRef.current.contains(event.target)
+      ) {
+        setMenuUsuarioAbierto(false);
+      }
+    }
+
+    document.addEventListener(
+      "mousedown",
+      cerrarMenuAlHacerClickFuera
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        cerrarMenuAlHacerClickFuera
+      );
+    };
+  }, []);
+
+  async function obtenerSesionInicial() {
+    setCargandoUsuario(true);
+
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Error al obtener la sesión:", error);
+      setCargandoUsuario(false);
+      return;
+    }
+
+    setSesion(session);
+
+    if (session?.user) {
+      await obtenerPerfil(session.user.id);
+    } else {
+      setUsuario(null);
+      setCargandoUsuario(false);
+    }
+  }
+
+  async function obtenerPerfil(idUsuario) {
+    const { data, error } = await supabase
+      .from("usuario")
+      .select("nom_user, est_user, rol_user")
+      .eq("id_user", idUsuario)
+      .single();
+
+    if (error) {
+      console.error("Error al cargar el perfil:", error);
+      setUsuario(null);
+      setCargandoUsuario(false);
+      return;
+    }
+
+    setUsuario(data);
+    setCargandoUsuario(false);
+  }
+
+  function obtenerPrimerNombre() {
+    if (!usuario?.nom_user) {
+      return "Usuario";
+    }
+
+    return usuario.nom_user.trim().split(/\s+/)[0];
+  }
+
+  async function cerrarSesion() {
+    setMenuUsuarioAbierto(false);
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Error al cerrar sesión:", error);
+      return;
+    }
+
+    setSesion(null);
+    setUsuario(null);
+    navigate("/", { replace: true });
+  }
+
+  function irA(ruta) {
+    setMenuUsuarioAbierto(false);
+    navigate(ruta);
+  }
+
   return (
-    <nav style={styles.nav}>
-      {/* Logo */}
-      <Link to="/" style={styles.logo}>
+    <nav className="navbar">
+      <Link to="/" className="navbar__logo">
         FERREPLAST
       </Link>
 
-      {/* Buscador */}
-      <div style={styles.searchContainer}>
+      <div className="navbar__search">
         <input
           type="text"
           placeholder="Buscar productos..."
-          style={styles.searchInput}
+          aria-label="Buscar productos"
         />
 
-        <button style={styles.searchButton}>
+        <button type="button" aria-label="Buscar">
           <FaSearch />
         </button>
       </div>
 
-      {/* Categorías */}
-      <div style={styles.dropdown}>
+      <div className="navbar__categories">
         <details>
-          <summary style={styles.summary}>
+          <summary>
             <FaBars />
             Categorías
           </summary>
 
-          <div style={styles.dropdownMenu}>
-            <Link to="/catalogo" style={styles.dropdownItem}>
-              📦 Catálogo
-            </Link>
-
-            <Link to="/resinas" style={styles.dropdownItem}>
-              🧪 Resinas Epóxicas
-            </Link>
-
-            <Link to="/herramientas" style={styles.dropdownItem}>
-              🛠 Herramientas
-            </Link>
-
-            <Link to="/pinturas" style={styles.dropdownItem}>
-              🎨 Pinturas
-            </Link>
-
-            <Link to="/materiales" style={styles.dropdownItem}>
-              🧱 Materiales
-            </Link>
-
-            <Link to="/tornillos" style={styles.dropdownItem}>
-              🔩 Tornillos
-            </Link>
-
-            <Link to="/electricidad" style={styles.dropdownItem}>
-              ⚡ Electricidad
-            </Link>
-
-            <Link to="/gasfiteria" style={styles.dropdownItem}>
-              🚿 Gasfitería
-            </Link>
+          <div className="navbar__categories-menu">
+            <Link to="/catalogo">📦 Catálogo</Link>
+            <Link to="/resinas">🧪 Resinas Epóxicas</Link>
+            <Link to="/herramientas">🛠 Herramientas</Link>
+            <Link to="/pinturas">🎨 Pinturas</Link>
+            <Link to="/materiales">🧱 Materiales</Link>
+            <Link to="/tornillos">🔩 Tornillos</Link>
+            <Link to="/electricidad">⚡ Electricidad</Link>
+            <Link to="/gasfiteria">🚿 Gasfitería</Link>
           </div>
         </details>
       </div>
 
-      {/* Usuario */}
-      <Link to="/login" style={styles.icon}>
-        <FaUser size={20} />
-        <span>Iniciar sesión</span>
-      </Link>
+      <div
+        className="navbar__account-wrapper"
+        ref={menuUsuarioRef}
+      >
+        {!sesion ? (
+          <Link to="/login" className="navbar__login">
+            <FaUser />
+            <span>Iniciar sesión</span>
+          </Link>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="navbar__account-button"
+              onClick={() =>
+                setMenuUsuarioAbierto((estado) => !estado)
+              }
+              aria-expanded={menuUsuarioAbierto}
+              aria-haspopup="menu"
+            >
+              <FaUser className="navbar__account-icon" />
 
-      {/* Carrito */}
-      <Link to="/carrito" style={styles.icon}>
-        <FaShoppingCart size={22} />
+              <span className="navbar__account-text">
+                <span className="navbar__greeting">
+                  {cargandoUsuario
+                    ? "Cargando..."
+                    : `Hola, ${obtenerPrimerNombre()}`}
+                </span>
+
+                <strong>Cuenta</strong>
+              </span>
+
+              <FaChevronDown
+                className={`navbar__account-arrow ${
+                  menuUsuarioAbierto
+                    ? "navbar__account-arrow--open"
+                    : ""
+                }`}
+              />
+            </button>
+
+            {menuUsuarioAbierto && (
+              <div
+                className="navbar__account-menu"
+                role="menu"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => irA("/pedidos")}
+                >
+                  <FaBox />
+                  <span>Pedidos</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => irA("/cuenta")}
+                >
+                  <FaUser />
+                  <span>Cuenta</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => irA("/ayuda")}
+                >
+                  <FaQuestionCircle />
+                  <span>Ayuda</span>
+                </button>
+
+                <div className="navbar__account-divider" />
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="navbar__logout"
+                  onClick={cerrarSesion}
+                >
+                  <FaSignOutAlt />
+                  <span>Cerrar sesión</span>
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <Link
+        to="/carrito"
+        className="navbar__cart"
+        aria-label="Carrito"
+      >
+        <FaShoppingCart />
       </Link>
     </nav>
   );
 }
-
-const styles = {
-  nav: {
-    display: "flex",
-    alignItems: "center",
-    gap: "25px",
-    padding: "15px 40px",
-    background: "#005BBB",
-    color: "white",
-    position: "sticky",
-    top: 0,
-    zIndex: 1000,
-  },
-
-  logo: {
-    color: "white",
-    textDecoration: "none",
-    fontSize: "30px",
-    fontWeight: "bold",
-    minWidth: "220px",
-  },
-
-  searchContainer: {
-    display: "flex",
-    flex: 1,
-    background: "white",
-    borderRadius: "30px",
-    overflow: "hidden",
-    height: "46px",
-  },
-
-  searchInput: {
-    flex: 1,
-    border: "none",
-    outline: "none",
-    padding: "0 18px",
-    fontSize: "16px",
-  },
-
-  searchButton: {
-    width: "60px",
-    border: "none",
-    background: "white",
-    color: "#005BBB",
-    cursor: "pointer",
-    fontSize: "18px",
-  },
-
-  dropdown: {
-    position: "relative",
-  },
-
-  summary: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    cursor: "pointer",
-    listStyle: "none",
-    color: "white",
-    fontWeight: "600",
-    padding: "10px",
-    userSelect: "none",
-  },
-
-  dropdownMenu: {
-    position: "absolute",
-    top: "55px",
-    right: 0,
-    width: "240px",
-    background: "white",
-    borderRadius: "10px",
-    boxShadow: "0 10px 25px rgba(0,0,0,.2)",
-    overflow: "hidden",
-  },
-
-  dropdownItem: {
-    display: "block",
-    padding: "14px 18px",
-    color: "#333",
-    textDecoration: "none",
-    borderBottom: "1px solid #eee",
-    fontSize: "15px",
-  },
-
-  icon: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    color: "white",
-    textDecoration: "none",
-    fontWeight: "500",
-    whiteSpace: "nowrap",
-  },
-};
 
 export default Navbar;

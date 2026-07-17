@@ -197,7 +197,7 @@ function Registro() {
         }
 
         if (valor.length < 8) {
-          return "La contraseña debe tener al menos 8 caracteres.";
+          return "La contraseña debe tener al menos 8 caracteres (Mayúsculas, minúsculas, números y carácter especial).";
         }
 
         return "";

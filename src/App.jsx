@@ -7,6 +7,7 @@ import AdminProductos from './pages/AdminProductos'
 import Registro from './pages/Registro'
 import Carrito from './pages/Carrito'
 import FloatingButtons from "./components/FloatingButtons";
+import Login from './pages/Login'
 
 function App() {
 
@@ -27,7 +28,8 @@ function App() {
         <Route path="/carrito" element={<Carrito />} />
 
         <Route path="/registro" element={<Registro />} />
-        
+
+        <Route path="/login" element={<Login />} />       
 
 
       </Routes>
