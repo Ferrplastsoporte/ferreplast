@@ -1,4 +1,4 @@
-import '../css/hero.css'
+import '../css/home.css'
 
 function Hero() {
   const categories = [

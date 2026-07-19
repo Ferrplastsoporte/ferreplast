@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import ProductList from '../components/productos/ProductList'
+import './css/Catalogo.css'
 
 function Catalogo() {
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
-  const [agregandoId, setAgregandoId] = useState(null) // Para dar feedback visual en el botón
 
   useEffect(() => {
     cargarProductos()
@@ -24,127 +25,27 @@ function Catalogo() {
     setCargando(false)
   }
 
-  // NUEVA FUNCIÓN: Envía el producto seleccionado a la tabla carrito
   const agregarAlCarrito = async (productoId) => {
-    setAgregandoId(productoId) // Cambia el texto del botón seleccionado a "Agregando..."
-    
-    // En una prueba simple, añadimos el producto con cantidad 1
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('carrito')
-      .insert([
-        { id_producto: productoId, cantidad: 1 }
-      ])
+      .insert([{ id_producto: productoId, cantidad: 1 }])
 
     if (error) {
-      console.error('Error al agregar al carrito:', error)
-      alert('Hubo un error al agregar el producto')
+      console.error('Error al agregar:', error)
+      alert('Error al agregar al carrito')
     } else {
-      alert('¡Producto agregado al carrito con éxito!')
+      alert('¡Producto agregado!')
     }
-    
-    setAgregandoId(null) // Restablece el botón
   }
 
-  if (cargando) return <p style={styles.center}>Cargando productos...</p>
+  if (cargando) return <p className="text-center">Cargando productos...</p>
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Catálogo de Productos</h1>
-      <div style={styles.grid}>
-        {productos.length === 0 ? (
-          <p>No hay productos aún. Ve al panel de administrador para subir uno.</p>
-        ) : (
-          productos.map((producto) => (
-            <div key={producto.id} style={styles.card}>
-              {producto.imagen_url && (
-                <img src={producto.imagen_url} alt={producto.nombre} style={styles.imagen} />
-              )}
-              <h3 style={styles.nombre}>{producto.nombre}</h3>
-              <p style={styles.descripcion}>{producto.descripcion}</p>
-              <p style={styles.precio}>${producto.precio.toLocaleString()}</p>
-              
-              {/* NUEVO BOTÓN DE PRUEBA */}
-              <button 
-                onClick={() => agregarAlCarrito(producto.id)}
-                disabled={agregandoId === producto.id}
-                style={agregandoId === producto.id ? {...styles.boton, ...styles.botonDeshabilitado} : styles.boton}
-              >
-                {agregandoId === producto.id ? 'Agregando...' : 'Añadir al carrito 🛒'}
-              </button>
-
-            </div>
-          ))
-        )}
-      </div>
+    <div className="catalogo-container">
+      <h1>Catálogo de Productos</h1>
+      <ProductList productos={productos} onAgregar={agregarAlCarrito} />
     </div>
   )
-}
-
-const styles = {
-  container: {
-    padding: '2rem',
-    maxWidth: '1200px',
-    margin: '0 auto'
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: '2rem'
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '1.5rem'
-  },
-  card: {
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '1rem',
-    textAlign: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between' // Para que el botón siempre quede abajo alineado
-  },
-  imagen: {
-    width: '100%',
-    height: '200px',
-    objectFit: 'cover',
-    borderRadius: '4px'
-  },
-  nombre: {
-    margin: '0.5rem 0',
-    fontSize: '1.2rem'
-  },
-  descripcion: {
-    color: '#666',
-    fontSize: '0.9rem',
-    marginBottom: '0.5rem'
-  },
-  precio: {
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    fontSize: '1.2rem',
-    marginBottom: '1rem'
-  },
-  boton: {
-    backgroundColor: '#27ae60',
-    color: 'white',
-    border: 'none',
-    padding: '0.6rem 1rem',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '1rem',
-    transition: 'background-color 0.2s'
-  },
-  botonDeshabilitado: {
-    backgroundColor: '#95a5a6',
-    cursor: 'not-allowed'
-  },
-  center: {
-    textAlign: 'center',
-    marginTop: '2rem'
-  }
 }
 
 export default Catalogo

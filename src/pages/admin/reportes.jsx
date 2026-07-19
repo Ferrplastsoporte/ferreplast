@@ -1,0 +1,17 @@
+import AdminSidebar from './components/AdminSidebar'
+import AdminHeader from './components/AdminHeader'
+import './css/admin.css'  
+
+function Reportes() {
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <div className="admin-content">
+        <AdminHeader titulo="Reportes" />
+        <p>Reportes del sistema</p>
+      </div>
+    </div>
+  )
+}
+
+export default Reportes
