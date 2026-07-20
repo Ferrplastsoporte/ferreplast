@@ -1,144 +1,503 @@
-// src/hooks/useAuth.js
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export const useAuth = () => {
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [initializing, setInitializing] = useState(true)
+
+  const [session, setSession] = useState(null)
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+
   const [modal, setModal] = useState({
     visible: false,
     tipo: '',
     titulo: '',
-    mensaje: '',
+    mensaje: ''
   })
 
-  const showModal = (tipo, titulo, mensaje) => {
-    setModal({ visible: true, tipo, titulo, mensaje })
+  const showModal = (
+    tipo,
+    titulo,
+    mensaje
+  ) => {
+    setModal({
+      visible: true,
+      tipo,
+      titulo,
+      mensaje
+    })
   }
 
   const hideModal = () => {
-    setModal({ visible: false, tipo: '', titulo: '', mensaje: '' })
+    setModal({
+      visible: false,
+      tipo: '',
+      titulo: '',
+      mensaje: ''
+    })
   }
 
   const translateError = (error) => {
-    const msg = error?.message?.toLowerCase() || ''
-    if (msg.includes('invalid login credentials')) return 'Credenciales incorrectas.'
-    if (msg.includes('email not confirmed')) return 'Confirma tu correo primero.'
-    if (msg.includes('already registered')) return 'El correo ya está registrado.'
-    if (msg.includes('too many requests')) return 'Demasiados intentos. Espera un momento.'
-    if (msg.includes('database error') || msg.includes('saving new user')) {
-      return 'Error al guardar el perfil. Verifica que todos los campos estén correctos.'
+    const message =
+      error?.message?.toLowerCase() ?? ''
+
+    if (
+      message.includes(
+        'invalid login credentials'
+      )
+    ) {
+      return 'El correo o la contraseña son incorrectos.'
     }
-    return 'Ocurrió un error. Inténtalo nuevamente.'
+
+    if (message.includes('email not confirmed')) {
+      return 'Debes confirmar tu correo antes de iniciar sesión.'
+    }
+
+    if (
+      message.includes('already registered') ||
+      message.includes(
+        'user already registered'
+      )
+    ) {
+      return 'El correo electrónico ya está registrado.'
+    }
+
+    if (
+      message.includes('password should be') ||
+      message.includes('weak password')
+    ) {
+      return 'La contraseña no cumple con los requisitos de seguridad.'
+    }
+
+    if (
+      message.includes('invalid email')
+    ) {
+      return 'El correo electrónico no es válido.'
+    }
+
+    if (
+      message.includes('too many requests') ||
+      message.includes('rate limit')
+    ) {
+      return 'Has realizado demasiados intentos. Espera unos minutos.'
+    }
+
+    if (
+      message.includes('database error') ||
+      message.includes('saving new user')
+    ) {
+      return 'No fue posible crear el perfil del usuario.'
+    }
+
+    if (
+      message.includes('network') ||
+      message.includes('failed to fetch')
+    ) {
+      return 'No fue posible conectar con el servidor. Revisa tu conexión.'
+    }
+
+    return 'Ocurrió un error inesperado. Inténtalo nuevamente.'
   }
 
-  const login = async (email, password) => {
+  const clearAuthState = () => {
+    setSession(null)
+    setUser(null)
+    setProfile(null)
+  }
+
+  const loadProfile = async (userId) => {
+    if (!userId) {
+      setProfile(null)
+      return null
+    }
+
+    const { data, error } = await supabase
+      .from('usuario')
+      .select(`
+        id_user,
+        nom_user,
+        rut_user,
+        direc_user,
+        phone_user,
+        id_comuna,
+        est_user,
+        rol_user
+      `)
+      .eq('id_user', userId)
+      .maybeSingle()
+
+    if (error) {
+      console.error(
+        'Error al cargar el perfil:',
+        error
+      )
+
+      setProfile(null)
+      return null
+    }
+
+    setProfile(data ?? null)
+
+    return data ?? null
+  }
+
+  useEffect(() => {
+    let mounted = true
+
+    const initializeAuth = async () => {
+      try {
+        const {
+          data: { session: currentSession },
+          error
+        } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error(
+            'Error al obtener la sesión:',
+            error
+          )
+
+          if (mounted) {
+            clearAuthState()
+          }
+
+          return
+        }
+
+        if (!mounted) {
+          return
+        }
+
+        setSession(currentSession)
+        setUser(currentSession?.user ?? null)
+
+        if (currentSession?.user) {
+          await loadProfile(
+            currentSession.user.id
+          )
+        } else {
+          setProfile(null)
+        }
+      } catch (error) {
+        console.error(
+          'Error inesperado al iniciar la sesión:',
+          error
+        )
+
+        if (mounted) {
+          clearAuthState()
+        }
+      } finally {
+        if (mounted) {
+          setInitializing(false)
+        }
+      }
+    }
+
+    initializeAuth()
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange(
+      async (_event, currentSession) => {
+        if (!mounted) {
+          return
+        }
+
+        setSession(currentSession)
+        setUser(currentSession?.user ?? null)
+
+        if (currentSession?.user) {
+          await loadProfile(
+            currentSession.user.id
+          )
+        } else {
+          setProfile(null)
+        }
+
+        setInitializing(false)
+      }
+    )
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const register = async (
+    userData,
+    mode = 'client'
+  ) => {
+    if (loading) {
+      return false
+    }
+
+    /*
+     * La creación administrativa de usuarios
+     * no debe realizarse con signUp desde el
+     * navegador, porque podría reemplazar la
+     * sesión actual del administrador.
+     */
+    if (mode === 'admin') {
+      showModal(
+        'warning',
+        'Función administrativa pendiente',
+        'La creación de trabajadores debe implementarse mediante una función segura del servidor.'
+      )
+
+      return false
+    }
+
     setLoading(true)
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
+      const email = userData.email
+        .trim()
+        .toLowerCase()
+
+      /*
+       * No insertamos manualmente en public.usuario.
+       *
+       * Estos datos se guardan como metadata y el
+       * trigger de Supabase se encarga de crear
+       * el perfil en la tabla usuario.
+       */
+      const {
+        data,
+        error
+      } = await supabase.auth.signUp({
+        email,
+        password: userData.password,
+        options: {
+          data: {
+            nombre:
+              userData.nombre.trim(),
+            rut:
+              userData.rut
+                .trim()
+                .toUpperCase(),
+            direccion:
+              userData.direccion.trim(),
+            telefono:
+              userData.telefono.trim(),
+            comuna:
+              Number(userData.comuna)
+          }
+        }
       })
 
       if (error) {
-        showModal('error', 'Error al iniciar sesión', translateError(error))
-        return
+        showModal(
+          'error',
+          'Error al registrarse',
+          translateError(error)
+        )
+        return false
       }
-
-      // 🔹 Buscar en la tabla "usuario" (sin S)
-      const { data: usuario, error: errorUsuario } = await supabase
-        .from('usuario')
-        .select('id_user, nom_user, est_user, rol_user')
-        .eq('id_user', data.user.id)
-        .single()
-
-      if (errorUsuario || !usuario) {
-        await supabase.auth.signOut()
-        showModal('error', 'Perfil no encontrado', 'No se encontró tu perfil.')
-        return
+      if (!data?.user) {
+        showModal(
+          'error',
+          'Error al registrarse',
+          'No fue posible crear la cuenta.'
+        )
+        return false
       }
-
-      if (usuario.est_user !== true) {
-        await supabase.auth.signOut()
-        showModal('warning', 'Cuenta pendiente', 'Debes confirmar tu correo.')
-        return
-      }
-
-      navigate('/', { replace: true })
+      showModal(
+        'success',
+        'Cuenta creada',
+        'Revisa tu correo electrónico y confirma tu cuenta para poder iniciar sesión.'
+      )
+      return true
     } catch (error) {
-      showModal('error', 'Error inesperado', 'Inténtalo nuevamente.')
+      console.error(
+        'Error inesperado durante el registro:',
+        error
+      )
+      showModal(
+        'error',
+        'Error inesperado',
+        translateError(error)
+      )
+      return false
     } finally {
       setLoading(false)
     }
   }
 
-  const register = async (userData) => {
+  const login = async (
+    email,
+    password
+  ) => {
+    if (loading) {
+      return false
+    }
+
     setLoading(true)
+
     try {
-      console.log('📝 Datos recibidos:', userData)
+      const {
+        data,
+        error
+      } =
+        await supabase.auth.signInWithPassword({
+          email: email
+            .trim()
+            .toLowerCase(),
 
-      // 🔹 PASO 1: Crear usuario en auth (SOLO email + password)
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: userData.email.trim().toLowerCase(),
-        password: userData.password,
-        // ⚠️ SIN options.data - esto se hace en el paso 2
-      })
+          password
+        })
 
-      if (authError || !authData?.user) {
-        console.error('❌ Error en auth:', authError)
-        showModal('error', 'Error al registrarse', translateError(authError))
-        return
+      if (error) {
+        showModal(
+          'error',
+          'Error al iniciar sesión',
+          translateError(error)
+        )
+
+        return false
       }
 
-      console.log('✅ Usuario creado en auth:', authData.user.id)
+      if (!data?.user || !data?.session) {
+        showModal(
+          'error',
+          'Error al iniciar sesión',
+          'No fue posible iniciar la sesión.'
+        )
 
-      // 🔹 PASO 2: Insertar perfil en tabla "usuario"
-      const { error: profileError } = await supabase
-        .from('usuario')
-        .insert([
-          {
-            id_user: authData.user.id,  // ← id_user (NO id_auth)
-            nom_user: userData.nombre?.trim(),
-            rut_user: userData.rut?.trim().toUpperCase(),
-            direc_user: userData.direccion?.trim(),
-            phone_user: userData.telefono?.trim(),
-            id_comuna: Number(userData.comuna),
-            est_user: false,  // DEFAULT false
-            // rol_user se asigna por defecto o se deja NULL
-          },
-        ])
-
-      if (profileError) {
-        console.error('❌ Error al guardar perfil:', profileError)
-        console.error('❌ Detalle del error:', profileError.message)
-        showModal('error', 'Error al guardar perfil', 'El usuario se creó pero no se pudo guardar el perfil. Verifica: RUT único, comuna válida.')
-        return
+        return false
       }
 
-      console.log('✅ Perfil guardado correctamente')
-      showModal('success', 'Cuenta creada', 'Confirma tu correo para iniciar sesión.')
-      return authData
+      const userProfile = await loadProfile(
+        data.user.id
+      )
+
+      if (!userProfile) {
+        await supabase.auth.signOut()
+        clearAuthState()
+
+        showModal(
+          'error',
+          'Perfil no encontrado',
+          'La cuenta existe, pero no se encontró su perfil de usuario.'
+        )
+
+        return false
+      }
+
+      if (userProfile.est_user !== true) {
+        await supabase.auth.signOut()
+        clearAuthState()
+
+        showModal(
+          'warning',
+          'Cuenta no habilitada',
+          'Debes confirmar tu correo o esperar a que tu cuenta sea habilitada.'
+        )
+
+        return false
+      }
+
+      setSession(data.session)
+      setUser(data.user)
+      setProfile(userProfile)
+
+      return true
     } catch (error) {
-      console.error('❌ Error inesperado:', error)
-      showModal('error', 'Error inesperado', 'Inténtalo nuevamente.')
+      console.error(
+        'Error inesperado durante el inicio de sesión:',
+        error
+      )
+
+      showModal(
+        'error',
+        'Error inesperado',
+        translateError(error)
+      )
+
+      return false
     } finally {
       setLoading(false)
     }
   }
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    navigate('/', { replace: true })
+    if (loading) {
+      return false
+    }
+
+    setLoading(true)
+
+    try {
+      const { error } =
+        await supabase.auth.signOut()
+
+      if (error) {
+        showModal(
+          'error',
+          'Error al cerrar sesión',
+          translateError(error)
+        )
+
+        return false
+      }
+
+      clearAuthState()
+
+      return true
+    } catch (error) {
+      console.error(
+        'Error inesperado al cerrar sesión:',
+        error
+      )
+
+      showModal(
+        'error',
+        'Error inesperado',
+        translateError(error)
+      )
+
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const refreshProfile = async () => {
+    if (!user?.id) {
+      setProfile(null)
+      return null
+    }
+
+    return await loadProfile(user.id)
   }
 
   return {
-    login,
-    register,
-    logout,
+    session,
+    user,
+    profile,
+
     loading,
+    initializing,
+
     modal,
     showModal,
-    hideModal
+    hideModal,
+
+    register,
+    login,
+    logout,
+    loadProfile,
+    refreshProfile,
+
+    isAuthenticated: Boolean(
+      session && user && profile
+    ),
+
+    role: profile?.rol_user ?? null,
+
+    isActive:
+      profile?.est_user === true
   }
 }
