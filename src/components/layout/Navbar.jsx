@@ -15,15 +15,22 @@ import "../css/navbar.css"
 
 function Navbar() {
   const navigate = useNavigate()
+
   const menuUsuarioRef = useRef(null)
+  const menuCategoriasRef = useRef(null)
 
   const [sesion, setSesion] = useState(null)
   const [usuario, setUsuario] = useState(null)
   const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false)
   const [cargandoUsuario, setCargandoUsuario] = useState(true)
 
+  const [busqueda, setBusqueda] = useState("")
+  const [categorias, setCategorias] = useState([])
+  const [cargandoCategorias, setCargandoCategorias] = useState(true)
+
   useEffect(() => {
     obtenerSesionInicial()
+    cargarCategorias()
 
     const {
       data: { subscription },
@@ -104,12 +111,67 @@ function Navbar() {
     setCargandoUsuario(false)
   }
 
+  async function cargarCategorias() {
+    setCargandoCategorias(true)
+
+    const { data, error } = await supabase
+      .from("categoria")
+      .select("id_cat, nom_cat")
+      .order("nom_cat", { ascending: true })
+
+    if (error) {
+      console.error("Error al cargar las categorías:", error)
+      setCategorias([])
+      setCargandoCategorias(false)
+      return
+    }
+
+    setCategorias(data || [])
+    setCargandoCategorias(false)
+  }
+
   function obtenerPrimerNombre() {
     if (!usuario?.nom_user) {
       return "Usuario"
     }
 
     return usuario.nom_user.trim().split(/\s+/)[0]
+  }
+
+  function buscarProductos(event) {
+    event.preventDefault()
+
+    const textoBusqueda = busqueda.trim()
+
+    cerrarMenuCategorias()
+
+    if (textoBusqueda) {
+      navigate(
+        `/catalogo?buscar=${encodeURIComponent(textoBusqueda)}`
+      )
+    } else {
+      navigate("/catalogo")
+    }
+  }
+
+  function irACategoria(idCategoria) {
+    cerrarMenuCategorias()
+    setBusqueda("")
+
+    navigate(`/catalogo?categoria=${idCategoria}`)
+  }
+
+  function irATodasLasCategorias() {
+    cerrarMenuCategorias()
+    setBusqueda("")
+
+    navigate("/catalogo")
+  }
+
+  function cerrarMenuCategorias() {
+    if (menuCategoriasRef.current) {
+      menuCategoriasRef.current.open = false
+    }
   }
 
   async function cerrarSesion() {
@@ -124,6 +186,7 @@ function Navbar() {
 
     setSesion(null)
     setUsuario(null)
+
     navigate("/", { replace: true })
   }
 
@@ -138,39 +201,70 @@ function Navbar() {
         FERREPLAST
       </Link>
 
-      <div className="navbar__search">
+      <form
+        className="navbar__search"
+        onSubmit={buscarProductos}
+      >
         <input
-          type="text"
+          type="search"
           placeholder="Buscar productos..."
           aria-label="Buscar productos"
+          value={busqueda}
+          onChange={(event) => setBusqueda(event.target.value)}
         />
 
-        <button type="button" aria-label="Buscar">
+        <button type="submit" aria-label="Buscar">
           <FaSearch />
         </button>
-      </div>
+      </form>
 
       <div className="navbar__categories">
-        <details>
+        <details ref={menuCategoriasRef}>
           <summary>
             <FaBars />
             Categorías
           </summary>
 
           <div className="navbar__categories-menu">
-            <Link to="/catalogo">📦 Catálogo</Link>
-            <Link to="/resinas">🧪 Resinas Epóxicas</Link>
-            <Link to="/herramientas">🛠 Herramientas</Link>
-            <Link to="/pinturas">🎨 Pinturas</Link>
-            <Link to="/materiales">🧱 Materiales</Link>
-            <Link to="/tornillos">🔩 Tornillos</Link>
-            <Link to="/electricidad">⚡ Electricidad</Link>
-            <Link to="/gasfiteria">🚿 Gasfitería</Link>
+            <button
+              type="button"
+              onClick={irATodasLasCategorias}
+            >
+              📦 Todas las categorías
+            </button>
+
+            {cargandoCategorias && (
+              <span className="navbar__categories-status">
+                Cargando categorías...
+              </span>
+            )}
+
+            {!cargandoCategorias && categorias.length === 0 && (
+              <span className="navbar__categories-status">
+                No hay categorías disponibles.
+              </span>
+            )}
+
+            {!cargandoCategorias &&
+              categorias.map((categoria) => (
+                <button
+                  key={categoria.id_cat}
+                  type="button"
+                  onClick={() =>
+                    irACategoria(categoria.id_cat)
+                  }
+                >
+                  {categoria.nom_cat}
+                </button>
+              ))}
           </div>
         </details>
       </div>
 
-      <div className="navbar__account-wrapper" ref={menuUsuarioRef}>
+      <div
+        className="navbar__account-wrapper"
+        ref={menuUsuarioRef}
+      >
         {!sesion ? (
           <Link to="/login" className="navbar__login">
             <FaUser />
@@ -181,7 +275,11 @@ function Navbar() {
             <button
               type="button"
               className="navbar__account-button"
-              onClick={() => setMenuUsuarioAbierto((estado) => !estado)}
+              onClick={() =>
+                setMenuUsuarioAbierto(
+                  (estadoActual) => !estadoActual
+                )
+              }
               aria-expanded={menuUsuarioAbierto}
               aria-haspopup="menu"
             >
@@ -199,24 +297,41 @@ function Navbar() {
 
               <FaChevronDown
                 className={`navbar__account-arrow ${
-                  menuUsuarioAbierto ? "navbar__account-arrow--open" : ""
+                  menuUsuarioAbierto
+                    ? "navbar__account-arrow--open"
+                    : ""
                 }`}
               />
             </button>
 
             {menuUsuarioAbierto && (
-              <div className="navbar__account-menu" role="menu">
-                <button type="button" role="menuitem" onClick={() => irA("/pedidos")}>
+              <div
+                className="navbar__account-menu"
+                role="menu"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => irA("/pedidos")}
+                >
                   <FaBox />
                   <span>Pedidos</span>
                 </button>
 
-                <button type="button" role="menuitem" onClick={() => irA("/cuenta")}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => irA("/cuenta")}
+                >
                   <FaUser />
                   <span>Cuenta</span>
                 </button>
 
-                <button type="button" role="menuitem" onClick={() => irA("/ayuda")}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => irA("/ayuda")}
+                >
                   <FaQuestionCircle />
                   <span>Ayuda</span>
                 </button>
@@ -238,7 +353,11 @@ function Navbar() {
         )}
       </div>
 
-      <Link to="/carrito" className="navbar__cart" aria-label="Carrito">
+      <Link
+        to="/carrito"
+        className="navbar__cart"
+        aria-label="Carrito"
+      >
         <FaShoppingCart />
       </Link>
     </nav>

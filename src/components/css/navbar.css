@@ -12,16 +12,20 @@
   box-sizing: border-box;
 
   background: #005bbb;
-  color: #ffffff;
+  color: #fff;
+}
+
+.navbar__logo,
+.navbar__login,
+.navbar__cart {
+  color: #fff;
+  text-decoration: none;
 }
 
 .navbar__logo {
   min-width: 210px;
-
-  color: #ffffff;
   font-size: 1.8rem;
   font-weight: 800;
-  text-decoration: none;
 }
 
 .navbar__search {
@@ -29,35 +33,34 @@
   flex: 1;
   height: 46px;
   overflow: hidden;
-
   border-radius: 24px;
-  background: #ffffff;
+  background: #fff;
+}
+
+.navbar__search input,
+.navbar__search button {
+  border: none;
+  background: #fff;
+  font-family: inherit;
 }
 
 .navbar__search input {
   flex: 1;
   min-width: 0;
   padding: 0 18px;
-
-  border: none;
   outline: none;
-
-  font-family: inherit;
   font-size: 1rem;
 }
 
 .navbar__search button {
   width: 58px;
-
-  border: none;
-  background: #ffffff;
   color: #005bbb;
-
   font-size: 1.05rem;
   cursor: pointer;
 }
 
-.navbar__categories {
+.navbar__categories,
+.navbar__account-wrapper {
   position: relative;
 }
 
@@ -65,10 +68,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-
   padding: 10px;
 
-  color: #ffffff;
+  color: #fff;
   font-weight: 600;
   list-style: none;
   cursor: pointer;
@@ -79,60 +81,74 @@
   display: none;
 }
 
-.navbar__categories-menu {
+.navbar__categories-menu,
+.navbar__account-menu {
   position: absolute;
-  top: 53px;
   right: 0;
-  width: 240px;
-  overflow: hidden;
+  z-index: 1100;
 
-  border-radius: 10px;
-  background: #ffffff;
+  background: #fff;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
 }
 
-.navbar__categories-menu a {
-  display: block;
-  padding: 14px 18px;
-
-  border-bottom: 1px solid #eeeeee;
-
-  color: #333333;
-  font-size: 0.94rem;
-  text-decoration: none;
+.navbar__categories-menu {
+  top: 53px;
+  width: 240px;
+  overflow: hidden;
+  border-radius: 10px;
 }
 
-.navbar__categories-menu a:hover {
+.navbar__categories-menu a,
+.navbar__categories-menu button {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-bottom: 1px solid #eee;
+  background: transparent;
+
+  color: #333;
+  font: inherit;
+  font-size: 0.94rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.navbar__categories-menu a:hover,
+.navbar__categories-menu button:hover {
   background: #f4f7fb;
 }
 
-.navbar__account-wrapper {
-  position: relative;
+.navbar__categories-status {
+  display: block;
+  padding: 14px 18px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.navbar__login,
+.navbar__account-button,
+.navbar__cart {
+  display: flex;
+  align-items: center;
 }
 
 .navbar__login {
-  display: flex;
-  align-items: center;
   gap: 8px;
-
-  color: #ffffff;
   font-weight: 600;
-  text-decoration: none;
   white-space: nowrap;
 }
 
 .navbar__account-button {
-  display: flex;
-  align-items: center;
   gap: 11px;
-
   min-width: 196px;
   padding: 9px 16px;
 
   border: none;
   border-radius: 32px;
   background: #064f98;
-  color: #ffffff;
+  color: #fff;
 
   font-family: inherit;
   cursor: pointer;
@@ -183,16 +199,10 @@
 }
 
 .navbar__account-menu {
-  position: absolute;
   top: calc(100% + 12px);
-  right: 0;
-  z-index: 1100;
-
   width: 270px;
   padding: 12px 0;
-
   border-radius: 12px;
-  background: #ffffff;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
 }
 
@@ -203,8 +213,8 @@
 
   width: 16px;
   height: 16px;
+  background: #fff;
 
-  background: #ffffff;
   content: "";
   transform: rotate(45deg);
 }
@@ -222,13 +232,16 @@
 
   border: none;
   background: transparent;
-  color: #333333;
+  color: #333;
 
   font-family: inherit;
   font-size: 1rem;
   text-align: left;
-
   cursor: pointer;
+}
+
+.navbar__account-menu button:hover {
+  background: #f3f5f7;
 }
 
 .navbar__account-menu button svg {
@@ -237,33 +250,24 @@
   color: #3f4650;
 }
 
-.navbar__account-menu button:hover {
-  background: #f3f5f7;
-}
-
 .navbar__account-divider {
   height: 1px;
   margin: 8px 22px;
-  background: #dddddd;
+  background: #ddd;
+}
+
+.navbar__logout:hover,
+.navbar__logout:hover svg {
+  color: #b42318;
 }
 
 .navbar__account-menu .navbar__logout:hover {
   background: #fff3f3;
-  color: #b42318;
-}
-
-.navbar__account-menu .navbar__logout:hover svg {
-  color: #b42318;
 }
 
 .navbar__cart {
-  display: flex;
-  align-items: center;
   justify-content: center;
-
-  color: #ffffff;
   font-size: 1.5rem;
-  text-decoration: none;
 }
 
 @media (max-width: 1050px) {
@@ -311,16 +315,13 @@
 }
 
 @media (max-width: 480px) {
-  .navbar__account-text {
+  .navbar__account-text,
+  .navbar__account-arrow {
     display: none;
   }
 
   .navbar__account-button {
     min-width: 46px;
     padding: 11px;
-  }
-
-  .navbar__account-arrow {
-    display: none;
   }
 }
