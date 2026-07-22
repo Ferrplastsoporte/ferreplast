@@ -1,0 +1,219 @@
+import { Link } from "react-router-dom"
+
+function ProductDetail({ producto }) {
+  const precioOriginal = Number(producto.precio_prod)
+
+  const precioActual =
+    producto.precio_act !== null &&
+    producto.precio_act !== undefined
+      ? Number(producto.precio_act)
+      : precioOriginal
+
+  const tieneOferta =
+    precioOriginal > 0 &&
+    precioActual < precioOriginal
+
+  const porcentajeDescuento = tieneOferta
+    ? Math.round(
+        ((precioOriginal - precioActual) /
+          precioOriginal) *
+          100
+      )
+    : 0
+
+  function formatearPrecio(valor) {
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0,
+    }).format(Number(valor))
+  }
+
+  const subcategoria = producto.subcategoria
+  const categoria = subcategoria?.categoria
+
+  return (
+    <article className="product-detail">
+      <div className="product-detail__top">
+        <div className="product-detail__image-container">
+          {tieneOferta && (
+            <span className="product-detail__discount">
+              -{porcentajeDescuento}%
+            </span>
+          )}
+
+          <img
+            className="product-detail__image"
+            src={
+              producto.imagen_url ||
+              "https://placehold.co/800x600?text=Sin+imagen"
+            }
+            alt={producto.nom_prod}
+            onError={(event) => {
+              event.currentTarget.src =
+                "https://placehold.co/800x600?text=Sin+imagen"
+            }}
+          />
+        </div>
+
+        <div className="product-detail__information">
+          <Link
+            className="product-detail__back"
+            to="/catalogo"
+          >
+            ← Volver al catálogo
+          </Link>
+
+          <div className="product-detail__classification">
+            {categoria?.nom_cat && (
+              <span>{categoria.nom_cat}</span>
+            )}
+
+            {categoria?.nom_cat &&
+              subcategoria?.nom_subcategoria && (
+                <span>/</span>
+              )}
+
+            {subcategoria?.nom_subcategoria && (
+              <span>
+                {subcategoria.nom_subcategoria}
+              </span>
+            )}
+          </div>
+
+          <h1>{producto.nom_prod}</h1>
+
+          {producto.desc_prod && (
+            <p className="product-detail__description">
+              {producto.desc_prod}
+            </p>
+          )}
+
+          <div className="product-detail__price">
+            {tieneOferta && (
+              <span className="product-detail__old-price">
+                {formatearPrecio(precioOriginal)}
+              </span>
+            )}
+
+            <strong>
+              {formatearPrecio(precioActual)}
+            </strong>
+
+            {tieneOferta && (
+              <span className="product-detail__offer-label">
+                Ahorras{" "}
+                {formatearPrecio(
+                  precioOriginal - precioActual
+                )}
+              </span>
+            )}
+          </div>
+
+          <dl className="product-detail__attributes">
+            {producto.color_prod && (
+              <div>
+                <dt>Color</dt>
+                <dd>{producto.color_prod}</dd>
+              </div>
+            )}
+
+            {producto.peso_prod !== null &&
+              producto.peso_prod !== undefined &&
+              producto.unidad_de_medida && (
+                <div>
+                  <dt>Peso</dt>
+                  <dd>
+                    {producto.peso_prod}{" "}
+                    {producto.unidad_de_medida}
+                  </dd>
+                </div>
+              )}
+
+            {subcategoria?.nom_subcategoria && (
+              <div>
+                <dt>Subcategoría</dt>
+                <dd>
+                  {subcategoria.nom_subcategoria}
+                </dd>
+              </div>
+            )}
+
+            {categoria?.nom_cat && (
+              <div>
+                <dt>Categoría</dt>
+                <dd>{categoria.nom_cat}</dd>
+              </div>
+            )}
+          </dl>
+
+          <button
+            type="button"
+            className="product-detail__cart-button"
+            disabled
+          >
+            Agregar al carrito
+          </button>
+
+          <p className="product-detail__cart-message">
+            El carrito se implementará próximamente.
+          </p>
+
+          {producto.documentos?.length > 0 && (
+            <section className="product-detail__documents">
+              <h2>Documentación</h2>
+
+              <div className="product-detail__document-list">
+                {producto.documentos.map(
+                  (documento) => (
+                    <a
+                      key={documento.id_documento}
+                      href={documento.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="product-detail__document"
+                    >
+                      <span
+                        className="product-detail__document-icon"
+                        aria-hidden="true"
+                      >
+                        PDF
+                      </span>
+
+                      <span className="product-detail__document-info">
+                        <strong>
+                          {documento.nombre_documento}
+                        </strong>
+
+                        <small>
+                          Abrir documento
+                        </small>
+                      </span>
+
+                      <span
+                        className="product-detail__document-arrow"
+                        aria-hidden="true"
+                      >
+                        ↓
+                      </span>
+                    </a>
+                  )
+                )}
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
+
+      {producto.detalle_prod && (
+        <section className="product-detail__full-description">
+          <h2>Detalle del producto</h2>
+
+          <p>{producto.detalle_prod}</p>
+        </section>
+      )}
+    </article>
+  )
+}
+
+export default ProductDetail

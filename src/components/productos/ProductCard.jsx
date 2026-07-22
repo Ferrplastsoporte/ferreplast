@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom"
+
 function ProductCard({ producto }) {
+  const navigate = useNavigate()
+
   const precioOriginal = Number(producto.precio_prod)
 
   /*
@@ -31,15 +35,39 @@ function ProductCard({ producto }) {
     }).format(precio)
   }
 
-  function agregarAlCarrito() {
+  function verDetalle() {
+    navigate(`/producto/${producto.id_prod}`)
+  }
+
+  function agregarAlCarrito(event) {
+    /*
+     * Evita que el clic del botón llegue al article
+     * y abra el detalle del producto.
+     */
+    event.stopPropagation()
+
     console.log(
       "Agregar producto al carrito:",
       producto.id_prod
     )
   }
 
+  function manejarTeclado(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      verDetalle()
+    }
+  }
+
   return (
-    <article className="product-card">
+    <article
+      className="product-card"
+      onClick={verDetalle}
+      onKeyDown={manejarTeclado}
+      role="link"
+      tabIndex={0}
+      aria-label={`Ver detalle de ${producto.nom_prod}`}
+    >
       <div className="product-card__image-wrapper">
         {tieneOferta && (
           <span className="product-card__discount">

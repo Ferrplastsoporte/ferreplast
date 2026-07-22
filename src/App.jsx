@@ -10,6 +10,7 @@ import Catalogo from './pages/Catalogo'
 import Carrito from './pages/Carrito'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
+import DetalleProducto from "./pages/DetalleProducto"
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -34,7 +35,8 @@ function App() {
         <Route path="/carrito" element={<Carrito />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
-        
+        <Route path="/producto/:id" element={<DetalleProducto />}/>
+
         {/* Admin */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/bodega" element={<Bodega />} />
