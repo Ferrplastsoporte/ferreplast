@@ -12,6 +12,8 @@ import {
 } from "react-icons/fa"
 import { supabase } from "../../lib/supabase"
 import "../css/navbar.css"
+/// import del logo
+import logo from "../../assets/logo.png"
 
 function Navbar() {
   const navigate = useNavigate()
@@ -198,7 +200,11 @@ function Navbar() {
   return (
     <nav className="navbar">
       <Link to="/" className="navbar__logo">
-        FERREPLAST
+        <img
+          src={logo}
+          alt="Ferreplast"
+          className="navbar__logo-image"
+        />
       </Link>
 
       <form

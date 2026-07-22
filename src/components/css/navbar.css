@@ -325,3 +325,15 @@
     padding: 11px;
   }
 }
+
+.navbar__logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.navbar__logo-image {
+    height: 55px;      /* Ajusta el tamaño */
+    width: auto;
+    display: block;
+}
