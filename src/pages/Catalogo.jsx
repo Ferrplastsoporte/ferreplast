@@ -5,6 +5,19 @@ import ProductFilters from "../components/productos/ProductFilters"
 import ProductList from "../components/productos/ProductList"
 import "./css/Catalogo.css"
 
+const PRODUCTOS_POR_PAGINA = 20
+
+const FILTROS_INICIALES = {
+  busqueda: "",
+  categoria: "",
+  subcategoria: "",
+  color: "",
+  peso: "",
+  precioMinimo: "",
+  precioMaximo: "",
+  orden: "recientes",
+}
+
 function Catalogo() {
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -13,6 +26,9 @@ function Catalogo() {
 
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
+  const [subcategorias, setSubcategorias] = useState([])
+  const [colores, setColores] = useState([])
+  const [pesos, setPesos] = useState([])
 
   const [cargando, setCargando] = useState(true)
   const [errorCarga, setErrorCarga] = useState("")
@@ -20,78 +36,170 @@ function Catalogo() {
   const [paginaActual, setPaginaActual] = useState(1)
   const [totalProductos, setTotalProductos] = useState(0)
 
-  const productosPorPagina = 20
-
   const [filtros, setFiltros] = useState({
+    ...FILTROS_INICIALES,
     busqueda: busquedaUrl,
     categoria: categoriaUrl,
-    precioMinimo: "",
-    precioMaximo: "",
-    orden: "recientes",
   })
 
   const totalPaginas = Math.max(
     1,
-    Math.ceil(totalProductos / productosPorPagina)
+    Math.ceil(totalProductos / PRODUCTOS_POR_PAGINA)
   )
 
   /*
-   * Carga las categorías una sola vez.
+   * Carga las opciones de los filtros.
    */
   useEffect(() => {
-    cargarCategorias()
+    cargarOpcionesFiltros()
   }, [])
 
   /*
-   * Sincroniza la búsqueda y categoría de la URL
+   * Sincroniza el buscador y la categoría del Navbar
    * con los filtros internos del catálogo.
    */
   useEffect(() => {
-    setFiltros((filtrosActuales) => ({
-      ...filtrosActuales,
-      busqueda: busquedaUrl,
-      categoria: categoriaUrl,
-    }))
+    setFiltros((filtrosActuales) => {
+      const cambioCategoria =
+        filtrosActuales.categoria !== categoriaUrl
+
+      return {
+        ...filtrosActuales,
+        busqueda: busquedaUrl,
+        categoria: categoriaUrl,
+        subcategoria: cambioCategoria
+          ? ""
+          : filtrosActuales.subcategoria,
+      }
+    })
 
     setPaginaActual(1)
   }, [busquedaUrl, categoriaUrl])
 
   /*
-   * Vuelve a cargar los productos cuando cambian
-   * los filtros o la página.
+   * Recarga los productos cuando cambia un filtro
+   * o la página actual.
    */
   useEffect(() => {
     cargarProductos()
   }, [
     filtros.busqueda,
     filtros.categoria,
+    filtros.subcategoria,
+    filtros.color,
+    filtros.peso,
     filtros.precioMinimo,
     filtros.precioMaximo,
     filtros.orden,
     paginaActual,
   ])
 
-  async function cargarCategorias() {
-    const { data, error } = await supabase
-      .from("categoria")
-      .select("id_cat, nom_cat")
-      .order("nom_cat", { ascending: true })
+  async function cargarOpcionesFiltros() {
+    const [
+      respuestaCategorias,
+      respuestaSubcategorias,
+      respuestaCaracteristicas,
+    ] = await Promise.all([
+      supabase
+        .from("categoria")
+        .select("id_cat, nom_cat")
+        .order("nom_cat", { ascending: true }),
 
-    if (error) {
-      console.error("Error al cargar categorías:", error)
+      supabase
+        .from("subcategoria")
+        .select(
+          "id_subcategoria, nom_subcategoria, id_cat"
+        )
+        .order("nom_subcategoria", { ascending: true }),
+
+      supabase
+        .from("producto")
+        .select("color_prod, peso_prod, unidad_de_medida")
+        .eq("est_prod", 1),
+    ])
+
+    if (respuestaCategorias.error) {
+      console.error(
+        "Error al cargar categorías:",
+        respuestaCategorias.error
+      )
       setCategorias([])
+    } else {
+      setCategorias(respuestaCategorias.data || [])
+    }
+
+    if (respuestaSubcategorias.error) {
+      console.error(
+        "Error al cargar subcategorías:",
+        respuestaSubcategorias.error
+      )
+      setSubcategorias([])
+    } else {
+      setSubcategorias(respuestaSubcategorias.data || [])
+    }
+
+    if (respuestaCaracteristicas.error) {
+      console.error(
+        "Error al cargar características:",
+        respuestaCaracteristicas.error
+      )
+      setColores([])
+      setPesos([])
       return
     }
 
-    setCategorias(data || [])
+    const productosCaracteristicas =
+      respuestaCaracteristicas.data || []
+
+    const coloresUnicos = [
+      ...new Set(
+        productosCaracteristicas
+          .map((producto) => producto.color_prod?.trim())
+          .filter(Boolean)
+      ),
+    ].sort((a, b) => a.localeCompare(b, "es"))
+
+    const pesosUnicos = productosCaracteristicas
+      .filter(
+        (producto) =>
+          producto.peso_prod !== null &&
+          producto.peso_prod !== undefined &&
+          producto.unidad_de_medida
+      )
+      .map((producto) => ({
+        valor: `${producto.peso_prod}|${producto.unidad_de_medida}`,
+        etiqueta: `${producto.peso_prod} ${producto.unidad_de_medida}`,
+        peso: Number(producto.peso_prod),
+        unidad: producto.unidad_de_medida,
+      }))
+      .filter(
+        (peso, indice, arreglo) =>
+          arreglo.findIndex(
+            (elemento) => elemento.valor === peso.valor
+          ) === indice
+      )
+      .sort((a, b) => {
+        const comparacionUnidad = a.unidad.localeCompare(
+          b.unidad,
+          "es"
+        )
+
+        return comparacionUnidad || a.peso - b.peso
+      })
+
+    setColores(coloresUnicos)
+    setPesos(pesosUnicos)
   }
 
   async function cargarProductos() {
     setCargando(true)
     setErrorCarga("")
 
-    const desde = (paginaActual - 1) * productosPorPagina
-    const hasta = desde + productosPorPagina - 1
+    const desde =
+      (paginaActual - 1) * PRODUCTOS_POR_PAGINA
+
+    const hasta =
+      desde + PRODUCTOS_POR_PAGINA - 1
 
     let consulta = supabase
       .from("producto")
@@ -100,21 +208,33 @@ function Catalogo() {
           id_prod,
           nom_prod,
           desc_prod,
+          detalle_prod,
           precio_prod,
           precio_act,
           imagen_url,
           created_prod,
-          id_cat,
           est_prod,
-          categoria (
+          color_prod,
+          peso_prod,
+          unidad_de_medida,
+          id_subcategoria,
+          subcategoria!inner (
+            id_subcategoria,
+            nom_subcategoria,
             id_cat,
-            nom_cat
+            categoria (
+              id_cat,
+              nom_cat
+            )
           )
         `,
         { count: "exact" }
       )
       .eq("est_prod", 1)
 
+    /*
+     * Búsqueda por nombre.
+     */
     if (filtros.busqueda.trim()) {
       consulta = consulta.ilike(
         "nom_prod",
@@ -122,13 +242,51 @@ function Catalogo() {
       )
     }
 
+    /*
+     * Categoría mediante la relación con subcategoria.
+     */
     if (filtros.categoria) {
       consulta = consulta.eq(
-        "id_cat",
+        "subcategoria.id_cat",
         Number(filtros.categoria)
       )
     }
 
+    /*
+     * Subcategoría directa del producto.
+     */
+    if (filtros.subcategoria) {
+      consulta = consulta.eq(
+        "id_subcategoria",
+        Number(filtros.subcategoria)
+      )
+    }
+
+    if (filtros.color) {
+      consulta = consulta.eq(
+        "color_prod",
+        filtros.color
+      )
+    }
+
+    /*
+     * El valor del filtro tiene formato:
+     * peso|unidad, por ejemplo 1|kg.
+     */
+    if (filtros.peso) {
+      const [peso, unidad] = filtros.peso.split("|")
+
+      if (peso && unidad) {
+        consulta = consulta
+          .eq("peso_prod", Number(peso))
+          .eq("unidad_de_medida", unidad)
+      }
+    }
+
+    /*
+     * Los rangos y el orden utilizan el precio actual,
+     * ya que es el valor que pagará el cliente.
+     */
     if (filtros.precioMinimo !== "") {
       consulta = consulta.gte(
         "precio_act",
@@ -206,8 +364,14 @@ function Catalogo() {
   function cambiarFiltro(nombre, valor) {
     setPaginaActual(1)
 
+    /*
+     * La categoría se guarda en la URL para mantenerla
+     * sincronizada con el menú del Navbar.
+     */
     if (nombre === "categoria") {
-      const nuevosParametros = new URLSearchParams(searchParams)
+      const nuevosParametros = new URLSearchParams(
+        searchParams
+      )
 
       if (valor) {
         nuevosParametros.set("categoria", valor)
@@ -216,6 +380,14 @@ function Catalogo() {
       }
 
       setSearchParams(nuevosParametros)
+
+      setFiltros((filtrosActuales) => ({
+        ...filtrosActuales,
+        categoria: valor,
+        subcategoria: "",
+      }))
+
+      return
     }
 
     setFiltros((filtrosActuales) => ({
@@ -228,11 +400,7 @@ function Catalogo() {
     setSearchParams({})
 
     setFiltros({
-      busqueda: "",
-      categoria: "",
-      precioMinimo: "",
-      precioMaximo: "",
-      orden: "recientes",
+      ...FILTROS_INICIALES,
     })
 
     setPaginaActual(1)
@@ -276,6 +444,9 @@ function Catalogo() {
 
       <ProductFilters
         categorias={categorias}
+        subcategorias={subcategorias}
+        colores={colores}
+        pesos={pesos}
         filtros={filtros}
         onCambiarFiltro={cambiarFiltro}
         onLimpiarFiltros={limpiarFiltros}
@@ -300,7 +471,10 @@ function Catalogo() {
           <div className="catalogo__error">
             <p>{errorCarga}</p>
 
-            <button type="button" onClick={cargarProductos}>
+            <button
+              type="button"
+              onClick={cargarProductos}
+            >
               Reintentar
             </button>
           </div>
@@ -313,8 +487,8 @@ function Catalogo() {
               <h2>No se encontraron productos</h2>
 
               <p>
-                Prueba cambiando la categoría, el precio o la
-                búsqueda.
+                Prueba cambiando la categoría, subcategoría,
+                color, peso, precio o búsqueda.
               </p>
 
               <button

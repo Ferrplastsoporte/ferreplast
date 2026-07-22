@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 function ProductFilters({
   categorias,
+  subcategorias,
+  colores,
+  pesos,
   filtros,
   onCambiarFiltro,
   onLimpiarFiltros,
@@ -22,32 +25,50 @@ function ProductFilters({
     setErrorPrecio("")
   }, [filtros.precioMinimo, filtros.precioMaximo])
 
+  const subcategoriasFiltradas = useMemo(() => {
+    if (!filtros.categoria) {
+      return subcategorias
+    }
+
+    return subcategorias.filter(
+      (subcategoria) =>
+        String(subcategoria.id_cat) ===
+        String(filtros.categoria)
+    )
+  }, [subcategorias, filtros.categoria])
+
   function obtenerNumero(valor) {
-    return valor.replace(/\D/g, "")
+    return String(valor).replace(/\D/g, "")
   }
 
-  function formatearPeso(valor) {
+  function formatearPrecio(valor) {
     if (!valor) {
       return ""
     }
 
-    const numero = obtenerNumero(valor)
+    const numero = Number(obtenerNumero(valor))
 
-    return `$${new Intl.NumberFormat("es-CL").format(
-      Number(numero)
-    )}`
+    if (Number.isNaN(numero)) {
+      return ""
+    }
+
+    return `$${new Intl.NumberFormat("es-CL").format(numero)}`
   }
 
   function aplicarPrecios() {
-    const minimo = Number(precioMinimo || 0)
-    const maximo = Number(precioMaximo || 0)
+    const minimo = precioMinimo
+      ? Number(precioMinimo)
+      : null
 
-    if (minimo < 0 || maximo < 0) {
-      setErrorPrecio("Los precios no pueden ser negativos.")
-      return
-    }
+    const maximo = precioMaximo
+      ? Number(precioMaximo)
+      : null
 
-    if (precioMinimo && precioMaximo && minimo > maximo) {
+    if (
+      minimo !== null &&
+      maximo !== null &&
+      minimo > maximo
+    ) {
       setErrorPrecio(
         "El precio máximo debe ser mayor o igual al precio mínimo."
       )
@@ -60,13 +81,6 @@ function ProductFilters({
     onCambiarFiltro("precioMaximo", precioMaximo)
   }
 
-  function manejarEnter(event) {
-    if (event.key === "Enter") {
-      event.preventDefault()
-      aplicarPrecios()
-    }
-  }
-
   function limpiarTodo() {
     setPrecioMinimo("")
     setPrecioMaximo("")
@@ -74,18 +88,32 @@ function ProductFilters({
     onLimpiarFiltros()
   }
 
+  function manejarEnter(evento) {
+    if (evento.key === "Enter") {
+      evento.preventDefault()
+      aplicarPrecios()
+    }
+  }
+
+  function cambiarCategoria(valor) {
+    onCambiarFiltro("categoria", valor)
+  }
+
   return (
-    <section className="product-filters">
+    <section
+      className="product-filters"
+      aria-label="Filtros del catálogo"
+    >
       <label>
         Categoría
 
         <select
           value={filtros.categoria}
-          onChange={(event) =>
-            onCambiarFiltro("categoria", event.target.value)
+          onChange={(evento) =>
+            cambiarCategoria(evento.target.value)
           }
         >
-          <option value="">Todas las categorías</option>
+          <option value="">Todas</option>
 
           {categorias.map((categoria) => (
             <option
@@ -99,16 +127,93 @@ function ProductFilters({
       </label>
 
       <label>
+        Subcategoría
+
+        <select
+          value={filtros.subcategoria}
+          onChange={(evento) =>
+            onCambiarFiltro(
+              "subcategoria",
+              evento.target.value
+            )
+          }
+          disabled={subcategoriasFiltradas.length === 0}
+        >
+          <option value="">Todas</option>
+
+          {subcategoriasFiltradas.map((subcategoria) => (
+            <option
+              key={subcategoria.id_subcategoria}
+              value={subcategoria.id_subcategoria}
+            >
+              {subcategoria.nom_subcategoria}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Color
+
+        <select
+          value={filtros.color}
+          onChange={(evento) =>
+            onCambiarFiltro(
+              "color",
+              evento.target.value
+            )
+          }
+        >
+          <option value="">Todos</option>
+
+          {colores.map((color) => (
+            <option
+              key={color}
+              value={color}
+            >
+              {color}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Peso
+
+        <select
+          value={filtros.peso}
+          onChange={(evento) =>
+            onCambiarFiltro(
+              "peso",
+              evento.target.value
+            )
+          }
+        >
+          <option value="">Todos</option>
+
+          {pesos.map((peso) => (
+            <option
+              key={peso.valor}
+              value={peso.valor}
+            >
+              {peso.etiqueta}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
         Precio mínimo
 
         <input
           type="text"
           inputMode="numeric"
+          autoComplete="off"
+          value={formatearPrecio(precioMinimo)}
           placeholder="$0"
-          value={formatearPeso(precioMinimo)}
-          onChange={(event) => {
+          onChange={(evento) => {
             setPrecioMinimo(
-              obtenerNumero(event.target.value)
+              obtenerNumero(evento.target.value)
             )
             setErrorPrecio("")
           }}
@@ -122,11 +227,12 @@ function ProductFilters({
         <input
           type="text"
           inputMode="numeric"
+          autoComplete="off"
+          value={formatearPrecio(precioMaximo)}
           placeholder="Sin límite"
-          value={formatearPeso(precioMaximo)}
-          onChange={(event) => {
+          onChange={(evento) => {
             setPrecioMaximo(
-              obtenerNumero(event.target.value)
+              obtenerNumero(evento.target.value)
             )
             setErrorPrecio("")
           }}
@@ -134,21 +240,16 @@ function ProductFilters({
         />
       </label>
 
-      <button
-        type="button"
-        className="product-filters__apply"
-        onClick={aplicarPrecios}
-      >
-        Aplicar precio
-      </button>
-
       <label>
-        Ordenar por
+        Ordenar
 
         <select
           value={filtros.orden}
-          onChange={(event) =>
-            onCambiarFiltro("orden", event.target.value)
+          onChange={(evento) =>
+            onCambiarFiltro(
+              "orden",
+              evento.target.value
+            )
           }
         >
           <option value="recientes">
@@ -160,33 +261,46 @@ function ProductFilters({
           </option>
 
           <option value="precio-menor">
-            Precio: menor a mayor
+            Menor precio
           </option>
 
           <option value="precio-mayor">
-            Precio: mayor a menor
+            Mayor precio
           </option>
 
           <option value="nombre-az">
-            Nombre: A-Z
+            Nombre A-Z
           </option>
 
           <option value="nombre-za">
-            Nombre: Z-A
+            Nombre Z-A
           </option>
         </select>
       </label>
 
-      <button
-        type="button"
-        className="product-filters__clear"
-        onClick={limpiarTodo}
-      >
-        Limpiar filtros
-      </button>
+      <div className="product-filters__actions">
+        <button
+          type="button"
+          className="product-filters__apply"
+          onClick={aplicarPrecios}
+        >
+          Aplicar precios
+        </button>
+
+        <button
+          type="button"
+          className="product-filters__clear"
+          onClick={limpiarTodo}
+        >
+          Limpiar
+        </button>
+      </div>
 
       {errorPrecio && (
-        <p className="product-filters__error">
+        <p
+          className="product-filters__error"
+          role="alert"
+        >
           {errorPrecio}
         </p>
       )}
