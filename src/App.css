@@ -182,3 +182,23 @@
     border-right-color: var(--border);
   }
 }
+
+
+
+
+.add-to-cart {
+  width: 100%;
+}
+
+.add-to-cart__button--success {
+  background: #15803d !important;
+  color: #ffffff !important;
+}
+
+.add-to-cart__error {
+  margin: 8px 0 0;
+
+  color: #00129c;
+  font-size: 0.82rem;
+  text-align: center;
+}

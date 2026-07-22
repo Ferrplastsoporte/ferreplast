@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import AddToCartButton from "../carrito/AddToCartButton"
 
 function ProductDetail({ producto }) {
   const precioOriginal = Number(producto.precio_prod)
@@ -147,17 +148,10 @@ function ProductDetail({ producto }) {
             )}
           </dl>
 
-          <button
-            type="button"
+          <AddToCartButton
+            producto={producto}
             className="product-detail__cart-button"
-            disabled
-          >
-            Agregar al carrito
-          </button>
-
-          <p className="product-detail__cart-message">
-            El carrito se implementará próximamente.
-          </p>
+          />
 
           {producto.documentos?.length > 0 && (
             <section className="product-detail__documents">

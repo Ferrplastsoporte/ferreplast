@@ -1,14 +1,11 @@
 import { useNavigate } from "react-router-dom"
+import AddToCartButton from "../carrito/AddToCartButton"
 
 function ProductCard({ producto }) {
   const navigate = useNavigate()
 
   const precioOriginal = Number(producto.precio_prod)
 
-  /*
-   * Si precio_act todavía es null, se utiliza
-   * precio_prod como respaldo.
-   */
   const precioActual =
     producto.precio_act !== null &&
     producto.precio_act !== undefined
@@ -39,21 +36,11 @@ function ProductCard({ producto }) {
     navigate(`/producto/${producto.id_prod}`)
   }
 
-  function agregarAlCarrito(event) {
-    /*
-     * Evita que el clic del botón llegue al article
-     * y abra el detalle del producto.
-     */
-    event.stopPropagation()
-
-    console.log(
-      "Agregar producto al carrito:",
-      producto.id_prod
-    )
-  }
-
   function manejarTeclado(event) {
-    if (event.key === "Enter" || event.key === " ") {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
       event.preventDefault()
       verDetalle()
     }
@@ -115,13 +102,10 @@ function ProductCard({ producto }) {
           </span>
         </div>
 
-        <button
-          type="button"
+        <AddToCartButton
+          producto={producto}
           className="btn-add"
-          onClick={agregarAlCarrito}
-        >
-          Agregar al carrito
-        </button>
+        />
       </div>
     </article>
   )

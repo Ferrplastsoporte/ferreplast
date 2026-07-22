@@ -8,6 +8,7 @@ import {
 } from "swiper/modules"
 
 import { supabase } from "../../../lib/supabase"
+import AddToCartButton from "../../../components/carrito/AddToCartButton"
 
 import "swiper/css"
 import "swiper/css/navigation"
@@ -83,19 +84,6 @@ function FeaturedProducts() {
 
   function verDetalle(idProducto) {
     navigate(`/producto/${idProducto}`)
-  }
-
-  function agregarAlCarrito(event, producto) {
-    /*
-     * Evita que el clic del botón abra
-     * la página de detalle.
-     */
-    event.stopPropagation()
-
-    console.log(
-      "Agregar producto al carrito:",
-      producto.id_prod
-    )
   }
 
   function manejarTeclado(event, idProducto) {
@@ -260,17 +248,10 @@ function FeaturedProducts() {
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={(event) =>
-                          agregarAlCarrito(
-                            event,
-                            producto
-                          )
-                        }
-                      >
-                        Agregar al carrito
-                      </button>
+                      <AddToCartButton
+                        producto={producto}
+                        className="featured-product-card__cart-button"
+                      />
                     </div>
                   </article>
                 </SwiperSlide>
