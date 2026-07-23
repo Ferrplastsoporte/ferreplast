@@ -183,3 +183,141 @@ export async function agregarProductoAlCarrito(
     mensaje: "Producto agregado al carrito.",
   }
 }
+
+export async function obtenerProductosCarrito() {
+  const usuario = await obtenerUsuarioActual()
+
+  if (!usuario) {
+    return obtenerCarritoLocal()
+  }
+
+  const { data, error } = await supabase
+    .from("carrito")
+    .select(`
+      id_cart,
+      cant_cart,
+      producto (
+        id_prod,
+        nom_prod,
+        precio_prod,
+        precio_act,
+        imagen_url
+      )
+    `)
+    .eq("id_user", usuario.id)
+    .order("creado_cart", {
+      ascending: false,
+    })
+
+  if (error) {
+    throw error
+  }
+
+  return (data ?? []).map((item) => ({
+    id_cart: item.id_cart,
+    id_prod: item.producto.id_prod,
+    nom_prod: item.producto.nom_prod,
+    precio_prod: item.producto.precio_prod,
+    precio_act: item.producto.precio_act,
+    imagen_url: item.producto.imagen_url,
+    cantidad: item.cant_cart,
+  }))
+}
+
+export async function actualizarCantidadCarrito(
+  idProducto,
+  nuevaCantidad
+) {
+  const cantidad = Number(nuevaCantidad)
+
+  if (cantidad < 1) {
+    throw new Error(
+      "La cantidad debe ser mayor o igual a 1."
+    )
+  }
+
+  const usuario = await obtenerUsuarioActual()
+
+  if (!usuario) {
+    const carritoActual = obtenerCarritoLocal()
+
+    const carritoActualizado = carritoActual.map(
+      (item) =>
+        item.id_prod === idProducto
+          ? {
+              ...item,
+              cantidad,
+            }
+          : item
+    )
+
+    guardarCarritoLocal(carritoActualizado)
+
+    return carritoActualizado
+  }
+
+  const { error } = await supabase
+    .from("carrito")
+    .update({
+      cant_cart: cantidad,
+    })
+    .eq("id_user", usuario.id)
+    .eq("id_prod", idProducto)
+
+  if (error) {
+    throw error
+  }
+
+  return obtenerProductosCarrito()
+}
+
+export async function eliminarProductoCarrito(
+  idProducto
+) {
+  const usuario = await obtenerUsuarioActual()
+
+  if (!usuario) {
+    const carritoActual = obtenerCarritoLocal()
+
+    const carritoActualizado = carritoActual.filter(
+      (item) => item.id_prod !== idProducto
+    )
+
+    guardarCarritoLocal(carritoActualizado)
+
+    return carritoActualizado
+  }
+
+  const { error } = await supabase
+    .from("carrito")
+    .delete()
+    .eq("id_user", usuario.id)
+    .eq("id_prod", idProducto)
+
+  if (error) {
+    throw error
+  }
+
+  return obtenerProductosCarrito()
+}
+
+export async function vaciarCarrito() {
+  const usuario = await obtenerUsuarioActual()
+
+  if (!usuario) {
+    localStorage.removeItem(CART_STORAGE_KEY)
+
+    return []
+  }
+
+  const { error } = await supabase
+    .from("carrito")
+    .delete()
+    .eq("id_user", usuario.id)
+
+  if (error) {
+    throw error
+  }
+
+  return []
+}

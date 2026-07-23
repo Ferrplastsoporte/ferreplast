@@ -4,6 +4,7 @@ import { useForm } from '../../hooks/useForm'
 import { useAuth } from '../../hooks/useAuth'
 import { validateRegisterField } from '../../utils/validators'
 import { sanitizeRegisterField } from '../../utils/helpers'
+import { useNavigate } from 'react-router-dom'
 
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -28,6 +29,9 @@ const ADMIN_VALUES = {
 }
 
 const RegistroForm = ({ mode = 'client' }) => {
+
+  const navigate = useNavigate()
+
   const initialValues = {
     ...BASE_VALUES,
     ...(mode === 'admin' ? ADMIN_VALUES : {})
@@ -176,6 +180,12 @@ const RegistroForm = ({ mode = 'client' }) => {
     if (resultado === true) {
       resetForm()
       setComunas([])
+
+      if (mode === 'client') {
+        navigate('/login', {
+          replace: true
+        })
+      }
     }
   }
 
