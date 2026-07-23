@@ -23,6 +23,7 @@ import Configuracion from './pages/admin/Configuracion'
 import Dashboard from './pages/admin/Dashboard'
 import Reportes from './pages/admin/reportes'
 
+
 function App() {
   return (
     <BrowserRouter>

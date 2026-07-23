@@ -757,7 +757,141 @@
     }
 
 }
+/*==================================
+            MISSION
+==================================*/
 
+.mission{
+    width:100%;
+    padding:90px 8%;
+    background:#ffffff;
+}
+
+.mission-header{
+    max-width:1300px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:70px;
+    margin-bottom:70px;
+}
+
+.mission-logo{
+    flex:1;
+    display:flex;
+    justify-content:center;
+}
+
+.mission-logo img{
+    width:320px;
+    max-width:100%;
+    transition:.4s;
+}
+
+.mission-logo img:hover{
+    transform:scale(1.05);
+}
+
+.mission-info{
+    flex:2;
+}
+
+.mission-subtitle{
+    color:#0d6efd;
+    font-weight:700;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+.mission-info h2{
+    font-size:3rem;
+    margin:15px 0;
+    color:#222;
+}
+
+.mission-info p{
+    color:#666;
+    font-size:1.08rem;
+    line-height:1.8;
+}
+
+.mission-stats{
+    display:flex;
+    gap:50px;
+    margin-top:35px;
+}
+
+.mission-stats h3{
+    font-size:2.2rem;
+    color:#0d6efd;
+    margin-bottom:5px;
+}
+
+.mission-stats span{
+    color:#777;
+    font-weight:600;
+}
+
+.mission-cards{
+    max-width:1300px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:30px;
+}
+
+.mission-card{
+    background:#f7f8fb;
+    padding:35px;
+    border-radius:18px;
+    text-align:center;
+    transition:.35s;
+    border:1px solid #e8e8e8;
+}
+
+.mission-card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 18px 40px rgba(0,0,0,.08);
+}
+
+.mission-icon{
+    font-size:3rem;
+    margin-bottom:20px;
+}
+
+.mission-card h3{
+    margin-bottom:15px;
+    color:#0d6efd;
+    font-size:1.5rem;
+}
+
+.mission-card p{
+    color:#666;
+    line-height:1.7;
+}
+
+@media(max-width:992px){
+
+    .mission-header{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .mission-stats{
+        justify-content:center;
+        flex-wrap:wrap;
+    }
+
+    .mission-cards{
+        grid-template-columns:1fr;
+    }
+
+    .mission-info h2{
+        font-size:2.3rem;
+    }
+
+}
 /* =========================
    RESPONSIVE
 ========================= */

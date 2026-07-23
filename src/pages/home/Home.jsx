@@ -4,6 +4,7 @@ import Brands from './components/Brands'
 import Benefits from './components/Benefits'
 import Contact from './components/Contact'
 import Footer from '../../components/layout/Footer'
+import Mission from './components/Mission'
 import './css/home.css'
 
 function Home() {
@@ -12,6 +13,7 @@ function Home() {
       <Hero />
       <FeaturedProducts />
       <Brands />
+      <Mission />
       <Benefits />
       <Contact />
       <Footer />
