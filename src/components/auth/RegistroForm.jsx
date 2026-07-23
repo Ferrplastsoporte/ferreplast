@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useForm } from '../../hooks/useForm'
 import { useAuth } from '../../hooks/useAuth'
 import { validateRegisterField } from '../../utils/validators'
 import { sanitizeRegisterField } from '../../utils/helpers'
-import { useNavigate } from 'react-router-dom'
 
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -29,7 +29,6 @@ const ADMIN_VALUES = {
 }
 
 const RegistroForm = ({ mode = 'client' }) => {
-
   const navigate = useNavigate()
 
   const initialValues = {
@@ -63,6 +62,12 @@ const RegistroForm = ({ mode = 'client' }) => {
   const [comunas, setComunas] = useState([])
   const [loadingRegiones, setLoadingRegiones] = useState(false)
   const [loadingComunas, setLoadingComunas] = useState(false)
+
+  /*
+   * Indica si debemos enviar al cliente al Login
+   * después de que cierre el modal de registro exitoso.
+   */
+  const [redirectToLogin, setRedirectToLogin] = useState(false)
 
   useEffect(() => {
     cargarRegiones()
@@ -172,20 +177,38 @@ const RegistroForm = ({ mode = 'client' }) => {
 
     const resultado = await register(values, mode)
 
-    /*
-     * La limpieza dependerá de lo que retorne useAuth.
-     * Cuando revisemos useAuth.js dejaremos definido
-     * que register retorne true cuando el registro sea exitoso.
-     */
     if (resultado === true) {
       resetForm()
       setComunas([])
 
+      /*
+       * En el registro de clientes esperamos a que
+       * cierre el modal antes de enviarlo al Login.
+       *
+       * El modo administrador no será redirigido.
+       */
       if (mode === 'client') {
-        navigate('/login', {
-          replace: true
-        })
+        setRedirectToLogin(true)
       }
+    }
+  }
+
+  const handleModalClose = () => {
+    /*
+     * Primero cerramos el modal.
+     */
+    hideModal()
+
+    /*
+     * Solo navegamos si el registro fue exitoso
+     * y corresponde al registro de un cliente.
+     */
+    if (redirectToLogin === true) {
+      setRedirectToLogin(false)
+
+      navigate('/login', {
+        replace: true
+      })
     }
   }
 
@@ -383,7 +406,7 @@ const RegistroForm = ({ mode = 'client' }) => {
 
       <Modal
         {...modal}
-        onClose={hideModal}
+        onClose={handleModalClose}
       />
     </>
   )
