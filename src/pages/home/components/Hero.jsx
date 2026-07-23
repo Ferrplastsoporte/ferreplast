@@ -1,4 +1,5 @@
 import '../css/home.css'
+import SlideUp from "../../../animations/SlideUp";
 
 function Hero() {
   const categories = [
@@ -11,6 +12,7 @@ function Hero() {
   ]
 
   return (
+   <SlideUp>
     <section className="hero">
       <div className="hero-header">
         <h1>¿Qué estás buscando hoy?</h1>
@@ -47,6 +49,7 @@ function Hero() {
         ))}
       </div>
     </section>
+    </SlideUp> 
   )
 }
 

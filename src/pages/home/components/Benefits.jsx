@@ -1,4 +1,5 @@
 import '../css/home.css' 
+import FadeIn from "../../../animations/FadeIn";
 
 function Benefits() {
   const benefits = [
@@ -9,6 +10,7 @@ function Benefits() {
   ]
 
   return (
+    <FadeIn>
     <section className="benefits">
       <div className="benefits-header">
         <span>FERREPLAST</span>
@@ -26,6 +28,7 @@ function Benefits() {
         ))}
       </div>
     </section>
+    </FadeIn>
   )
 }
 

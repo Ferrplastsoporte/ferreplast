@@ -1,7 +1,8 @@
 import "../css/home.css";
-
+import SlideUp from "../../../animations/SlideUp";
 function Contact() {
   return (
+    <SlideUp delay={0.3}>
     <section className="contact">
       <div className="contact-container">
 
@@ -75,6 +76,7 @@ function Contact() {
 
       </div>
     </section>
+    </SlideUp>
   );
 }
 

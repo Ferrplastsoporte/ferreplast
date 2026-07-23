@@ -4,6 +4,7 @@ import klingspor from "../../../assets/klingspor.png";
 import basf from "../../../assets/basf.png";
 import oldWoodBrothers from "../../../assets/oldwoodbrothers.png";
 
+import FadeIn from "../../../animations/FadeIn";
 function Brands() {
 
   const brands = [
@@ -25,6 +26,7 @@ function Brands() {
   ];
 
   return (
+    <FadeIn delay={0.2}>
     <section className="brands">
 
       <span>MARCAS EXCLUSIVAS</span>
@@ -58,6 +60,7 @@ function Brands() {
       </div>
 
     </section>
+    </FadeIn>
   );
 }
 
