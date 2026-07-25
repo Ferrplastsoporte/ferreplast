@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
 
 function ProductFilters({
-  categorias,
+  familias,
   subcategorias,
+  marcas,
   colores,
+  unidadesMedida,
   pesos,
   filtros,
   onCambiarFiltro,
@@ -26,16 +28,28 @@ function ProductFilters({
   }, [filtros.precioMinimo, filtros.precioMaximo])
 
   const subcategoriasFiltradas = useMemo(() => {
-    if (!filtros.categoria) {
-      return subcategorias
+    if (!filtros.familia) {
+      return []
     }
 
     return subcategorias.filter(
       (subcategoria) =>
-        String(subcategoria.id_cat) ===
-        String(filtros.categoria)
+        String(subcategoria.id_familia) ===
+        String(filtros.familia)
     )
-  }, [subcategorias, filtros.categoria])
+  }, [subcategorias, filtros.familia])
+
+  const familiaSeleccionada = Boolean(
+    filtros.familia
+  )
+
+  const subcategoriaSeleccionada = Boolean(
+    filtros.subcategoria
+  )
+
+  const unidadSeleccionada = Boolean(
+    filtros.unidadMedida
+  )
 
   function obtenerNumero(valor) {
     return String(valor).replace(/\D/g, "")
@@ -46,23 +60,44 @@ function ProductFilters({
       return ""
     }
 
-    const numero = Number(obtenerNumero(valor))
+    const numero = Number(
+      obtenerNumero(valor)
+    )
 
     if (Number.isNaN(numero)) {
       return ""
     }
 
-    return `$${new Intl.NumberFormat("es-CL").format(numero)}`
+    return `$${new Intl.NumberFormat(
+      "es-CL"
+    ).format(numero)}`
+  }
+
+  function formatearPeso(valor) {
+    const numero = Number(valor)
+
+    if (Number.isNaN(numero)) {
+      return valor
+    }
+
+    return new Intl.NumberFormat(
+      "es-CL",
+      {
+        maximumFractionDigits: 3,
+      }
+    ).format(numero)
   }
 
   function aplicarPrecios() {
-    const minimo = precioMinimo
-      ? Number(precioMinimo)
-      : null
+    const minimo =
+      precioMinimo !== ""
+        ? Number(precioMinimo)
+        : null
 
-    const maximo = precioMaximo
-      ? Number(precioMaximo)
-      : null
+    const maximo =
+      precioMaximo !== ""
+        ? Number(precioMaximo)
+        : null
 
     if (
       minimo !== null &&
@@ -72,19 +107,28 @@ function ProductFilters({
       setErrorPrecio(
         "El precio máximo debe ser mayor o igual al precio mínimo."
       )
+
       return
     }
 
     setErrorPrecio("")
 
-    onCambiarFiltro("precioMinimo", precioMinimo)
-    onCambiarFiltro("precioMaximo", precioMaximo)
+    onCambiarFiltro(
+      "precioMinimo",
+      precioMinimo
+    )
+
+    onCambiarFiltro(
+      "precioMaximo",
+      precioMaximo
+    )
   }
 
   function limpiarTodo() {
     setPrecioMinimo("")
     setPrecioMaximo("")
     setErrorPrecio("")
+
     onLimpiarFiltros()
   }
 
@@ -95,188 +139,353 @@ function ProductFilters({
     }
   }
 
-  function cambiarCategoria(valor) {
-    onCambiarFiltro("categoria", valor)
+  function cambiarFamilia(valor) {
+    setErrorPrecio("")
+
+    onCambiarFiltro("familia", valor)
+  }
+
+  function cambiarSubcategoria(valor) {
+    setErrorPrecio("")
+
+    onCambiarFiltro(
+      "subcategoria",
+      valor
+    )
   }
 
   return (
-    <section
+    <aside
       className="product-filters"
       aria-label="Filtros del catálogo"
     >
-      <label>
-        Categoría
+      <div className="product-filters__header">
+        <h2>Filtrar productos</h2>
 
-        <select
-          value={filtros.categoria}
-          onChange={(evento) =>
-            cambiarCategoria(evento.target.value)
-          }
-        >
-          <option value="">Todas</option>
+        <p>
+          Selecciona una familia y una
+          subcategoría para habilitar los filtros
+          de características.
+        </p>
+      </div>
 
-          {categorias.map((categoria) => (
-            <option
-              key={categoria.id_cat}
-              value={categoria.id_cat}
-            >
-              {categoria.nom_cat}
+      <div className="product-filters__fields">
+        <label className="product-filters__field">
+          <span>Familia</span>
+
+          <select
+            value={filtros.familia}
+            onChange={(evento) =>
+              cambiarFamilia(
+                evento.target.value
+              )
+            }
+          >
+            <option value="">
+              Todas las familias
             </option>
-          ))}
-        </select>
-      </label>
 
-      <label>
-        Subcategoría
+            {familias.map((familia) => (
+              <option
+                key={familia.id_familia}
+                value={familia.id_familia}
+              >
+                {familia.nom_familia}
+              </option>
+            ))}
+          </select>
+        </label>
 
-        <select
-          value={filtros.subcategoria}
-          onChange={(evento) =>
-            onCambiarFiltro(
-              "subcategoria",
-              evento.target.value
-            )
-          }
-          disabled={subcategoriasFiltradas.length === 0}
-        >
-          <option value="">Todas</option>
+        <label className="product-filters__field">
+          <span>Subcategoría</span>
 
-          {subcategoriasFiltradas.map((subcategoria) => (
-            <option
-              key={subcategoria.id_subcategoria}
-              value={subcategoria.id_subcategoria}
-            >
-              {subcategoria.nom_subcategoria}
+          <select
+            value={filtros.subcategoria}
+            onChange={(evento) =>
+              cambiarSubcategoria(
+                evento.target.value
+              )
+            }
+            disabled={!familiaSeleccionada}
+          >
+            <option value="">
+              {familiaSeleccionada
+                ? "Todas las subcategorías"
+                : "Selecciona una familia"}
             </option>
-          ))}
-        </select>
-      </label>
 
-      <label>
-        Color
+            {subcategoriasFiltradas.map(
+              (subcategoria) => (
+                <option
+                  key={
+                    subcategoria.id_subcategoria
+                  }
+                  value={
+                    subcategoria.id_subcategoria
+                  }
+                >
+                  {
+                    subcategoria.nom_subcategoria
+                  }
+                </option>
+              )
+            )}
+          </select>
+        </label>
 
-        <select
-          value={filtros.color}
-          onChange={(evento) =>
-            onCambiarFiltro(
-              "color",
-              evento.target.value
-            )
-          }
-        >
-          <option value="">Todos</option>
+        <label className="product-filters__field">
+          <span>Marca</span>
 
-          {colores.map((color) => (
-            <option
-              key={color}
-              value={color}
-            >
-              {color}
+          <select
+            value={filtros.marca}
+            onChange={(evento) =>
+              onCambiarFiltro(
+                "marca",
+                evento.target.value
+              )
+            }
+            disabled={
+              !subcategoriaSeleccionada ||
+              marcas.length === 0
+            }
+          >
+            <option value="">
+              {!subcategoriaSeleccionada
+                ? "Selecciona una subcategoría"
+                : marcas.length === 0
+                  ? "Sin marcas disponibles"
+                  : "Todas las marcas"}
             </option>
-          ))}
-        </select>
-      </label>
 
-      <label>
-        Peso
+            {marcas.map((marca) => (
+              <option
+                key={marca.id_marca}
+                value={marca.id_marca}
+              >
+                {marca.nom_marca}
+              </option>
+            ))}
+          </select>
+        </label>
 
-        <select
-          value={filtros.peso}
-          onChange={(evento) =>
-            onCambiarFiltro(
-              "peso",
-              evento.target.value
-            )
-          }
-        >
-          <option value="">Todos</option>
+        <label className="product-filters__field">
+          <span>Color</span>
 
-          {pesos.map((peso) => (
-            <option
-              key={peso.valor}
-              value={peso.valor}
-            >
-              {peso.etiqueta}
+          <select
+            value={filtros.color}
+            onChange={(evento) =>
+              onCambiarFiltro(
+                "color",
+                evento.target.value
+              )
+            }
+            disabled={
+              !subcategoriaSeleccionada ||
+              colores.length === 0
+            }
+          >
+            <option value="">
+              {!subcategoriaSeleccionada
+                ? "Selecciona una subcategoría"
+                : colores.length === 0
+                  ? "Sin colores disponibles"
+                  : "Todos los colores"}
             </option>
-          ))}
-        </select>
-      </label>
 
-      <label>
-        Precio mínimo
+            {colores.map((color) => (
+              <option
+                key={color}
+                value={color}
+              >
+                {color}
+              </option>
+            ))}
+          </select>
+        </label>
 
-        <input
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          value={formatearPrecio(precioMinimo)}
-          placeholder="$0"
-          onChange={(evento) => {
-            setPrecioMinimo(
-              obtenerNumero(evento.target.value)
-            )
-            setErrorPrecio("")
-          }}
-          onKeyDown={manejarEnter}
-        />
-      </label>
+        <label className="product-filters__field">
+          <span>Unidad de medida</span>
 
-      <label>
-        Precio máximo
+          <select
+            value={filtros.unidadMedida}
+            onChange={(evento) =>
+              onCambiarFiltro(
+                "unidadMedida",
+                evento.target.value
+              )
+            }
+            disabled={
+              !subcategoriaSeleccionada ||
+              unidadesMedida.length === 0
+            }
+          >
+            <option value="">
+              {!subcategoriaSeleccionada
+                ? "Selecciona una subcategoría"
+                : unidadesMedida.length === 0
+                  ? "Sin unidades disponibles"
+                  : "Todas las unidades"}
+            </option>
 
-        <input
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          value={formatearPrecio(precioMaximo)}
-          placeholder="Sin límite"
-          onChange={(evento) => {
-            setPrecioMaximo(
-              obtenerNumero(evento.target.value)
-            )
-            setErrorPrecio("")
-          }}
-          onKeyDown={manejarEnter}
-        />
-      </label>
+            {unidadesMedida.map(
+              (unidad) => (
+                <option
+                  key={
+                    unidad.id_und_medida
+                  }
+                  value={
+                    unidad.id_und_medida
+                  }
+                >
+                  {
+                    unidad.nom_und_medida
+                  }
+                </option>
+              )
+            )}
+          </select>
+        </label>
 
-      <label>
-        Ordenar
+        <label className="product-filters__field">
+          <span>Peso</span>
 
-        <select
-          value={filtros.orden}
-          onChange={(evento) =>
-            onCambiarFiltro(
-              "orden",
-              evento.target.value
-            )
-          }
-        >
-          <option value="recientes">
-            Más recientes
-          </option>
+          <select
+            value={filtros.peso}
+            onChange={(evento) =>
+              onCambiarFiltro(
+                "peso",
+                evento.target.value
+              )
+            }
+            disabled={
+              !subcategoriaSeleccionada ||
+              !unidadSeleccionada ||
+              pesos.length === 0
+            }
+          >
+            <option value="">
+              {!subcategoriaSeleccionada
+                ? "Selecciona una subcategoría"
+                : !unidadSeleccionada
+                  ? "Selecciona una unidad"
+                  : pesos.length === 0
+                    ? "Sin pesos disponibles"
+                    : "Todos los pesos"}
+            </option>
 
-          <option value="antiguos">
-            Más antiguos
-          </option>
+            {pesos.map((peso) => (
+              <option
+                key={`${peso.id_und_medida}-${peso.valor}`}
+                value={peso.valor}
+              >
+                {formatearPeso(
+                  peso.valor
+                )}
+              </option>
+            ))}
+          </select>
+        </label>
 
-          <option value="precio-menor">
-            Menor precio
-          </option>
+        <div className="product-filters__price-group">
+          <label className="product-filters__field">
+            <span>Precio mínimo</span>
 
-          <option value="precio-mayor">
-            Mayor precio
-          </option>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={formatearPrecio(
+                precioMinimo
+              )}
+              placeholder="$0"
+              onChange={(evento) => {
+                setPrecioMinimo(
+                  obtenerNumero(
+                    evento.target.value
+                  )
+                )
 
-          <option value="nombre-az">
-            Nombre A-Z
-          </option>
+                setErrorPrecio("")
+              }}
+              onKeyDown={manejarEnter}
+            />
+          </label>
 
-          <option value="nombre-za">
-            Nombre Z-A
-          </option>
-        </select>
-      </label>
+          <label className="product-filters__field">
+            <span>Precio máximo</span>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={formatearPrecio(
+                precioMaximo
+              )}
+              placeholder="Sin límite"
+              onChange={(evento) => {
+                setPrecioMaximo(
+                  obtenerNumero(
+                    evento.target.value
+                  )
+                )
+
+                setErrorPrecio("")
+              }}
+              onKeyDown={manejarEnter}
+            />
+          </label>
+        </div>
+
+        {errorPrecio && (
+          <p
+            className="product-filters__error"
+            role="alert"
+          >
+            {errorPrecio}
+          </p>
+        )}
+
+        <label className="product-filters__field">
+          <span>Ordenar por</span>
+
+          <select
+            value={filtros.orden}
+            onChange={(evento) =>
+              onCambiarFiltro(
+                "orden",
+                evento.target.value
+              )
+            }
+            disabled={
+              !subcategoriaSeleccionada
+            }
+          >
+            <option value="recientes">
+              Más recientes
+            </option>
+
+            <option value="antiguos">
+              Más antiguos
+            </option>
+
+            <option value="precio-menor">
+              Menor precio
+            </option>
+
+            <option value="precio-mayor">
+              Mayor precio
+            </option>
+
+            <option value="nombre-az">
+              Nombre A-Z
+            </option>
+
+            <option value="nombre-za">
+              Nombre Z-A
+            </option>
+          </select>
+        </label>
+      </div>
 
       <div className="product-filters__actions">
         <button
@@ -292,19 +501,10 @@ function ProductFilters({
           className="product-filters__clear"
           onClick={limpiarTodo}
         >
-          Limpiar
+          Limpiar filtros
         </button>
       </div>
-
-      {errorPrecio && (
-        <p
-          className="product-filters__error"
-          role="alert"
-        >
-          {errorPrecio}
-        </p>
-      )}
-    </section>
+    </aside>
   )
 }
 

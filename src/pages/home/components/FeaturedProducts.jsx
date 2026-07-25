@@ -15,6 +15,9 @@ import "swiper/css/navigation"
 import "swiper/css/pagination"
 import "../css/home.css"
 
+const IMAGEN_RESPALDO =
+  "https://placehold.co/600x400?text=Sin+imagen"
+
 function FeaturedProducts() {
   const navigate = useNavigate()
 
@@ -25,6 +28,25 @@ function FeaturedProducts() {
   useEffect(() => {
     cargarProductosDestacados()
   }, [])
+
+  function obtenerUrlImagen(rutaImagen) {
+    if (!rutaImagen) {
+      return IMAGEN_RESPALDO
+    }
+
+    if (
+      rutaImagen.startsWith("http://") ||
+      rutaImagen.startsWith("https://")
+    ) {
+      return rutaImagen
+    }
+
+    const { data } = supabase.storage
+      .from("imagenes_productos")
+      .getPublicUrl(rutaImagen)
+
+    return data.publicUrl
+  }
 
   async function cargarProductosDestacados() {
     setCargando(true)
@@ -41,12 +63,16 @@ function FeaturedProducts() {
         imagen_url,
         created_prod,
         est_prod,
+        id_subcategoria,
+
         subcategoria (
           id_subcategoria,
           nom_subcategoria,
-          categoria (
-            id_cat,
-            nom_cat
+          id_familia,
+
+          familia (
+            id_familia,
+            nom_familia
           )
         )
       `)
@@ -70,7 +96,16 @@ function FeaturedProducts() {
       return
     }
 
-    setProductos(data || [])
+    const productosAdaptados = (data || []).map(
+      (producto) => ({
+        ...producto,
+        imagen_url: obtenerUrlImagen(
+          producto.imagen_url
+        ),
+      })
+    )
+
+    setProductos(productosAdaptados)
     setCargando(false)
   }
 
@@ -183,9 +218,9 @@ function FeaturedProducts() {
                 precioOriginal > 0 &&
                 precioActual < precioOriginal
 
-              const categoria =
-                producto.subcategoria?.categoria
-                  ?.nom_cat || "Producto"
+              const familia =
+                producto.subcategoria?.familia
+                  ?.nom_familia || "Producto"
 
               return (
                 <SwiperSlide
@@ -214,21 +249,20 @@ function FeaturedProducts() {
                       )}
 
                       <img
-                        src={
-                          producto.imagen_url ||
-                          "https://placehold.co/600x400?text=Sin+imagen"
-                        }
+                        src={producto.imagen_url}
                         alt={producto.nom_prod}
                         className="featured-product-card__image"
                         onError={(event) => {
+                          event.currentTarget.onerror =
+                            null
                           event.currentTarget.src =
-                            "https://placehold.co/600x400?text=Sin+imagen"
+                            IMAGEN_RESPALDO
                         }}
                       />
                     </div>
 
                     <div className="featured-product-card__info">
-                      <small>{categoria}</small>
+                      <small>{familia}</small>
 
                       <h3>{producto.nom_prod}</h3>
 

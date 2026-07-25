@@ -117,9 +117,9 @@ function Navbar() {
     setCargandoCategorias(true)
 
     const { data, error } = await supabase
-      .from("categoria")
-      .select("id_cat, nom_cat")
-      .order("nom_cat", { ascending: true })
+      .from("familia")
+      .select("id_familia, nom_familia")
+      .order("nom_familia", { ascending: true })
 
     if (error) {
       console.error("Error al cargar las categorías:", error)
@@ -128,7 +128,12 @@ function Navbar() {
       return
     }
 
-    setCategorias(data || [])
+    const categoriasAdaptadas = (data || []).map((familia) => ({
+      id_cat: familia.id_familia,
+      nom_cat: familia.nom_familia,
+    }))
+
+    setCategorias(categoriasAdaptadas)
     setCargandoCategorias(false)
   }
 
@@ -228,7 +233,7 @@ function Navbar() {
         <details ref={menuCategoriasRef}>
           <summary>
             <FaBars />
-            Categorías
+            Catálogo
           </summary>
 
           <div className="navbar__categories-menu">
@@ -236,7 +241,7 @@ function Navbar() {
               type="button"
               onClick={irATodasLasCategorias}
             >
-              📦 Todas las categorías
+              <b>Ver todo el Catálogo</b>
             </button>
 
             {cargandoCategorias && (

@@ -89,7 +89,12 @@
 }
 
 .product-detail__back {
-  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 600;
 
   margin-bottom: 22px;
 

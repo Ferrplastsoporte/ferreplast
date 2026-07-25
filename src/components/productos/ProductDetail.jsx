@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { FaArrowLeft } from "react-icons/fa"
 import AddToCartButton from "../carrito/AddToCartButton"
 
 function ProductDetail({ producto }) {
@@ -31,7 +32,9 @@ function ProductDetail({ producto }) {
   }
 
   const subcategoria = producto.subcategoria
-  const categoria = subcategoria?.categoria
+  const familia = subcategoria?.familia
+  const unidadMedida = producto.unidad_medida
+  const marca = producto.marca_producto
 
   return (
     <article className="product-detail">
@@ -51,6 +54,7 @@ function ProductDetail({ producto }) {
             }
             alt={producto.nom_prod}
             onError={(event) => {
+              event.currentTarget.onerror = null
               event.currentTarget.src =
                 "https://placehold.co/800x600?text=Sin+imagen"
             }}
@@ -62,15 +66,16 @@ function ProductDetail({ producto }) {
             className="product-detail__back"
             to="/catalogo"
           >
-            ← Volver al catálogo
+            <FaArrowLeft />
+            <span>Volver al catálogo</span>
           </Link>
 
           <div className="product-detail__classification">
-            {categoria?.nom_cat && (
-              <span>{categoria.nom_cat}</span>
+            {familia?.nom_familia && (
+              <span>{familia.nom_familia}</span>
             )}
 
-            {categoria?.nom_cat &&
+            {familia?.nom_familia &&
               subcategoria?.nom_subcategoria && (
                 <span>/</span>
               )}
@@ -83,6 +88,12 @@ function ProductDetail({ producto }) {
           </div>
 
           <h1>{producto.nom_prod}</h1>
+
+          {marca?.nom_marca && (
+            <p className="product-detail__brand">
+              Marca: <strong>{marca.nom_marca}</strong>
+            </p>
+          )}
 
           {producto.desc_prod && (
             <p className="product-detail__description">
@@ -112,6 +123,13 @@ function ProductDetail({ producto }) {
           </div>
 
           <dl className="product-detail__attributes">
+            {marca?.nom_marca && (
+              <div>
+                <dt>Marca</dt>
+                <dd>{marca.nom_marca}</dd>
+              </div>
+            )}
+
             {producto.color_prod && (
               <div>
                 <dt>Color</dt>
@@ -120,13 +138,14 @@ function ProductDetail({ producto }) {
             )}
 
             {producto.peso_prod !== null &&
-              producto.peso_prod !== undefined &&
-              producto.unidad_de_medida && (
+              producto.peso_prod !== undefined && (
                 <div>
                   <dt>Peso</dt>
                   <dd>
-                    {producto.peso_prod}{" "}
-                    {producto.unidad_de_medida}
+                    {producto.peso_prod}
+                    {unidadMedida?.nom_und_medida
+                      ? ` ${unidadMedida.nom_und_medida}`
+                      : ""}
                   </dd>
                 </div>
               )}
@@ -140,10 +159,10 @@ function ProductDetail({ producto }) {
               </div>
             )}
 
-            {categoria?.nom_cat && (
+            {familia?.nom_familia && (
               <div>
-                <dt>Categoría</dt>
-                <dd>{categoria.nom_cat}</dd>
+                <dt>Familia</dt>
+                <dd>{familia.nom_familia}</dd>
               </div>
             )}
           </dl>

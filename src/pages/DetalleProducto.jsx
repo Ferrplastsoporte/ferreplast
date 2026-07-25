@@ -18,11 +18,11 @@ function DetalleProducto() {
   async function cargarProducto() {
     setCargando(true)
     setErrorCarga("")
+    setProducto(null)
 
     const idProducto = Number(id)
 
-    if (!Number.isInteger(idProducto)) {
-      setProducto(null)
+    if (!Number.isInteger(idProducto) || idProducto <= 0) {
       setErrorCarga(
         "El identificador del producto no es válido."
       )
@@ -44,17 +44,29 @@ function DetalleProducto() {
         est_prod,
         color_prod,
         peso_prod,
-        unidad_de_medida,
+        id_und_medida,
         id_subcategoria,
+        id_marca,
+
+        unidad_medida (
+          id_und_medida,
+          nom_und_medida
+        ),
+
+        marca_producto (
+          id_marca,
+          nom_marca,
+          logo_url
+        ),
 
         subcategoria (
           id_subcategoria,
           nom_subcategoria,
-          id_cat,
+          id_familia,
 
-          categoria (
-            id_cat,
-            nom_cat
+          familia (
+            id_familia,
+            nom_familia
           )
         ),
 
@@ -76,7 +88,6 @@ function DetalleProducto() {
         error
       )
 
-      setProducto(null)
       setErrorCarga(
         "No fue posible cargar la información del producto."
       )
@@ -85,12 +96,24 @@ function DetalleProducto() {
     }
 
     if (!data) {
-      setProducto(null)
       setErrorCarga(
         "El producto no existe o no se encuentra disponible."
       )
       setCargando(false)
       return
+    }
+
+    let imagenPublica = data.imagen_url
+
+    if (
+      data.imagen_url &&
+      !data.imagen_url.startsWith("http")
+    ) {
+      const { data: imagenData } = supabase.storage
+        .from("imagenes_productos")
+        .getPublicUrl(data.imagen_url)
+
+      imagenPublica = imagenData.publicUrl
     }
 
     const documentos = (
@@ -113,6 +136,7 @@ function DetalleProducto() {
 
     setProducto({
       ...data,
+      imagen_url: imagenPublica,
       documentos,
     })
 
