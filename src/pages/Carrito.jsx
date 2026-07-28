@@ -131,7 +131,10 @@ function Carrito() {
                             producto.cantidad + 1,
                           )
                         }
-                        disabled={actualizando}
+                        disabled={
+                          actualizando ||
+                          producto.cantidad >= producto.stock_prod
+                        }
                       >
                         +
                       </button>

@@ -75,7 +75,7 @@ function useCart() {
       )
 
       setErrorCarrito(
-        "No fue posible agregar el producto."
+        error.message || "No fue posible agregar el producto."
       )
 
       temporizadorRef.current = setTimeout(() => {

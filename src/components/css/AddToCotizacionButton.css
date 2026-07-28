@@ -109,6 +109,18 @@
   background: #0757a1;
 }
 
+.add-to-cart {
+    position: relative;
+}
+
+.add-to-cart__modal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 12px);
+    z-index: 100;
+}
+
 @media (max-width: 560px) {
   .add-cotizacion__selector {
     position: fixed;

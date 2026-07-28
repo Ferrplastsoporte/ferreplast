@@ -7,11 +7,18 @@ const CART_STORAGE_KEY = "ferreplast_cart";
  */
 export function obtenerCarritoLocal() {
   try {
-    const carritoGuardado = localStorage.getItem(CART_STORAGE_KEY);
+    const carritoGuardado = localStorage.getItem(
+      CART_STORAGE_KEY,
+    );
 
-    return carritoGuardado ? JSON.parse(carritoGuardado) : [];
+    return carritoGuardado
+      ? JSON.parse(carritoGuardado)
+      : [];
   } catch (error) {
-    console.error("Error al leer el carrito local:", error);
+    console.error(
+      "Error al leer el carrito local:",
+      error,
+    );
 
     return [];
   }
@@ -21,30 +28,98 @@ export function obtenerCarritoLocal() {
  * Guarda el carrito completo en localStorage.
  */
 function guardarCarritoLocal(carrito) {
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(carrito));
+  localStorage.setItem(
+    CART_STORAGE_KEY,
+    JSON.stringify(carrito),
+  );
+}
+
+/*
+ * Valida que la cantidad final del producto
+ * no supere el stock disponible.
+ */
+function validarCantidadConStock(
+  cantidadActual,
+  cantidadAgregar,
+  stockDisponible,
+) {
+  const actual = Number(cantidadActual) || 0;
+  const agregar = Number(cantidadAgregar);
+  const stock = Number(stockDisponible);
+
+  if (
+    !Number.isInteger(agregar) ||
+    agregar < 1
+  ) {
+    throw new Error(
+      "La cantidad debe ser mayor o igual a 1.",
+    );
+  }
+
+  if (
+    !Number.isFinite(stock) ||
+    stock < 0
+  ) {
+    throw new Error(
+      "No fue posible comprobar el stock del producto.",
+    );
+  }
+
+  const cantidadFinal = actual + agregar;
+
+  if (cantidadFinal > stock) {
+    const stockRestante = Math.max(
+      0,
+      stock - actual,
+    );
+
+    throw new Error(
+      stockRestante > 0
+        ? `Solo puedes agregar ${stockRestante} unidad(es) más.`
+        : "Ya tienes todo el stock disponible en el carrito.",
+    );
+  }
+
+  return cantidadFinal;
 }
 
 /*
  * Agrega un producto al carrito de un usuario invitado.
- * Si ya existe, aumenta su cantidad.
+ * Si ya existe, aumenta su cantidad sin superar el stock.
  */
-export function agregarProductoLocal(producto, cantidad = 1) {
+export function agregarProductoLocal(
+  producto,
+  cantidad = 1,
+) {
   const carritoActual = obtenerCarritoLocal();
 
   const productoExistente = carritoActual.find(
-    (item) => item.id_prod === producto.id_prod,
+    (item) =>
+      item.id_prod === producto.id_prod,
   );
+
+  const cantidadActual =
+    productoExistente?.cantidad ?? 0;
+
+  const cantidadFinal =
+    validarCantidadConStock(
+      cantidadActual,
+      cantidad,
+      producto.stock_prod,
+    );
 
   let carritoActualizado;
 
   if (productoExistente) {
-    carritoActualizado = carritoActual.map((item) =>
-      item.id_prod === producto.id_prod
-        ? {
-            ...item,
-            cantidad: item.cantidad + cantidad,
-          }
-        : item,
+    carritoActualizado = carritoActual.map(
+      (item) =>
+        item.id_prod === producto.id_prod
+          ? {
+              ...item,
+              stock_prod: producto.stock_prod,
+              cantidad: cantidadFinal,
+            }
+          : item,
     );
   } else {
     carritoActualizado = [
@@ -55,7 +130,8 @@ export function agregarProductoLocal(producto, cantidad = 1) {
         precio_prod: producto.precio_prod,
         precio_act: producto.precio_act,
         imagen_url: producto.imagen_url,
-        cantidad,
+        stock_prod: producto.stock_prod,
+        cantidad: cantidadFinal,
       },
     ];
   }
@@ -82,17 +158,25 @@ export async function obtenerUsuarioActual() {
 }
 
 /*
- * Agrega un producto al carrito de un usuario autenticado.
+ * Agrega un producto al carrito
+ * de un usuario autenticado.
  *
  * Si ya existe, aumenta cant_cart.
  * Si no existe, crea una nueva fila.
+ *
+ * La cantidad final no puede superar
+ * el stock disponible del producto.
  */
 export async function agregarProductoSupabase(
   idUsuario,
   idProducto,
   cantidad = 1,
+  stockDisponible,
 ) {
-  const { data: itemExistente, error: errorConsulta } = await supabase
+  const {
+    data: itemExistente,
+    error: errorConsulta,
+  } = await supabase
     .from("carrito")
     .select("id_cart, cant_cart")
     .eq("id_user", idUsuario)
@@ -103,13 +187,21 @@ export async function agregarProductoSupabase(
     throw errorConsulta;
   }
 
-  if (itemExistente) {
-    const nuevaCantidad = Number(itemExistente.cant_cart) + cantidad;
+  const cantidadActual =
+    itemExistente?.cant_cart ?? 0;
 
+  const cantidadFinal =
+    validarCantidadConStock(
+      cantidadActual,
+      cantidad,
+      stockDisponible,
+    );
+
+  if (itemExistente) {
     const { data, error } = await supabase
       .from("carrito")
       .update({
-        cant_cart: nuevaCantidad,
+        cant_cart: cantidadFinal,
       })
       .eq("id_cart", itemExistente.id_cart)
       .select()
@@ -127,7 +219,7 @@ export async function agregarProductoSupabase(
     .insert({
       id_user: idUsuario,
       id_prod: idProducto,
-      cant_cart: cantidad,
+      cant_cart: cantidadFinal,
     })
     .select()
     .single();
@@ -140,28 +232,45 @@ export async function agregarProductoSupabase(
 }
 
 /*
- * Decide automáticamente dónde guardar el producto.
+ * Decide automáticamente dónde guardar
+ * el producto según exista o no una sesión.
  */
-export async function agregarProductoAlCarrito(producto, cantidad = 1) {
+export async function agregarProductoAlCarrito(
+  producto,
+  cantidad = 1,
+) {
   const usuario = await obtenerUsuarioActual();
 
   if (usuario) {
-    await agregarProductoSupabase(usuario.id, producto.id_prod, cantidad);
+    await agregarProductoSupabase(
+      usuario.id,
+      producto.id_prod,
+      cantidad,
+      producto.stock_prod,
+    );
 
     return {
       tipo: "supabase",
-      mensaje: "Producto agregado al carrito.",
+      mensaje:
+        "Producto agregado al carrito.",
     };
   }
 
-  agregarProductoLocal(producto, cantidad);
+  agregarProductoLocal(
+    producto,
+    cantidad,
+  );
 
   return {
     tipo: "local",
-    mensaje: "Producto agregado al carrito.",
+    mensaje:
+      "Producto agregado al carrito.",
   };
 }
 
+/*
+ * Obtiene los productos del carrito.
+ */
 export async function obtenerProductosCarrito() {
   const usuario = await obtenerUsuarioActual();
 
@@ -180,7 +289,8 @@ export async function obtenerProductosCarrito() {
         nom_prod,
         precio_prod,
         precio_act,
-        imagen_url
+        imagen_url,
+        stock_prod
       )
     `,
     )
@@ -200,34 +310,114 @@ export async function obtenerProductosCarrito() {
     precio_prod: item.producto.precio_prod,
     precio_act: item.producto.precio_act,
     imagen_url: item.producto.imagen_url,
+    stock_prod: item.producto.stock_prod,
     cantidad: item.cant_cart,
   }));
 }
 
-export async function actualizarCantidadCarrito(idProducto, nuevaCantidad) {
+/*
+ * Actualiza la cantidad de un producto
+ * dentro del carrito.
+ */
+export async function actualizarCantidadCarrito(
+  idProducto,
+  nuevaCantidad,
+) {
   const cantidad = Number(nuevaCantidad);
 
-  if (cantidad < 1) {
-    throw new Error("La cantidad debe ser mayor o igual a 1.");
+  if (
+    !Number.isInteger(cantidad) ||
+    cantidad < 1
+  ) {
+    throw new Error(
+      "La cantidad debe ser mayor o igual a 1.",
+    );
   }
 
   const usuario = await obtenerUsuarioActual();
 
   if (!usuario) {
-    const carritoActual = obtenerCarritoLocal();
+    const carritoActual =
+      obtenerCarritoLocal();
 
-    const carritoActualizado = carritoActual.map((item) =>
-      item.id_prod === idProducto
-        ? {
-            ...item,
-            cantidad,
-          }
-        : item,
+    const productoExistente =
+      carritoActual.find(
+        (item) =>
+          item.id_prod === idProducto,
+      );
+
+    if (!productoExistente) {
+      throw new Error(
+        "No se encontró el producto en el carrito.",
+      );
+    }
+
+    const stock = Number(
+      productoExistente.stock_prod,
     );
 
-    guardarCarritoLocal(carritoActualizado);
+    if (
+      !Number.isFinite(stock) ||
+      stock < 0
+    ) {
+      throw new Error(
+        "No fue posible comprobar el stock del producto.",
+      );
+    }
+
+    if (cantidad > stock) {
+      throw new Error(
+        `Solo hay ${stock} unidad(es) disponibles.`,
+      );
+    }
+
+    const carritoActualizado =
+      carritoActual.map((item) =>
+        item.id_prod === idProducto
+          ? {
+              ...item,
+              cantidad,
+            }
+          : item,
+      );
+
+    guardarCarritoLocal(
+      carritoActualizado,
+    );
 
     return carritoActualizado;
+  }
+
+  const {
+    data: producto,
+    error: errorProducto,
+  } = await supabase
+    .from("producto")
+    .select("stock_prod")
+    .eq("id_prod", idProducto)
+    .single();
+
+  if (errorProducto) {
+    throw errorProducto;
+  }
+
+  const stock = Number(
+    producto.stock_prod,
+  );
+
+  if (
+    !Number.isFinite(stock) ||
+    stock < 0
+  ) {
+    throw new Error(
+      "No fue posible comprobar el stock del producto.",
+    );
+  }
+
+  if (cantidad > stock) {
+    throw new Error(
+      `Solo hay ${stock} unidad(es) disponibles.`,
+    );
   }
 
   const { error } = await supabase
@@ -245,17 +435,27 @@ export async function actualizarCantidadCarrito(idProducto, nuevaCantidad) {
   return obtenerProductosCarrito();
 }
 
-export async function eliminarProductoCarrito(idProducto) {
+/*
+ * Elimina un producto del carrito.
+ */
+export async function eliminarProductoCarrito(
+  idProducto,
+) {
   const usuario = await obtenerUsuarioActual();
 
   if (!usuario) {
-    const carritoActual = obtenerCarritoLocal();
+    const carritoActual =
+      obtenerCarritoLocal();
 
-    const carritoActualizado = carritoActual.filter(
-      (item) => item.id_prod !== idProducto,
+    const carritoActualizado =
+      carritoActual.filter(
+        (item) =>
+          item.id_prod !== idProducto,
+      );
+
+    guardarCarritoLocal(
+      carritoActualizado,
     );
-
-    guardarCarritoLocal(carritoActualizado);
 
     return carritoActualizado;
   }
@@ -273,11 +473,16 @@ export async function eliminarProductoCarrito(idProducto) {
   return obtenerProductosCarrito();
 }
 
+/*
+ * Vacía completamente el carrito.
+ */
 export async function vaciarCarrito() {
   const usuario = await obtenerUsuarioActual();
 
   if (!usuario) {
-    localStorage.removeItem(CART_STORAGE_KEY);
+    localStorage.removeItem(
+      CART_STORAGE_KEY,
+    );
 
     return [];
   }

@@ -460,6 +460,15 @@
   margin-top: 0;
 }
 
+.product-detail .add-to-cart__error {
+  margin: 8px 0 0;
+  text-align: center;
+  color: #ff9100;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 /* =========================
    RESPONSIVE
 ========================= */

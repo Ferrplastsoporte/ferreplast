@@ -109,6 +109,9 @@ function ProductCard({ producto }) {
 
         <AddToCartButton
           producto={producto}
+          stockDisponible={
+            Number(producto.stock_prod) || 0
+          }
           className="btn-add"
         />
         {user && (

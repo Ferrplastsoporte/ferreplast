@@ -9,6 +9,11 @@ const estadoInicial = {
   comentarioGeneral: "",
 };
 
+/*
+ * Normaliza la estructura guardada de la cotización.
+ * También permite recuperar versiones antiguas
+ * que solo contenían un arreglo de productos.
+ */
 function normalizarCotizacion(valor) {
   if (Array.isArray(valor)) {
     return {
@@ -32,6 +37,26 @@ function normalizarCotizacion(valor) {
   };
 }
 
+/*
+ * Valida únicamente que la cantidad
+ * sea un número entero mayor o igual a 1.
+ *
+ * La cotización no se limita por el stock actual,
+ * porque representa una solicitud comercial.
+ */
+function validarCantidad(cantidad) {
+  const cantidadValidada = Number(cantidad);
+
+  if (!Number.isInteger(cantidadValidada) || cantidadValidada < 1) {
+    throw new Error("La cantidad debe ser mayor o igual a 1.");
+  }
+
+  return cantidadValidada;
+}
+
+/*
+ * Obtiene la cotización completa desde localStorage.
+ */
 export function obtenerCotizacionCompleta() {
   try {
     const guardada = localStorage.getItem(COTIZACION_KEY);
@@ -46,6 +71,9 @@ export function obtenerCotizacionCompleta() {
   }
 }
 
+/*
+ * Guarda la cotización completa en localStorage.
+ */
 export function guardarCotizacionCompleta(cotizacion) {
   const normalizada = normalizarCotizacion(cotizacion);
 
@@ -54,10 +82,18 @@ export function guardarCotizacionCompleta(cotizacion) {
   return normalizada;
 }
 
+/*
+ * Obtiene solamente los productos
+ * seleccionados desde el catálogo.
+ */
 export function obtenerCotizacion() {
   return obtenerCotizacionCompleta().productosCatalogo;
 }
 
+/*
+ * Guarda solamente los productos del catálogo,
+ * conservando los demás datos de la cotización.
+ */
 export function guardarCotizacion(productos) {
   const cotizacion = obtenerCotizacionCompleta();
 
@@ -68,16 +104,22 @@ export function guardarCotizacion(productos) {
   return cotizacion.productosCatalogo;
 }
 
+/*
+ * Agrega un producto del catálogo a la cotización.
+ *
+ * Si el producto ya existe, suma la cantidad.
+ *
+ * El stock se conserva como referencia informativa,
+ * pero no limita la cantidad solicitada.
+ */
 export function agregarProductoCotizacion(producto) {
   if (!producto?.id_prod) {
     throw new Error("El producto no es válido.");
   }
 
-  const stock = Math.max(0, Number(producto.stock_prod) || 0);
+  const cantidadNueva = validarCantidad(producto.cantidad);
 
-  if (stock <= 0) {
-    throw new Error("El producto no tiene stock disponible.");
-  }
+  const stockActual = Math.max(0, Number(producto.stock_prod) || 0);
 
   const productos = obtenerCotizacion();
 
@@ -85,27 +127,37 @@ export function agregarProductoCotizacion(producto) {
     (item) => Number(item.id_prod) === Number(producto.id_prod),
   );
 
-  const cantidadNueva = Math.max(1, Math.trunc(Number(producto.cantidad) || 1));
-
   if (indice >= 0) {
     const productoActual = productos[indice];
+
+    const cantidadActual = Number(productoActual.cantidad) || 0;
+
+    const cantidadFinal = cantidadActual + cantidadNueva;
 
     productos[indice] = {
       ...productoActual,
       ...producto,
-      stock_prod: stock,
 
-      cantidad: Math.min(
-        (Number(productoActual.cantidad) || 0) + cantidadNueva,
-        stock,
-      ),
+      cantidad: cantidadFinal,
+
+      /*
+       * El stock queda guardado únicamente
+       * como referencia del momento
+       * en que se agregó el producto.
+       */
+      stock_prod: stockActual,
+
+      observacion: productoActual.observacion || producto.observacion || "",
+
+      es_producto_catalogo: true,
     };
   } else {
     productos.push({
       ...producto,
-      stock_prod: stock,
 
-      cantidad: Math.min(cantidadNueva, stock),
+      cantidad: cantidadNueva,
+
+      stock_prod: stockActual,
 
       observacion: producto.observacion || "",
 
@@ -116,7 +168,15 @@ export function agregarProductoCotizacion(producto) {
   return guardarCotizacion(productos);
 }
 
+/*
+ * Actualiza la cantidad de un producto
+ * dentro de la vista de cotización.
+ *
+ * No se limita según el stock actual.
+ */
 export function actualizarCantidadCotizacion(idProducto, nuevaCantidad) {
+  const cantidad = validarCantidad(nuevaCantidad);
+
   const productos = obtenerCotizacion();
 
   const indice = productos.findIndex(
@@ -127,13 +187,6 @@ export function actualizarCantidadCotizacion(idProducto, nuevaCantidad) {
     return productos;
   }
 
-  const stock = Math.max(1, Number(productos[indice].stock_prod) || 1);
-
-  const cantidad = Math.min(
-    stock,
-    Math.max(1, Math.trunc(Number(nuevaCantidad) || 1)),
-  );
-
   productos[indice] = {
     ...productos[indice],
     cantidad,
@@ -142,6 +195,10 @@ export function actualizarCantidadCotizacion(idProducto, nuevaCantidad) {
   return guardarCotizacion(productos);
 }
 
+/*
+ * Elimina un producto del catálogo
+ * desde la cotización temporal.
+ */
 export function eliminarProductoCotizacion(idProducto) {
   const productosFiltrados = obtenerCotizacion().filter(
     (producto) => Number(producto.id_prod) !== Number(idProducto),
@@ -150,12 +207,18 @@ export function eliminarProductoCotizacion(idProducto) {
   return guardarCotizacion(productosFiltrados);
 }
 
+/*
+ * Limpia completamente la cotización temporal.
+ */
 export function limpiarCotizacion() {
   localStorage.removeItem(COTIZACION_KEY);
 
   return { ...estadoInicial };
 }
 
+/*
+ * Envía la cotización a Supabase.
+ */
 export async function enviarCotizacion({
   productosCatalogo = [],
   productosManuales = [],
@@ -169,12 +232,16 @@ export async function enviarCotizacion({
   }
 
   const catalogoValidos = productosCatalogo.filter(
-    (producto) => producto?.id_prod && Number(producto.cantidad) >= 1,
+    (producto) =>
+      producto?.id_prod &&
+      Number.isInteger(Number(producto.cantidad)) &&
+      Number(producto.cantidad) >= 1,
   );
 
   const manualesValidos = productosManuales.filter(
     (producto) =>
       producto?.nom_producto_solicitado?.trim() !== "" &&
+      Number.isInteger(Number(producto.cantidad)) &&
       Number(producto.cantidad) >= 1,
   );
 
@@ -213,7 +280,7 @@ export async function enviarCotizacion({
 
     nom_producto_solicitado: null,
 
-    cantidad: Math.max(1, Math.trunc(Number(producto.cantidad) || 1)),
+    cantidad: validarCantidad(producto.cantidad),
 
     observacion: producto.observacion?.trim() || null,
   }));
@@ -227,7 +294,7 @@ export async function enviarCotizacion({
 
     nom_producto_solicitado: producto.nom_producto_solicitado.trim(),
 
-    cantidad: Math.max(1, Math.trunc(Number(producto.cantidad) || 1)),
+    cantidad: validarCantidad(producto.cantidad),
 
     observacion: producto.observacion?.trim() || null,
   }));

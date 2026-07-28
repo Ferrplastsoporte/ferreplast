@@ -1,4 +1,4 @@
-import "../css/QuantitySelector.css"
+import "../css/QuantitySelector.css";
 
 function QuantitySelector({
   cantidad,
@@ -8,82 +8,72 @@ function QuantitySelector({
   disabled = false,
 }) {
   const limiteMaximo =
-    maximo === null || maximo === undefined
-      ? Infinity
-      : Number(maximo)
+    maximo === null || maximo === undefined ? Infinity : Number(maximo);
 
   function validarCantidad(valor) {
-    const numero = Number(valor)
+    const numero = Number(valor);
 
     if (!Number.isFinite(numero)) {
-      return minimo
+      return minimo;
     }
 
-    return Math.min(
-      limiteMaximo,
-      Math.max(minimo, Math.trunc(numero))
-    )
+    return Math.min(limiteMaximo, Math.max(minimo, Math.trunc(numero)));
   }
 
   function disminuir(evento) {
-    evento.stopPropagation()
+    evento.stopPropagation();
 
     if (disabled) {
-      return
+      return;
     }
 
-    onChange(validarCantidad(cantidad - 1))
+    onChange(validarCantidad(cantidad - 1));
   }
 
   function aumentar(evento) {
-    evento.stopPropagation()
+    evento.stopPropagation();
 
     if (disabled) {
-      return
+      return;
     }
 
-    onChange(validarCantidad(cantidad + 1))
+    onChange(validarCantidad(cantidad + 1));
   }
 
   function cambiarCantidad(evento) {
-    evento.stopPropagation()
+    evento.stopPropagation();
 
     if (disabled) {
-      return
+      return;
     }
 
-    const valor = evento.target.value
+    const valor = evento.target.value;
 
     if (valor === "") {
-      onChange("")
-      return
+      onChange("");
+      return;
     }
 
-    onChange(validarCantidad(valor))
+    onChange(validarCantidad(valor));
   }
 
   function validarAlSalir() {
     if (cantidad === "") {
-      onChange(minimo)
-      return
+      onChange(minimo);
+      return;
     }
 
-    onChange(validarCantidad(cantidad))
+    onChange(validarCantidad(cantidad));
   }
 
-  const noPuedeDisminuir =
-    disabled || Number(cantidad) <= minimo
+  const noPuedeDisminuir = disabled || Number(cantidad) <= minimo;
 
-  const noPuedeAumentar =
-    disabled ||
-    Number(cantidad) >= limiteMaximo
+  const noPuedeAumentar = disabled || Number(cantidad) >= limiteMaximo;
 
   return (
     <div
       className="quantity-selector"
-      onClick={(evento) =>
-        evento.stopPropagation()
-      }
+      onClick={(evento) => evento.stopPropagation()}
     >
       <button
         type="button"
@@ -99,17 +89,11 @@ function QuantitySelector({
         type="number"
         className="quantity-selector__input"
         min={minimo}
-        max={
-          Number.isFinite(limiteMaximo)
-            ? limiteMaximo
-            : undefined
-        }
+        max={Number.isFinite(limiteMaximo) ? limiteMaximo : undefined}
         value={cantidad}
         onChange={cambiarCantidad}
         onBlur={validarAlSalir}
-        onClick={(evento) =>
-          evento.stopPropagation()
-        }
+        onClick={(evento) => evento.stopPropagation()}
         disabled={disabled}
         aria-label="Cantidad"
       />
@@ -124,7 +108,7 @@ function QuantitySelector({
         +
       </button>
     </div>
-  )
+  );
 }
 
-export default QuantitySelector
+export default QuantitySelector;

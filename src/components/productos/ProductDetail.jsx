@@ -180,6 +180,9 @@ function ProductDetail({ producto }) {
 
           <AddToCartButton
             producto={producto}
+            stockDisponible={
+              Number(producto.stock_prod) || 0
+            }
             className="product-detail__cart-button"
           />
 

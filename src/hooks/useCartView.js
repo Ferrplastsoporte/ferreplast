@@ -74,7 +74,7 @@ function useCartView() {
       )
 
       setError(
-        "No fue posible actualizar la cantidad."
+        "Superaste el Stock disponible. No fue posible actualizar la cantidad."
       )
     } finally {
       setActualizando(false)
