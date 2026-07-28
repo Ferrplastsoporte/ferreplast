@@ -1,0 +1,418 @@
+.cotizacion-page {
+  min-height: 70vh;
+  padding: 40px 20px;
+  background: #f5f5f5;
+}
+
+.cotizacion-container {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
+.cotizacion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.cotizacion-header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+}
+
+.cotizacion-header p {
+  margin: 0;
+  color: #666;
+}
+
+.cotizacion-clear {
+  border: 1px solid #c62828;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  color: #c62828;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cotizacion-clear:hover {
+  background: #c62828;
+  color: #fff;
+}
+
+.cotizacion-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.cotizacion-main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.cotizacion-section {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+}
+
+.cotizacion-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.cotizacion-section__header h2 {
+  margin: 0 0 6px;
+}
+
+.cotizacion-section__header p {
+  margin: 0;
+  color: #666;
+}
+
+.cotizacion-section__catalog-link {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.cotizacion-section__catalog-link:hover {
+  text-decoration: underline;
+}
+
+.cotizacion-section__empty {
+  padding: 24px;
+  border: 1px dashed #d0d0d0;
+  border-radius: 10px;
+  background: #fafafa;
+  text-align: center;
+  color: #666;
+}
+
+.cotizacion-list,
+.cotizacion-manual-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cotizacion-item {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+}
+
+.cotizacion-item__image-container {
+  width: 110px;
+  height: 110px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f2f2f2;
+}
+
+.cotizacion-item__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cotizacion-item__image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #777;
+}
+
+.cotizacion-item__name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #222;
+  text-decoration: none;
+}
+
+.cotizacion-item__stock {
+  color: #666;
+}
+
+.cotizacion-item__quantity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cotizacion-item__remove,
+.cotizacion-manual-item__remove {
+  border: none;
+  background: none;
+  color: #c62828;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cotizacion-manual-item {
+  padding: 20px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.cotizacion-manual-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.cotizacion-manual-item__fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px;
+  gap: 16px;
+}
+
+.cotizacion-add-manual {
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px dashed #1d4ed8;
+  border-radius: 8px;
+  background: transparent;
+  color: #1d4ed8;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cotizacion-add-manual:hover {
+  background: #eff6ff;
+}
+
+.cotizacion-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cotizacion-field--observation {
+  grid-column: 1/-1;
+}
+
+.cotizacion-field input,
+.cotizacion-field select,
+.cotizacion-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.cotizacion-field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.cotizacion-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cotizacion-summary {
+  position: sticky;
+  top: 110px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+}
+
+.cotizacion-summary__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cotizacion-summary__message {
+  margin: 20px 0;
+  color: #666;
+}
+
+.cotizacion-summary__button {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: #bdbdbd;
+  color: #fff;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+.cotizacion-summary__button:not(:disabled) {
+  background: #1d4ed8;
+  cursor: pointer;
+}
+
+.cotizacion-summary__button:not(:disabled):hover {
+  background: #1e40af;
+}
+
+.cotizacion-empty {
+  max-width: 650px;
+  margin: 60px auto;
+  padding: 50px 30px;
+  background: #fff;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.cotizacion-empty__link {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: #1d4ed8;
+  color: #fff;
+  text-decoration: none;
+}
+
+.cotizacion-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.cotizacion-modal {
+  width: min(440px, 100%);
+  padding: 32px;
+  text-align: center;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+  animation: aparecerModal 0.2s ease;
+}
+
+.cotizacion-modal h2 {
+  margin: 0 0 14px;
+  font-size: 1.8rem;
+  color: #000000;
+}
+
+.cotizacion-modal p {
+  margin: 8px 0;
+  color: #000000;
+  line-height: 1.5;
+}
+
+.cotizacion-modal button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 13px 18px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  background: #176c38;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cotizacion-modal button:hover {
+  background: #10552b;
+}
+
+/* Avisos del resumen */
+.cotizacion-summary__warning,
+.cotizacion-summary__error {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  border-radius: 8px;
+}
+
+.cotizacion-summary__warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 14px 0 14px;
+    padding: 12px 14px;
+
+    font-size: .92rem;
+    line-height: 1.35;
+
+    color: #8a5a00;
+    background: #fff8e6;
+    border: 1px solid #f3d27a;
+    border-radius: 10px;
+}
+
+.cotizacion-summary__error {
+  color: #9f1c13;
+  background: #feeceb;
+  border: 1px solid #f4c7c3;
+}
+
+@keyframes aparecerModal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .cotizacion-content {
+    grid-template-columns: 1fr;
+  }
+
+  .cotizacion-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .cotizacion-header,
+  .cotizacion-section__header {
+    flex-direction: column;
+  }
+
+  .cotizacion-item {
+    grid-template-columns: 90px 1fr;
+  }
+
+  .cotizacion-manual-item__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .cotizacion-field--observation {
+    grid-column: auto;
+  }
+}

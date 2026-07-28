@@ -1,0 +1,122 @@
+.add-cotizacion {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.add-cotizacion__button {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+
+  border: 1px solid #0647b9;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #0647b9;
+
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.add-cotizacion__button:hover:not(:disabled) {
+  border-color: #053a98;
+  background: #eaf2ff;
+  color: #053a98;
+}
+
+.add-cotizacion__button:disabled {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.add-cotizacion__selector {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  z-index: 30;
+
+  width: min(290px, calc(100vw - 32px));
+  padding: 18px;
+  box-sizing: border-box;
+
+  transform: translateX(-50%);
+
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #ffffff;
+
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.18);
+}
+
+.add-cotizacion__title {
+  margin: 0 0 5px;
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.add-cotizacion__stock {
+  margin: 0 0 15px;
+  color: #64748b;
+  font-size: 0.88rem;
+}
+
+.add-cotizacion__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.add-cotizacion__cancel,
+.add-cotizacion__confirm {
+  min-height: 40px;
+  padding: 8px 12px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-cotizacion__cancel {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+}
+
+.add-cotizacion__cancel:hover {
+  background: #f8fafc;
+}
+
+.add-cotizacion__confirm {
+  border: 1px solid #0969c3;
+  background: #0969c3;
+  color: #ffffff;
+}
+
+.add-cotizacion__confirm:hover {
+  border-color: #0757a1;
+  background: #0757a1;
+}
+
+@media (max-width: 560px) {
+  .add-cotizacion__selector {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+
+    width: auto;
+    transform: none;
+  }
+}

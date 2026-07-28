@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom"
+import { useAuth } from "../../hooks/useAuth"
 import { FaArrowLeft } from "react-icons/fa"
 import AddToCartButton from "../carrito/AddToCartButton"
+import AddToCotizacionButton from "../cotizacion/AddToCotizacionButton"
 
 function ProductDetail({ producto }) {
+  const { user } = useAuth()
+
   const precioOriginal = Number(producto.precio_prod)
 
   const precioActual =
@@ -165,12 +169,28 @@ function ProductDetail({ producto }) {
                 <dd>{familia.nom_familia}</dd>
               </div>
             )}
+
+            {producto.stock_prod !== null && producto.stock_prod !== undefined && (
+              <div>
+                <dt>Stock</dt>
+                <dd>{producto.stock_prod}</dd>
+              </div>
+            )}
           </dl>
 
           <AddToCartButton
             producto={producto}
             className="product-detail__cart-button"
           />
+
+          {user && (
+            <AddToCotizacionButton
+              producto={producto}
+              stockDisponible={
+                Number(producto.stock_prod) || 0
+              }
+            />
+          )}
 
           {producto.documentos?.length > 0 && (
             <section className="product-detail__documents">

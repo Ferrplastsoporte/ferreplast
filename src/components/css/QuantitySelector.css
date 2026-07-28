@@ -1,0 +1,69 @@
+.quantity-selector {
+  display: grid;
+  grid-template-columns: 44px minmax(70px, 1fr) 44px;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.quantity-selector__button,
+.quantity-selector__input {
+  height: 44px;
+  box-sizing: border-box;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #1e293b;
+
+  font: inherit;
+  font-weight: 700;
+}
+
+.quantity-selector__button {
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.quantity-selector__button:hover:not(:disabled) {
+  border-color: #0969c3;
+  background: #eff6ff;
+  color: #0969c3;
+}
+
+.quantity-selector__button:disabled,
+.quantity-selector__input:disabled {
+  border-color: #e2e8f0;
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.quantity-selector__input {
+  width: 100%;
+  padding: 0 8px;
+  text-align: center;
+  outline: none;
+}
+
+.quantity-selector__input:focus {
+  border-color: #0969c3;
+  box-shadow: 0 0 0 3px rgba(9, 105, 195, 0.12);
+}
+
+/* Oculta las flechas del input number */
+
+.quantity-selector__input::-webkit-inner-spin-button,
+.quantity-selector__input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.quantity-selector__input {
+  appearance: textfield;
+}

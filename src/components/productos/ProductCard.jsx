@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router-dom"
 import AddToCartButton from "../carrito/AddToCartButton"
+import AddToCotizacionButton from "../cotizacion/AddToCotizacionButton"
+import { useAuth } from "../../hooks/useAuth"
+
 
 function ProductCard({ producto }) {
+  const { user } = useAuth()
+
   const navigate = useNavigate()
 
   const precioOriginal = Number(producto.precio_prod)
@@ -106,6 +111,12 @@ function ProductCard({ producto }) {
           producto={producto}
           className="btn-add"
         />
+        {user && (
+          <AddToCotizacionButton
+            producto={producto}
+            stockDisponible={Number(producto.stock_prod) || 0}
+          />
+        )}
       </div>
     </article>
   )

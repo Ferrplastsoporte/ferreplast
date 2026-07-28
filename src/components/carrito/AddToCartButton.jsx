@@ -1,4 +1,4 @@
-import useCart from "../../hooks/useCart"
+import useCart from "../../hooks/useCart";
 
 function AddToCartButton({
   producto,
@@ -8,36 +8,28 @@ function AddToCartButton({
   disabled = false,
   onAgregado,
 }) {
-  const {
-    agregando,
-    agregado,
-    errorCarrito,
-    agregarAlCarrito,
-  } = useCart()
+  const { agregando, agregado, errorCarrito, agregarAlCarrito } = useCart();
 
   async function manejarAgregar(event) {
-    event.stopPropagation()
+    event.stopPropagation();
 
-    const resultado = await agregarAlCarrito(
-      producto,
-      cantidad
-    )
+    const resultado = await agregarAlCarrito(producto, cantidad);
 
     if (resultado.ok && onAgregado) {
-      onAgregado(resultado)
+      onAgregado(resultado);
     }
   }
 
   function obtenerTextoBoton() {
     if (agregando) {
-      return "Agregando..."
+      return "Agregando...";
     }
 
     if (agregado) {
-      return "✓ Agregado"
+      return "✓ Agregado";
     }
 
-    return texto
+    return texto;
   }
 
   return (
@@ -54,15 +46,12 @@ function AddToCartButton({
       </button>
 
       {errorCarrito && (
-        <p
-          className="add-to-cart__error"
-          role="alert"
-        >
+        <p className="add-to-cart__error" role="alert">
           {errorCarrito}
         </p>
       )}
     </div>
-  )
+  );
 }
 
-export default AddToCartButton
+export default AddToCartButton;

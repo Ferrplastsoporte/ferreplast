@@ -1,213 +1,194 @@
 export const isValidEmail = (email) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
-export const isValidRut = (rut = '') => {
-  const rutLimpio = rut
-    .replace(/\./g, '')
-    .replace(/\s/g, '')
-    .toUpperCase()
+export const isValidRut = (rut = "") => {
+  const rutLimpio = rut.replace(/\./g, "").replace(/\s/g, "").toUpperCase();
 
-  const partes = rutLimpio.split('-')
+  const partes = rutLimpio.split("-");
 
   if (partes.length !== 2) {
-    return false
+    return false;
   }
 
-  const [cuerpo, digitoIngresado] = partes
+  const [cuerpo, digitoIngresado] = partes;
 
   if (!/^\d+$/.test(cuerpo)) {
-    return false
+    return false;
   }
 
   if (!/^[0-9K]$/.test(digitoIngresado)) {
-    return false
+    return false;
   }
 
-  let suma = 0
-  let multiplicador = 2
+  let suma = 0;
+  let multiplicador = 2;
 
   for (let i = cuerpo.length - 1; i >= 0; i--) {
-    suma += Number(cuerpo[i]) * multiplicador
+    suma += Number(cuerpo[i]) * multiplicador;
 
-    multiplicador =
-      multiplicador === 7
-        ? 2
-        : multiplicador + 1
+    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
   }
 
-  const resultado = 11 - (suma % 11)
+  const resultado = 11 - (suma % 11);
 
   const digitoCalculado =
-    resultado === 11
-      ? '0'
-      : resultado === 10
-        ? 'K'
-        : String(resultado)
+    resultado === 11 ? "0" : resultado === 10 ? "K" : String(resultado);
 
-  return digitoIngresado === digitoCalculado
-}
+  return digitoIngresado === digitoCalculado;
+};
 
 export const isValidPhone = (phone) => {
-  return /^\+569\d{8}$/.test(phone)
-}
+  return /^\+569\d{8}$/.test(phone);
+};
 
 export const isValidPassword = (password) => {
   if (password.length < 8) {
-    return false
+    return false;
   }
 
   if (!/[A-Z]/.test(password)) {
-    return false
+    return false;
   }
 
   if (!/[a-z]/.test(password)) {
-    return false
+    return false;
   }
 
   if (!/[0-9]/.test(password)) {
-    return false
+    return false;
   }
 
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    return false
+    return false;
   }
 
-  return true
-}
+  return true;
+};
 
 export const isValidName = (name) => {
-  return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/.test(
-    name
-  )
-}
+  return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/.test(name);
+};
 
 export const isValidAddress = (address) => {
   const formatoValido =
     /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9#]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9#]+)*$/.test(
-      address
-    )
+      address,
+    );
 
-  return formatoValido && address.length >= 5
-}
+  return formatoValido && address.length >= 5;
+};
 
 // ============================
 // VALIDACIÓN DEL REGISTRO
 // ============================
 
-export const validateRegisterField = (
-  name,
-  value,
-  form
-) => {
-  const val =
-    typeof value === 'string'
-      ? value.trim()
-      : value
+export const validateRegisterField = (name, value, form) => {
+  const val = typeof value === "string" ? value.trim() : value;
 
   switch (name) {
-    case 'nombre':
+    case "nombre":
       if (!val) {
-        return 'Debes ingresar tu nombre y apellidos.'
+        return "Debes ingresar tu nombre y apellidos.";
       }
 
       if (val.length < 3) {
-        return 'El nombre debe tener al menos 3 caracteres.'
+        return "El nombre debe tener al menos 3 caracteres.";
       }
 
       if (!isValidName(val)) {
-        return 'El nombre solo puede contener letras y espacios.'
+        return "El nombre solo puede contener letras y espacios.";
       }
 
-      return ''
+      return "";
 
-    case 'rut':
+    case "rut":
       if (!val) {
-        return 'Debes ingresar tu RUT.'
+        return "Debes ingresar tu RUT.";
       }
 
       if (!/^\d{7,8}-[\dkK]$/.test(val)) {
-        return 'Usa el formato sin puntos y con guion. Ejemplo: 12345678-5.'
+        return "Usa el formato sin puntos y con guion. Ejemplo: 12345678-5.";
       }
 
       if (!isValidRut(val)) {
-        return 'El RUT ingresado no es válido.'
+        return "El RUT ingresado no es válido.";
       }
 
-      return ''
+      return "";
 
-    case 'email':
+    case "email":
       if (!val) {
-        return 'Debes ingresar tu correo electrónico.'
+        return "Debes ingresar tu correo electrónico.";
       }
 
       if (!isValidEmail(val)) {
-        return 'Ingresa un correo electrónico válido.'
+        return "Ingresa un correo electrónico válido.";
       }
 
-      return ''
+      return "";
 
-    case 'password':
+    case "password":
       if (!value) {
-        return 'Debes crear una contraseña.'
+        return "Debes crear una contraseña.";
       }
 
       if (!isValidPassword(value)) {
-        return 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.'
+        return "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.";
       }
 
-      return ''
+      return "";
 
-    case 'confirmarPassword':
+    case "confirmarPassword":
       if (!value) {
-        return 'Debes repetir la contraseña.'
+        return "Debes repetir la contraseña.";
       }
 
       if (value !== form.password) {
-        return 'Las contraseñas no coinciden.'
+        return "Las contraseñas no coinciden.";
       }
 
-      return ''
+      return "";
 
-    case 'direccion':
+    case "direccion":
       if (!val) {
-        return 'Debes ingresar tu dirección.'
+        return "Debes ingresar tu dirección.";
       }
 
       if (val.length < 5) {
-        return 'Ingresa una dirección más completa.'
+        return "Ingresa una dirección más completa.";
       }
 
       if (!isValidAddress(val)) {
-        return 'La dirección solo puede contener letras, números, espacios y #.'
+        return "La dirección solo puede contener letras, números, espacios y #.";
       }
 
-      return ''
+      return "";
 
-    case 'telefono':
+    case "telefono":
       if (!val) {
-        return 'Debes ingresar tu número de teléfono.'
+        return "Debes ingresar tu número de teléfono.";
       }
 
       if (!isValidPhone(val)) {
-        return 'Usa el formato +56912345678, sin espacios ni guiones.'
+        return "Usa el formato +56912345678, sin espacios ni guiones.";
       }
 
-      return ''
+      return "";
 
-    case 'region':
+    case "region":
       if (!val) {
-        return 'Debes seleccionar una región.'
+        return "Debes seleccionar una región.";
       }
 
-      return ''
+      return "";
 
-    case 'comuna':
+    case "comuna":
       if (!val) {
-        return 'Debes seleccionar una comuna.'
+        return "Debes seleccionar una comuna.";
       }
 
-      return ''
+      return "";
 
     /*
      * Estos campos solo existen cuando mode="admin".
@@ -215,31 +196,29 @@ export const validateRegisterField = (
      * los validamos por seguridad.
      */
 
-    case 'rol':
+    case "rol":
       if (!val) {
-        return 'Debes seleccionar un rol.'
+        return "Debes seleccionar un rol.";
       }
 
-      if (
-        !['bodeguero', 'vendedor', 'admin'].includes(val)
-      ) {
-        return 'El rol seleccionado no es válido.'
+      if (!["bodeguero", "vendedor", "admin"].includes(val)) {
+        return "El rol seleccionado no es válido.";
       }
 
-      return ''
+      return "";
 
-    case 'estado':
+    case "estado":
       if (!val) {
-        return 'Debes seleccionar un estado.'
+        return "Debes seleccionar un estado.";
       }
 
-      if (!['activo', 'inactivo'].includes(val)) {
-        return 'El estado seleccionado no es válido.'
+      if (!["activo", "inactivo"].includes(val)) {
+        return "El estado seleccionado no es válido.";
       }
 
-      return ''
+      return "";
 
     default:
-      return ''
+      return "";
   }
-}
+};

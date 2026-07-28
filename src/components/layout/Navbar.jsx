@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaBars,
   FaBox,
@@ -9,50 +9,48 @@ import {
   FaShoppingCart,
   FaSignOutAlt,
   FaUser,
-} from "react-icons/fa"
-import { supabase } from "../../lib/supabase"
-import "../css/navbar.css"
+} from "react-icons/fa";
+import { supabase } from "../../lib/supabase";
+import "../css/navbar.css";
 /// import del logo
-import logo from "../../assets/logo.png"
+import logo from "../../assets/logo.png";
 
 function Navbar() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const menuUsuarioRef = useRef(null)
-  const menuCategoriasRef = useRef(null)
+  const menuUsuarioRef = useRef(null);
+  const menuCategoriasRef = useRef(null);
 
-  const [sesion, setSesion] = useState(null)
-  const [usuario, setUsuario] = useState(null)
-  const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false)
-  const [cargandoUsuario, setCargandoUsuario] = useState(true)
+  const [sesion, setSesion] = useState(null);
+  const [usuario, setUsuario] = useState(null);
+  const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false);
+  const [cargandoUsuario, setCargandoUsuario] = useState(true);
 
-  const [busqueda, setBusqueda] = useState("")
-  const [categorias, setCategorias] = useState([])
-  const [cargandoCategorias, setCargandoCategorias] = useState(true)
+  const [busqueda, setBusqueda] = useState("");
+  const [categorias, setCategorias] = useState([]);
+  const [cargandoCategorias, setCargandoCategorias] = useState(true);
 
   useEffect(() => {
-    obtenerSesionInicial()
-    cargarCategorias()
+    obtenerSesionInicial();
+    cargarCategorias();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      async (_evento, nuevaSesion) => {
-        setSesion(nuevaSesion)
+    } = supabase.auth.onAuthStateChange(async (_evento, nuevaSesion) => {
+      setSesion(nuevaSesion);
 
-        if (nuevaSesion?.user) {
-          await obtenerPerfil(nuevaSesion.user.id)
-        } else {
-          setUsuario(null)
-          setCargandoUsuario(false)
-        }
+      if (nuevaSesion?.user) {
+        await obtenerPerfil(nuevaSesion.user.id);
+      } else {
+        setUsuario(null);
+        setCargandoUsuario(false);
       }
-    )
+    });
 
     return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     function cerrarMenuAlHacerClickFuera(event) {
@@ -60,38 +58,38 @@ function Navbar() {
         menuUsuarioRef.current &&
         !menuUsuarioRef.current.contains(event.target)
       ) {
-        setMenuUsuarioAbierto(false)
+        setMenuUsuarioAbierto(false);
       }
     }
 
-    document.addEventListener("mousedown", cerrarMenuAlHacerClickFuera)
+    document.addEventListener("mousedown", cerrarMenuAlHacerClickFuera);
 
     return () => {
-      document.removeEventListener("mousedown", cerrarMenuAlHacerClickFuera)
-    }
-  }, [])
+      document.removeEventListener("mousedown", cerrarMenuAlHacerClickFuera);
+    };
+  }, []);
 
   async function obtenerSesionInicial() {
-    setCargandoUsuario(true)
+    setCargandoUsuario(true);
 
     const {
       data: { session },
       error,
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getSession();
 
     if (error) {
-      console.error("Error al obtener la sesión:", error)
-      setCargandoUsuario(false)
-      return
+      console.error("Error al obtener la sesión:", error);
+      setCargandoUsuario(false);
+      return;
     }
 
-    setSesion(session)
+    setSesion(session);
 
     if (session?.user) {
-      await obtenerPerfil(session.user.id)
+      await obtenerPerfil(session.user.id);
     } else {
-      setUsuario(null)
-      setCargandoUsuario(false)
+      setUsuario(null);
+      setCargandoUsuario(false);
     }
   }
 
@@ -100,122 +98,113 @@ function Navbar() {
       .from("usuario")
       .select("nom_user, est_user, rol_user")
       .eq("id_user", idUsuario)
-      .single()
+      .single();
 
     if (error) {
-      console.error("Error al cargar el perfil:", error)
-      setUsuario(null)
-      setCargandoUsuario(false)
-      return
+      console.error("Error al cargar el perfil:", error);
+      setUsuario(null);
+      setCargandoUsuario(false);
+      return;
     }
 
-    setUsuario(data)
-    setCargandoUsuario(false)
+    setUsuario(data);
+    setCargandoUsuario(false);
   }
 
   async function cargarCategorias() {
-    setCargandoCategorias(true)
+    setCargandoCategorias(true);
 
     const { data, error } = await supabase
       .from("familia")
       .select("id_familia, nom_familia")
-      .order("nom_familia", { ascending: true })
+      .order("nom_familia", { ascending: true });
 
     if (error) {
-      console.error("Error al cargar las categorías:", error)
-      setCategorias([])
-      setCargandoCategorias(false)
-      return
+      console.error("Error al cargar las categorías:", error);
+      setCategorias([]);
+      setCargandoCategorias(false);
+      return;
     }
 
     const categoriasAdaptadas = (data || []).map((familia) => ({
       id_cat: familia.id_familia,
       nom_cat: familia.nom_familia,
-    }))
+    }));
 
-    setCategorias(categoriasAdaptadas)
-    setCargandoCategorias(false)
+    setCategorias(categoriasAdaptadas);
+    setCargandoCategorias(false);
   }
 
   function obtenerPrimerNombre() {
     if (!usuario?.nom_user) {
-      return "Usuario"
+      return "Usuario";
     }
 
-    return usuario.nom_user.trim().split(/\s+/)[0]
+    return usuario.nom_user.trim().split(/\s+/)[0];
   }
 
   function buscarProductos(event) {
-    event.preventDefault()
+    event.preventDefault();
 
-    const textoBusqueda = busqueda.trim()
+    const textoBusqueda = busqueda.trim();
 
-    cerrarMenuCategorias()
+    cerrarMenuCategorias();
 
     if (textoBusqueda) {
-      navigate(
-        `/catalogo?buscar=${encodeURIComponent(textoBusqueda)}`
-      )
+      navigate(`/catalogo?buscar=${encodeURIComponent(textoBusqueda)}`);
     } else {
-      navigate("/catalogo")
+      navigate("/catalogo");
     }
   }
 
   function irACategoria(idCategoria) {
-    cerrarMenuCategorias()
-    setBusqueda("")
+    cerrarMenuCategorias();
+    setBusqueda("");
 
-    navigate(`/catalogo?categoria=${idCategoria}`)
+    navigate(`/catalogo?categoria=${idCategoria}`);
   }
 
   function irATodasLasCategorias() {
-    cerrarMenuCategorias()
-    setBusqueda("")
+    cerrarMenuCategorias();
+    setBusqueda("");
 
-    navigate("/catalogo")
+    navigate("/catalogo");
   }
 
   function cerrarMenuCategorias() {
     if (menuCategoriasRef.current) {
-      menuCategoriasRef.current.open = false
+      menuCategoriasRef.current.open = false;
     }
   }
 
   async function cerrarSesion() {
-    setMenuUsuarioAbierto(false)
+    setMenuUsuarioAbierto(false);
 
-    const { error } = await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.error("Error al cerrar sesión:", error)
-      return
+      console.error("Error al cerrar sesión:", error);
+      return;
     }
 
-    setSesion(null)
-    setUsuario(null)
+    setSesion(null);
+    setUsuario(null);
 
-    navigate("/", { replace: true })
+    navigate("/", { replace: true });
   }
 
   function irA(ruta) {
-    setMenuUsuarioAbierto(false)
-    navigate(ruta)
+    setMenuUsuarioAbierto(false);
+    navigate(ruta);
   }
 
   return (
     <nav className="navbar">
       <Link to="/" className="navbar__logo">
-        <img
-          src={logo}
-          alt="Ferreplast"
-          className="navbar__logo-image"
-        />
+        <img src={logo} alt="Ferreplast" className="navbar__logo-image" />
       </Link>
 
-      <form
-        className="navbar__search"
-        onSubmit={buscarProductos}
-      >
+      <form className="navbar__search" onSubmit={buscarProductos}>
         <input
           type="search"
           placeholder="Buscar productos..."
@@ -237,10 +226,7 @@ function Navbar() {
           </summary>
 
           <div className="navbar__categories-menu">
-            <button
-              type="button"
-              onClick={irATodasLasCategorias}
-            >
+            <button type="button" onClick={irATodasLasCategorias}>
               <b>Ver todo el Catálogo</b>
             </button>
 
@@ -261,9 +247,7 @@ function Navbar() {
                 <button
                   key={categoria.id_cat}
                   type="button"
-                  onClick={() =>
-                    irACategoria(categoria.id_cat)
-                  }
+                  onClick={() => irACategoria(categoria.id_cat)}
                 >
                   {categoria.nom_cat}
                 </button>
@@ -272,10 +256,7 @@ function Navbar() {
         </details>
       </div>
 
-      <div
-        className="navbar__account-wrapper"
-        ref={menuUsuarioRef}
-      >
+      <div className="navbar__account-wrapper" ref={menuUsuarioRef}>
         {!sesion ? (
           <Link to="/login" className="navbar__login">
             <FaUser />
@@ -287,9 +268,7 @@ function Navbar() {
               type="button"
               className="navbar__account-button"
               onClick={() =>
-                setMenuUsuarioAbierto(
-                  (estadoActual) => !estadoActual
-                )
+                setMenuUsuarioAbierto((estadoActual) => !estadoActual)
               }
               aria-expanded={menuUsuarioAbierto}
               aria-haspopup="menu"
@@ -308,18 +287,13 @@ function Navbar() {
 
               <FaChevronDown
                 className={`navbar__account-arrow ${
-                  menuUsuarioAbierto
-                    ? "navbar__account-arrow--open"
-                    : ""
+                  menuUsuarioAbierto ? "navbar__account-arrow--open" : ""
                 }`}
               />
             </button>
 
             {menuUsuarioAbierto && (
-              <div
-                className="navbar__account-menu"
-                role="menu"
-              >
+              <div className="navbar__account-menu" role="menu">
                 <button
                   type="button"
                   role="menuitem"
@@ -364,15 +338,11 @@ function Navbar() {
         )}
       </div>
 
-      <Link
-        to="/carrito"
-        className="navbar__cart"
-        aria-label="Carrito"
-      >
+      <Link to="/carrito" className="navbar__cart" aria-label="Carrito">
         <FaShoppingCart />
       </Link>
     </nav>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

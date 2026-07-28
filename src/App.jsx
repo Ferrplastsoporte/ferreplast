@@ -11,6 +11,7 @@ import Carrito from './pages/Carrito'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
 import DetalleProducto from "./pages/DetalleProducto"
+import Cotizacion from './pages/Cotizacion'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -37,6 +38,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/producto/:id" element={<DetalleProducto />}/>
+
+        {/* Clientes */}
+        <Route path="/cotizacion" element={<Cotizacion />} />
 
         {/* Admin */}
         <Route path="/admin" element={<AdminDashboard />} />

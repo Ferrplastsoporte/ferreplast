@@ -1,33 +1,65 @@
-import { useEffect, useState } from "react"
-import { FaWhatsapp, FaArrowUp } from "react-icons/fa"
-import "../css/floatingButtons.css"
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { FaArrowUp, FaDollarSign, FaWhatsapp } from "react-icons/fa";
+
+import { useAuth } from "../../hooks/useAuth";
+import "../css/floatingButtons.css";
 
 function FloatingButtons() {
-  const [showTop, setShowTop] = useState(false)
+  const [showTop, setShowTop] = useState(false);
+
+  const auth = useAuth();
+
+  const user = auth?.user || auth?.session?.user || null;
+
+  const loading = auth?.loading || auth?.cargando || false;
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowTop(window.scrollY > 300)
-    }
+      setShowTop(window.scrollY > 300);
+    };
 
-    window.addEventListener("scroll", handleScroll)
+    handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll);
 
-  const scrollTop = () => {
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  function scrollTop() {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
-    })
+    });
   }
 
   return (
     <div className="floating-buttons">
       {showTop && (
-        <button className="top-button" onClick={scrollTop}>
-          <FaArrowUp />
+        <button
+          type="button"
+          className="top-button"
+          onClick={scrollTop}
+          aria-label="Volver al inicio de la página"
+          title="Volver arriba"
+        >
+          <FaArrowUp aria-hidden="true" />
         </button>
+      )}
+
+      {!loading && user && (
+        <Link
+          to="/cotizacion"
+          className="cotizacion-button"
+          aria-label="Ir a solicitud de cotización"
+          title="Cotiza con nosotros"
+        >
+          <FaDollarSign aria-hidden="true" />
+
+          <span>Cotiza con nosotros</span>
+        </Link>
       )}
 
       <a
@@ -35,12 +67,15 @@ function FloatingButtons() {
         target="_blank"
         rel="noreferrer"
         className="whatsapp-button"
+        aria-label="Contactar por WhatsApp"
+        title="¿Necesitas ayuda?"
       >
-        <FaWhatsapp />
+        <FaWhatsapp aria-hidden="true" />
+
         <span>¿Necesitas ayuda?</span>
       </a>
     </div>
-  )
+  );
 }
 
-export default FloatingButtons
+export default FloatingButtons;

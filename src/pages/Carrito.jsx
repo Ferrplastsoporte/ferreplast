@@ -1,12 +1,12 @@
-import useCartView from "../hooks/useCartView"
-import "./css/Carrito.css"
+import useCartView from "../hooks/useCartView";
+import "./css/Carrito.css";
 
 function formatearPrecio(valor) {
   return new Intl.NumberFormat("es-CL", {
     style: "currency",
     currency: "CLP",
     maximumFractionDigits: 0,
-  }).format(valor)
+  }).format(valor);
 }
 
 function Carrito() {
@@ -21,30 +21,25 @@ function Carrito() {
     cambiarCantidad,
     eliminarProducto,
     vaciarCarritoCompleto,
-  } = useCartView()
+  } = useCartView();
 
   if (cargando) {
     return (
       <main className="cart-page">
         <p>Cargando carrito...</p>
       </main>
-    )
+    );
   }
 
   return (
     <main className="cart-page">
       <header className="cart-page__header">
         <div>
-          <span className="cart-page__eyebrow">
-            Tu compra
-          </span>
+          <span className="cart-page__eyebrow">Tu compra</span>
 
           <h1>Carrito de compras</h1>
 
-          <p>
-            Revisa los productos agregados antes de
-            continuar.
-          </p>
+          <p>Revisa los productos agregados antes de continuar.</p>
         </div>
 
         {productos.length > 0 && (
@@ -59,54 +54,33 @@ function Carrito() {
         )}
       </header>
 
-      {error && (
-        <p className="cart-page__error">
-          {error}
-        </p>
-      )}
+      {error && <p className="cart-page__error">{error}</p>}
 
       {productos.length === 0 ? (
         <section className="cart-empty">
-          <span className="cart-empty__icon">
-            🛒
-          </span>
+          <span className="cart-empty__icon">🛒</span>
 
           <h2>Tu carrito está vacío</h2>
 
-          <p>
-            Agrega productos desde el catálogo para
-            comenzar tu compra.
-          </p>
+          <p>Agrega productos desde el catálogo para comenzar tu compra.</p>
         </section>
       ) : (
         <div className="cart-layout">
           <section className="cart-products">
             {productos.map((producto) => {
-              const precioActual =
-                Number(producto.precio_act)
+              const precioActual = Number(producto.precio_act);
 
-              const precioNormal =
-                Number(producto.precio_prod)
+              const precioNormal = Number(producto.precio_prod);
 
               const precio =
-                precioActual > 0
-                  ? precioActual
-                  : precioNormal || 0
+                precioActual > 0 ? precioActual : precioNormal || 0;
 
-              const subtotalProducto =
-                precio *
-                Number(producto.cantidad)
+              const subtotalProducto = precio * Number(producto.cantidad);
 
               return (
-                <article
-                  key={producto.id_prod}
-                  className="cart-item"
-                >
+                <article key={producto.id_prod} className="cart-item">
                   <img
-                    src={
-                      producto.imagen_url ||
-                      "/img/producto-sin-imagen.png"
-                    }
+                    src={producto.imagen_url || "/img/producto-sin-imagen.png"}
                     alt={producto.nom_prod}
                     className="cart-item__image"
                   />
@@ -121,11 +95,7 @@ function Carrito() {
                     <button
                       type="button"
                       className="cart-item__remove"
-                      onClick={() =>
-                        eliminarProducto(
-                          producto.id_prod
-                        )
-                      }
+                      onClick={() => eliminarProducto(producto.id_prod)}
                       disabled={actualizando}
                     >
                       Quitar producto
@@ -142,20 +112,15 @@ function Carrito() {
                         onClick={() =>
                           cambiarCantidad(
                             producto.id_prod,
-                            producto.cantidad - 1
+                            producto.cantidad - 1,
                           )
                         }
-                        disabled={
-                          actualizando ||
-                          producto.cantidad <= 1
-                        }
+                        disabled={actualizando || producto.cantidad <= 1}
                       >
                         −
                       </button>
 
-                      <strong>
-                        {producto.cantidad}
-                      </strong>
+                      <strong>{producto.cantidad}</strong>
 
                       <button
                         type="button"
@@ -163,7 +128,7 @@ function Carrito() {
                         onClick={() =>
                           cambiarCantidad(
                             producto.id_prod,
-                            producto.cantidad + 1
+                            producto.cantidad + 1,
                           )
                         }
                         disabled={actualizando}
@@ -174,12 +139,10 @@ function Carrito() {
                   </div>
 
                   <strong className="cart-item__subtotal">
-                    {formatearPrecio(
-                      subtotalProducto
-                    )}
+                    {formatearPrecio(subtotalProducto)}
                   </strong>
                 </article>
-              )
+              );
             })}
           </section>
 
@@ -188,25 +151,19 @@ function Carrito() {
 
             <div className="cart-summary__row">
               <span>Subtotal</span>
-              <strong>
-                {formatearPrecio(subtotal)}
-              </strong>
+              <strong>{formatearPrecio(subtotal)}</strong>
             </div>
 
             <div className="cart-summary__row">
               <span>Envío</span>
-              <strong>
-                {formatearPrecio(envio)}
-              </strong>
+              <strong>{formatearPrecio(envio)}</strong>
             </div>
 
             <div className="cart-summary__divider" />
 
             <div className="cart-summary__total">
               <span>Total</span>
-              <strong>
-                {formatearPrecio(total)}
-              </strong>
+              <strong>{formatearPrecio(total)}</strong>
             </div>
 
             <button
@@ -219,14 +176,13 @@ function Carrito() {
             </button>
 
             <p className="cart-summary__notice">
-              El pago en línea se habilitará
-              próximamente.
+              El pago en línea se habilitará próximamente.
             </p>
           </aside>
         </div>
       )}
     </main>
-  )
+  );
 }
 
-export default Carrito
+export default Carrito;

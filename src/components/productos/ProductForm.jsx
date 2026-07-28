@@ -1,18 +1,20 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 const ProductForm = ({ onSubmit, productoInicial = null }) => {
-  const [nombre, setNombre] = useState(productoInicial?.nombre || '')
-  const [descripcion, setDescripcion] = useState(productoInicial?.descripcion || '')
-  const [precio, setPrecio] = useState(productoInicial?.precio || '')
-  const [imagen, setImagen] = useState(null)
-  const [cargando, setCargando] = useState(false)
+  const [nombre, setNombre] = useState(productoInicial?.nombre || "");
+  const [descripcion, setDescripcion] = useState(
+    productoInicial?.descripcion || "",
+  );
+  const [precio, setPrecio] = useState(productoInicial?.precio || "");
+  const [imagen, setImagen] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setCargando(true)
-    await onSubmit({ nombre, descripcion, precio: parseFloat(precio), imagen })
-    setCargando(false)
-  }
+    e.preventDefault();
+    setCargando(true);
+    await onSubmit({ nombre, descripcion, precio: parseFloat(precio), imagen });
+    setCargando(false);
+  };
 
   return (
     <form className="product-form" onSubmit={handleSubmit}>
@@ -50,10 +52,10 @@ const ProductForm = ({ onSubmit, productoInicial = null }) => {
       />
 
       <button type="submit" disabled={cargando} className="product-form-button">
-        {cargando ? 'Guardando...' : 'Guardar Producto'}
+        {cargando ? "Guardando..." : "Guardar Producto"}
       </button>
     </form>
-  )
-}
+  );
+};
 
-export default ProductForm
+export default ProductForm;

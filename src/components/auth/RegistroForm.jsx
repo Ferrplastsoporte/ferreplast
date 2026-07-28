@@ -1,40 +1,40 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
-import { useForm } from '../../hooks/useForm'
-import { useAuth } from '../../hooks/useAuth'
-import { validateRegisterField } from '../../utils/validators'
-import { sanitizeRegisterField } from '../../utils/helpers'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
+import { useForm } from "../../hooks/useForm";
+import { useAuth } from "../../hooks/useAuth";
+import { validateRegisterField } from "../../utils/validators";
+import { sanitizeRegisterField } from "../../utils/helpers";
 
-import Input from '../ui/Input'
-import Select from '../ui/Select'
-import Button from '../ui/Button'
-import Modal from '../ui/Modal'
+import Input from "../ui/Input";
+import Select from "../ui/Select";
+import Button from "../ui/Button";
+import Modal from "../ui/Modal";
 
 const BASE_VALUES = {
-  nombre: '',
-  rut: '',
-  email: '',
-  password: '',
-  confirmarPassword: '',
-  direccion: '',
-  telefono: '',
-  region: '',
-  comuna: ''
-}
+  nombre: "",
+  rut: "",
+  email: "",
+  password: "",
+  confirmarPassword: "",
+  direccion: "",
+  telefono: "",
+  region: "",
+  comuna: "",
+};
 
 const ADMIN_VALUES = {
-  rol: 'bodeguero',
-  estado: 'activo'
-}
+  rol: "bodeguero",
+  estado: "activo",
+};
 
-const RegistroForm = ({ mode = 'client' }) => {
-  const navigate = useNavigate()
+const RegistroForm = ({ mode = "client" }) => {
+  const navigate = useNavigate();
 
   const initialValues = {
     ...BASE_VALUES,
-    ...(mode === 'admin' ? ADMIN_VALUES : {})
-  }
+    ...(mode === "admin" ? ADMIN_VALUES : {}),
+  };
 
   const {
     values,
@@ -44,142 +44,127 @@ const RegistroForm = ({ mode = 'client' }) => {
     validateForm,
     resetForm,
     setFieldValue,
-    clearFieldError
-  } = useForm(
-    initialValues,
-    validateRegisterField,
-    sanitizeRegisterField
-  )
+    clearFieldError,
+  } = useForm(initialValues, validateRegisterField, sanitizeRegisterField);
 
-  const {
-    register,
-    loading,
-    modal,
-    hideModal
-  } = useAuth()
+  const { register, loading, modal, hideModal } = useAuth();
 
-  const [regiones, setRegiones] = useState([])
-  const [comunas, setComunas] = useState([])
-  const [loadingRegiones, setLoadingRegiones] = useState(false)
-  const [loadingComunas, setLoadingComunas] = useState(false)
+  const [regiones, setRegiones] = useState([]);
+  const [comunas, setComunas] = useState([]);
+  const [loadingRegiones, setLoadingRegiones] = useState(false);
+  const [loadingComunas, setLoadingComunas] = useState(false);
 
   /*
    * Indica si debemos enviar al cliente al Login
    * después de que cierre el modal de registro exitoso.
    */
-  const [redirectToLogin, setRedirectToLogin] = useState(false)
+  const [redirectToLogin, setRedirectToLogin] = useState(false);
 
   useEffect(() => {
-    cargarRegiones()
-  }, [])
+    cargarRegiones();
+  }, []);
 
   const cargarRegiones = async () => {
-    setLoadingRegiones(true)
+    setLoadingRegiones(true);
 
     try {
       const { data, error } = await supabase
-        .from('region')
-        .select('id_reg, nom_reg')
-        .order('nom_reg', { ascending: true })
+        .from("region")
+        .select("id_reg, nom_reg")
+        .order("nom_reg", { ascending: true });
 
       if (error) {
-        console.error('Error al cargar regiones:', error)
-        setRegiones([])
-        return
+        console.error("Error al cargar regiones:", error);
+        setRegiones([]);
+        return;
       }
 
-      setRegiones(data ?? [])
+      setRegiones(data ?? []);
     } catch (error) {
-      console.error(
-        'Error inesperado al cargar regiones:',
-        error
-      )
+      console.error("Error inesperado al cargar regiones:", error);
 
-      setRegiones([])
+      setRegiones([]);
     } finally {
-      setLoadingRegiones(false)
+      setLoadingRegiones(false);
     }
-  }
+  };
 
   const cargarComunas = async (idRegion) => {
     if (!idRegion) {
-      setComunas([])
-      return
+      setComunas([]);
+      return;
     }
 
-    setLoadingComunas(true)
+    setLoadingComunas(true);
 
     try {
       const { data, error } = await supabase
-        .from('comuna')
-        .select('id_comuna, nom_comuna')
-        .eq('id_reg', idRegion)
-        .order('nom_comuna', { ascending: true })
+        .from("comuna")
+        .select("id_comuna, nom_comuna")
+        .eq("id_reg", idRegion)
+        .order("nom_comuna", { ascending: true });
 
       if (error) {
-        console.error('Error al cargar comunas:', error)
-        setComunas([])
-        return
+        console.error("Error al cargar comunas:", error);
+        setComunas([]);
+        return;
       }
 
-      setComunas(data ?? [])
+      setComunas(data ?? []);
     } catch (error) {
-      console.error(
-        'Error inesperado al cargar comunas:',
-        error
-      )
+      console.error("Error inesperado al cargar comunas:", error);
 
-      setComunas([])
+      setComunas([]);
     } finally {
-      setLoadingComunas(false)
+      setLoadingComunas(false);
     }
-  }
+  };
 
   const handleRegionChange = async (event) => {
-    const idRegion = event.target.value
+    const idRegion = event.target.value;
 
     /*
      * Actualizamos la región y limpiamos cualquier
      * error anterior de ese campo.
      */
-    setFieldValue('region', idRegion, {
-      validate: true
-    })
+    setFieldValue("region", idRegion, {
+      validate: true,
+    });
 
     /*
      * Al cambiar la región, la comuna seleccionada
      * anteriormente deja de ser válida.
      */
-    setFieldValue('comuna', '', {
-      clearError: true
-    })
+    setFieldValue("comuna", "", {
+      clearError: true,
+    });
 
-    clearFieldError('comuna')
-    setComunas([])
+    clearFieldError("comuna");
+    setComunas([]);
 
     if (idRegion) {
-      await cargarComunas(idRegion)
+      await cargarComunas(idRegion);
     }
-  }
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     if (loading) {
-      return
+      return;
     }
 
-    const formularioValido = validateForm()
+    const formularioValido = validateForm();
 
     if (!formularioValido) {
-      return
+      return;
     }
 
-    const resultado = await register(values, mode)
+    const resultado = await register(values, mode);
 
     if (resultado === true) {
-      resetForm()
-      setComunas([])
+      resetForm();
+      setComunas([]);
 
       /*
        * En el registro de clientes esperamos a que
@@ -187,30 +172,30 @@ const RegistroForm = ({ mode = 'client' }) => {
        *
        * El modo administrador no será redirigido.
        */
-      if (mode === 'client') {
-        setRedirectToLogin(true)
+      if (mode === "client") {
+        setRedirectToLogin(true);
       }
     }
-  }
+  };
 
   const handleModalClose = () => {
     /*
      * Primero cerramos el modal.
      */
-    hideModal()
+    hideModal();
 
     /*
      * Solo navegamos si el registro fue exitoso
      * y corresponde al registro de un cliente.
      */
     if (redirectToLogin === true) {
-      setRedirectToLogin(false)
+      setRedirectToLogin(false);
 
-      navigate('/login', {
-        replace: true
-      })
+      navigate("/login", {
+        replace: true,
+      });
     }
-  }
+  };
 
   return (
     <>
@@ -308,12 +293,10 @@ const RegistroForm = ({ mode = 'client' }) => {
           error={errors.region}
           options={regiones.map((region) => ({
             id: region.id_reg,
-            nombre: region.nom_reg
+            nombre: region.nom_reg,
           }))}
           placeholder={
-            loadingRegiones
-              ? 'Cargando regiones...'
-              : 'Selecciona una región'
+            loadingRegiones ? "Cargando regiones..." : "Selecciona una región"
           }
           disabled={loadingRegiones}
         />
@@ -327,22 +310,19 @@ const RegistroForm = ({ mode = 'client' }) => {
           error={errors.comuna}
           options={comunas.map((comuna) => ({
             id: comuna.id_comuna,
-            nombre: comuna.nom_comuna
+            nombre: comuna.nom_comuna,
           }))}
-          disabled={
-            !values.region ||
-            loadingComunas
-          }
+          disabled={!values.region || loadingComunas}
           placeholder={
             !values.region
-              ? 'Primero selecciona una región'
+              ? "Primero selecciona una región"
               : loadingComunas
-                ? 'Cargando comunas...'
-                : 'Selecciona una comuna'
+                ? "Cargando comunas..."
+                : "Selecciona una comuna"
           }
         />
 
-        {mode === 'admin' && (
+        {mode === "admin" && (
           <>
             <Select
               label="Rol"
@@ -353,17 +333,17 @@ const RegistroForm = ({ mode = 'client' }) => {
               error={errors.rol}
               options={[
                 {
-                  id: 'bodeguero',
-                  nombre: '👨‍🏭 Bodeguero'
+                  id: "bodeguero",
+                  nombre: "Bodeguero",
                 },
                 {
-                  id: 'vendedor',
-                  nombre: '🧑‍💼 Vendedor'
+                  id: "vendedor",
+                  nombre: "Vendedor",
                 },
                 {
-                  id: 'admin',
-                  nombre: '👑 Administrador'
-                }
+                  id: "admin",
+                  nombre: "Administrador",
+                },
               ]}
             />
 
@@ -376,13 +356,13 @@ const RegistroForm = ({ mode = 'client' }) => {
               error={errors.estado}
               options={[
                 {
-                  id: 'activo',
-                  nombre: '✅ Activo'
+                  id: "activo",
+                  nombre: "Activo",
                 },
                 {
-                  id: 'inactivo',
-                  nombre: '⛔ Inactivo'
-                }
+                  id: "inactivo",
+                  nombre: "Inactivo",
+                },
               ]}
             />
           </>
@@ -391,25 +371,16 @@ const RegistroForm = ({ mode = 'client' }) => {
         <Button
           type="submit"
           loading={loading}
-          disabled={
-            loading ||
-            loadingRegiones ||
-            loadingComunas
-          }
+          disabled={loading || loadingRegiones || loadingComunas}
           className="registro-boton"
         >
-          {mode === 'admin'
-            ? 'Crear usuario'
-            : 'Registrarse'}
+          {mode === "admin" ? "Crear usuario" : "Registrarse"}
         </Button>
       </form>
 
-      <Modal
-        {...modal}
-        onClose={handleModalClose}
-      />
+      <Modal {...modal} onClose={handleModalClose} />
     </>
-  )
-}
+  );
+};
 
-export default RegistroForm
+export default RegistroForm;

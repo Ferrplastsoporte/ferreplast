@@ -1,38 +1,37 @@
-import { useEffect, useState } from "react"
-import { Link, useParams } from "react-router-dom"
-import { supabase } from "../lib/supabase"
-import ProductDetail from "../components/productos/ProductDetail"
-import "./css/DetalleProducto.css"
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { supabase } from "../lib/supabase";
+import ProductDetail from "../components/productos/ProductDetail";
+import "./css/DetalleProducto.css";
 
 function DetalleProducto() {
-  const { id } = useParams()
+  const { id } = useParams();
 
-  const [producto, setProducto] = useState(null)
-  const [cargando, setCargando] = useState(true)
-  const [errorCarga, setErrorCarga] = useState("")
+  const [producto, setProducto] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState("");
 
   useEffect(() => {
-    cargarProducto()
-  }, [id])
+    cargarProducto();
+  }, [id]);
 
   async function cargarProducto() {
-    setCargando(true)
-    setErrorCarga("")
-    setProducto(null)
+    setCargando(true);
+    setErrorCarga("");
+    setProducto(null);
 
-    const idProducto = Number(id)
+    const idProducto = Number(id);
 
     if (!Number.isInteger(idProducto) || idProducto <= 0) {
-      setErrorCarga(
-        "El identificador del producto no es válido."
-      )
-      setCargando(false)
-      return
+      setErrorCarga("El identificador del producto no es válido.");
+      setCargando(false);
+      return;
     }
 
     const { data, error } = await supabase
       .from("producto")
-      .select(`
+      .select(
+        `
         id_prod,
         nom_prod,
         desc_prod,
@@ -47,6 +46,7 @@ function DetalleProducto() {
         id_und_medida,
         id_subcategoria,
         id_marca,
+        stock_prod,
 
         unidad_medida (
           id_und_medida,
@@ -77,80 +77,64 @@ function DetalleProducto() {
           archivo_path,
           est_documento
         )
-      `)
+      `,
+      )
       .eq("id_prod", idProducto)
       .eq("est_prod", 1)
-      .maybeSingle()
+      .maybeSingle();
 
     if (error) {
-      console.error(
-        "Error al cargar el detalle del producto:",
-        error
-      )
+      console.error("Error al cargar el detalle del producto:", error);
 
-      setErrorCarga(
-        "No fue posible cargar la información del producto."
-      )
-      setCargando(false)
-      return
+      setErrorCarga("No fue posible cargar la información del producto.");
+      setCargando(false);
+      return;
     }
 
     if (!data) {
-      setErrorCarga(
-        "El producto no existe o no se encuentra disponible."
-      )
-      setCargando(false)
-      return
+      setErrorCarga("El producto no existe o no se encuentra disponible.");
+      setCargando(false);
+      return;
     }
 
-    let imagenPublica = data.imagen_url
+    let imagenPublica = data.imagen_url;
 
-    if (
-      data.imagen_url &&
-      !data.imagen_url.startsWith("http")
-    ) {
+    if (data.imagen_url && !data.imagen_url.startsWith("http")) {
       const { data: imagenData } = supabase.storage
         .from("imagenes_productos")
-        .getPublicUrl(data.imagen_url)
+        .getPublicUrl(data.imagen_url);
 
-      imagenPublica = imagenData.publicUrl
+      imagenPublica = imagenData.publicUrl;
     }
 
-    const documentos = (
-      data.producto_documento ?? []
-    )
-      .filter(
-        (documento) =>
-          documento.est_documento === true
-      )
+    const documentos = (data.producto_documento ?? [])
+      .filter((documento) => documento.est_documento === true)
       .map((documento) => {
         const { data: urlData } = supabase.storage
           .from("producto-documentos")
-          .getPublicUrl(documento.archivo_path)
+          .getPublicUrl(documento.archivo_path);
 
         return {
           ...documento,
           url: urlData.publicUrl,
-        }
-      })
+        };
+      });
 
     setProducto({
       ...data,
       imagen_url: imagenPublica,
       documentos,
-    })
+    });
 
-    setCargando(false)
+    setCargando(false);
   }
 
   if (cargando) {
     return (
       <main className="detalle-producto">
-        <p className="detalle-producto__estado">
-          Cargando producto...
-        </p>
+        <p className="detalle-producto__estado">Cargando producto...</p>
       </main>
-    )
+    );
   }
 
   if (errorCarga) {
@@ -161,19 +145,17 @@ function DetalleProducto() {
 
           <p>{errorCarga}</p>
 
-          <Link to="/catalogo">
-            Volver al catálogo
-          </Link>
+          <Link to="/catalogo">Volver al catálogo</Link>
         </section>
       </main>
-    )
+    );
   }
 
   return (
     <main className="detalle-producto">
       <ProductDetail producto={producto} />
     </main>
-  )
+  );
 }
 
-export default DetalleProducto
+export default DetalleProducto;
