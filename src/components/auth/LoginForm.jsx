@@ -38,7 +38,7 @@ const LoginForm = () => {
     validateField,
   );
 
-  const { login, loading, modal, hideModal } = useAuth();
+  const { login, loading, modal, hideModal, profile } = useAuth(); // ← AGREGAR profile
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -50,9 +50,12 @@ const LoginForm = () => {
     const resultado = await login(values.email, values.password);
 
     if (resultado === true) {
-      navigate("/", {
-        replace: true,
-      });
+      // 🔹 Redirigir según el rol del usuario
+      if (profile?.rol_user === 2) {
+        navigate("/bodeguero", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     }
   };
 

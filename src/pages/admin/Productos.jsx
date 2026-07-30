@@ -17,45 +17,98 @@ function Productos() {
 
   const cargarProductos = async () => {
     const { data } = await supabase
-      .from('productos')
+      .from('producto')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('created_prod', { ascending: false })  // ← CAMBIADO
     setProductos(data || [])
     setCargando(false)
   }
 
+  // ============================================================
+  // ✅ CORREGIDO: Admin crea producto con est_prod = 2
+  // ✅ CORREGIDO: Bucket correcto 'imagenes_productos'
+  // ============================================================
   const handleSubmit = async (productoData) => {
     let imagenUrl = ''
     
     if (productoData.imagen) {
       const fileName = `${Date.now()}_${productoData.imagen.name}`
-      await supabase.storage
-        .from('productos')
+      const { error } = await supabase.storage
+        .from('imagenes_productos')  // ← CAMBIADO: bucket correcto
         .upload(fileName, productoData.imagen)
+
+      if (error) {
+        alert('Error al subir imagen: ' + error.message)
+        return
+      }
+
       const { data } = supabase.storage
-        .from('productos')
+        .from('imagenes_productos')  // ← CAMBIADO: bucket correcto
         .getPublicUrl(fileName)
       imagenUrl = data.publicUrl
     }
 
+    // 🔹 Insertar con est_prod = 2 (pendiente)
     const { error } = await supabase
-      .from('productos')
+      .from('producto')
       .insert([{ 
-        nombre: productoData.nombre,
-        descripcion: productoData.descripcion,
-        precio: productoData.precio,
+        nom_prod: productoData.nombre,
+        desc_prod: productoData.descripcion,
+        precio_prod: productoData.precio,
+        precio_act: productoData.precio,
         imagen_url: imagenUrl,
-        stock: 0
+        stock_prod: 0,
+        est_prod: 2,  // ← NUEVO: Pendiente de aprobación
+        // Valores por defecto para campos requeridos
+        id_und_medida: 1,
+        id_subcategoria: 1
       }])
 
     if (error) {
       alert('Error al guardar: ' + error.message)
     } else {
-      alert('✅ Producto guardado correctamente')
+      alert('✅ Producto creado correctamente (pendiente de aprobación)')
       setMostrarForm(false)
       cargarProductos()
     }
   }
+
+  // ============================================================
+  // ✅ NUEVAS FUNCIONES PARA ADMIN
+  // ============================================================
+
+  // 🔹 Admin aprueba producto (est_prod 2 → 1)
+  const aprobarProducto = async (id) => {
+    const { error } = await supabase
+      .from('producto')
+      .update({ est_prod: 1 })
+      .eq('id_prod', id)
+
+    if (!error) cargarProductos()
+  }
+
+  // 🔹 Admin desactiva producto (est_prod 1 → 3)
+  const desactivarProducto = async (id) => {
+    const { error } = await supabase
+      .from('producto')
+      .update({ est_prod: 3 })
+      .eq('id_prod', id)
+
+    if (!error) cargarProductos()
+  }
+
+  // 🔹 Admin elimina producto (solo casos excepcionales)
+  const eliminarProducto = async (id) => {
+    if (confirm('¿Eliminar este producto definitivamente? Esta acción no se puede deshacer.')) {
+      const { error } = await supabase
+        .from('producto')
+        .delete()
+        .eq('id_prod', id)
+
+      if (!error) cargarProductos()
+    }
+  }
+  // ============================================================
 
   if (cargando) return <p>Cargando...</p>
 
@@ -76,10 +129,14 @@ function Productos() {
         )}
 
         <div className="productos-table-container">
+          {/* ✅ ACTUALIZADO: ProductTable con modo admin */}
           <ProductTable 
             productos={productos}
-            onEditar={() => {}}
-            onEliminar={() => {}}
+            onEditar={() => {}}  // Admin no edita directamente
+            onEliminar={eliminarProducto}
+            onAprobar={aprobarProducto}
+            onDesactivar={desactivarProducto}
+            modo="admin"
           />
         </div>
       </div>

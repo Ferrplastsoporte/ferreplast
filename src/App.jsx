@@ -24,6 +24,15 @@ import Configuracion from './pages/admin/Configuracion'
 import Dashboard from './pages/admin/Dashboard'
 import Reportes from './pages/admin/reportes'
 
+// Bodeguero Pages
+import BodegueroDashboard from './pages/bodeguero/Dashboard'
+import BodegueroProductos from './pages/bodeguero/Productos'
+import BodegueroStock from './pages/bodeguero/Stock'
+import BodegueroSolicitudes from './pages/bodeguero/Solicitudes'
+import BodegueroFamilias from './pages/bodeguero/Familias'
+import BodegueroSubcategorias from './pages/bodeguero/Subcategorias'
+import BodegueroMarcas from './pages/bodeguero/Marcas'
+import BodegueroUnidades from './pages/bodeguero/Unidades'
 
 function App() {
   return (
@@ -52,6 +61,16 @@ function App() {
         <Route path="/admin/configuracion" element={<Configuracion />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/reportes" element={<Reportes />} />
+
+        {/* Bodeguero */}
+        <Route path="/bodeguero" element={<BodegueroDashboard />} />
+        <Route path="/bodeguero/productos" element={<BodegueroProductos />} />
+        <Route path="/bodeguero/stock" element={<BodegueroStock />} />
+        <Route path="/bodeguero/solicitudes" element={<BodegueroSolicitudes />} />
+        <Route path="/bodeguero/familias" element={<BodegueroFamilias />} />
+        <Route path="/bodeguero/subcategorias" element={<BodegueroSubcategorias />} />
+        <Route path="/bodeguero/marcas" element={<BodegueroMarcas />} />
+        <Route path="/bodeguero/unidades" element={<BodegueroUnidades />} />
       </Routes>
     </BrowserRouter>
   )

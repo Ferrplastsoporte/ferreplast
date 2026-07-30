@@ -1,0 +1,64 @@
+/* ============================
+   BODEGUERO - ESTILOS ESPECÍFICOS
+============================ */
+
+/* Reutilizar estilos de admin */
+.bodega-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.bodega-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 2rem;
+}
+
+.bodega-section h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #1f2937;
+  font-size: 1.3rem;
+}
+
+/* ============================
+   BOTONES
+============================ */
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #0039A6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.btn-add:hover {
+  background: #002a7a;
+}
+
+/* ============================
+   RESPONSIVE
+============================ */
+@media (max-width: 768px) {
+  .bodega-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .bodega-stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,151 @@
+Listado de rutas de carpetas
+El número de serie del volumen es 0000020E EA2D:602C
+C:\USERS\ALVARO\DESKTOP\GD\NUEVA CARPETA\FERREPLAST\SRC
+¦   App.css
+¦   App.jsx
+¦   index.css
+¦   main.jsx
+¦   vite-env.d.ts
+¦   
++---animations
+¦       FadeIn.jsx
+¦       PageTransition.jsx
+¦       ScaleIn.jsx
+¦       SlideUp.jsx
+¦       Stagger.jsx
+¦       
++---assets
+¦       basf.png
+¦       hero.png
+¦       klingspor.png
+¦       logo.png
+¦       logocompleto.jpg
+¦       oldwoodbrothers.png
+¦       react.svg
+¦       vite.svg
+¦       
++---components
+¦   +---auth
+¦   ¦       LoginForm.jsx
+¦   ¦       RegistroForm.jsx
+¦   ¦       
+¦   +---carrito
+¦   ¦       AddToCartButton.jsx
+¦   ¦       
+¦   +---cotizacion
+¦   ¦       AddToCotizacionButton.jsx
+¦   ¦       
+¦   +---css
+¦   ¦       AddToCotizacionButton.css
+¦   ¦       FloatingButtons.css
+¦   ¦       footer.css
+¦   ¦       navbar.css
+¦   ¦       productos.css
+¦   ¦       QuantitySelector.css
+¦   ¦       
+¦   +---estadisticas
+¦   ¦       StatsCard.jsx
+¦   ¦       StatsGrid.jsx
+¦   ¦       
+¦   +---layout
+¦   ¦       AdminNavbar.jsx
+¦   ¦       FloatingButtons.jsx
+¦   ¦       Footer.jsx
+¦   ¦       Navbar.jsx
+¦   ¦       
+¦   +---pedidos
+¦   ¦       EstadoBadge.jsx
+¦   ¦       PedidoList.jsx
+¦   ¦       
+¦   +---productos
+¦   ¦       ProductCard.jsx
+¦   ¦       ProductDetail.jsx
+¦   ¦       ProductFilters.jsx
+¦   ¦       ProductForm.jsx
+¦   ¦       ProductList.jsx
+¦   ¦       ProductTable.jsx
+¦   ¦       
+¦   +---ui
+¦   ¦       Button.jsx
+¦   ¦       Card.jsx
+¦   ¦       Input.jsx
+¦   ¦       Modal.jsx
+¦   ¦       QuantityModal.jsx
+¦   ¦       QuantitySelector.jsx
+¦   ¦       Select.jsx
+¦   ¦       
+¦   +---usuarios
+¦           UserForm.jsx
+¦           UserTable.jsx
+¦           
++---hooks
+¦       useAdminAuth.js
+¦       useAuth.js
+¦       useCart.js
+¦       useCartView.js
+¦       useForm.js
+¦       
++---lib
+¦       supabase.ts
+¦       supabase.ts.backup
+¦       
++---pages
+¦   ¦   Carrito.jsx
+¦   ¦   Catalogo.jsx
+¦   ¦   Cotizacion.jsx
+¦   ¦   DetalleProducto.jsx
+¦   ¦   Login.jsx
+¦   ¦   Registro.jsx
+¦   ¦   
+¦   +---admin
+¦   ¦   ¦   AdminDashboard.jsx
+¦   ¦   ¦   Bodega.jsx
+¦   ¦   ¦   Configuracion.jsx
+¦   ¦   ¦   CrearUsuario.jsx
+¦   ¦   ¦   Dashboard.jsx
+¦   ¦   ¦   Productos.jsx
+¦   ¦   ¦   reportes.jsx
+¦   ¦   ¦   Usuarios.jsx
+¦   ¦   ¦   Ventas.jsx
+¦   ¦   ¦   
+¦   ¦   +---components
+¦   ¦   ¦       AdminHeader.jsx
+¦   ¦   ¦       AdminSidebar.jsx
+¦   ¦   ¦       
+¦   ¦   +---Css
+¦   ¦           admin.css
+¦   ¦           
+¦   +---css
+¦   ¦       Carrito.css
+¦   ¦       Catalogo.css
+¦   ¦       Cotizacion.css
+¦   ¦       DetalleProducto.css
+¦   ¦       Login.css
+¦   ¦       Registro.css
+¦   ¦       
+¦   +---home
+¦       ¦   Hero.jsx
+¦       ¦   Home.jsx
+¦       ¦   
+¦       +---components
+¦       ¦       Benefits.jsx
+¦       ¦       Brands.jsx
+¦       ¦       Contact.jsx
+¦       ¦       FeaturedProducts.jsx
+¦       ¦       Footer.jsx
+¦       ¦       Hero.jsx
+¦       ¦       Mission.jsx
+¦       ¦       
+¦       +---css
+¦               home.css
+¦               
++---services
+¦       cartService.js
+¦       cotizacionService.js
+¦       
++---utils
+        constants.js
+        formatters.js
+        helpers.js
+        validators.js
+        
