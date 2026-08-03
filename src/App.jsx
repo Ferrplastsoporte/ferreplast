@@ -6,12 +6,12 @@ import FloatingButtons from './components/layout/FloatingButtons'
 
 // Pages
 import Home from './pages/home/Home'
-import Catalogo from './pages/Catalogo'
-import Carrito from './pages/Carrito'
-import Login from './pages/Login'
-import Registro from './pages/Registro'
-import DetalleProducto from "./pages/DetalleProducto"
-import Cotizacion from './pages/Cotizacion'
+import Catalogo from './pages/Cliente/Catalogo'
+import Carrito from './pages/Cliente/Carrito'
+import Login from './pages/Autenticación-Registro/Login'
+import Registro from './pages/Autenticación-Registro/Registro'
+import DetalleProducto from "./pages/Cliente/DetalleProducto"
+import Cotizacion from './pages/Cliente/Cotizacion'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'

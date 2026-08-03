@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "../lib/supabase";
-import ProductFilters from "../components/productos/ProductFilters";
-import ProductList from "../components/productos/ProductList";
-import "./css/Catalogo.css";
+import { supabase } from "../../lib/supabase";
+import ProductFilters from "../../components/productos/ProductFilters";
+import ProductList from "../../components/productos/ProductList";
+import "../css/Catalogo.css";
 
 const PRODUCTOS_POR_PAGINA = 20;
 

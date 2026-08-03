@@ -1,5 +1,5 @@
-import RegistroForm from '../components/auth/RegistroForm'
-import './css/Registro.css'
+import RegistroForm from '../../components/auth/RegistroForm'
+import '../css/Registro.css'
 
 function Registro() {
   return (

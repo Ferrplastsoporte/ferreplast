@@ -1,5 +1,5 @@
-import useCartView from "../hooks/useCartView";
-import "./css/Carrito.css";
+import useCartView from "../../hooks/useCartView";
+import "../css/Carrito.css";
 
 function formatearPrecio(valor) {
   return new Intl.NumberFormat("es-CL", {

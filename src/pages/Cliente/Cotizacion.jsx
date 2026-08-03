@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import QuantitySelector from "../components/ui/QuantitySelector";
+import QuantitySelector from "../../components/ui/QuantitySelector";
 
 import {
   obtenerCotizacionCompleta,
@@ -10,9 +10,9 @@ import {
   eliminarProductoCotizacion,
   limpiarCotizacion,
   enviarCotizacion,
-} from "../services/cotizacionService";
+} from "../../services/cotizacionService";
 
-import "../pages/css/Cotizacion.css";
+import "../css/Cotizacion.css";
 
 const CANTIDAD_MINIMA = 1;
 const CANTIDAD_MAXIMA = 100;
