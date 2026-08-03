@@ -42,14 +42,14 @@ function App() {
       <Routes>
         {/* Públicas */}
         <Route path="/" element={<Home />} />
-        <Route path="/catalogo" element={<Catalogo />} />
-        <Route path="/carrito" element={<Carrito />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
-        <Route path="/producto/:id" element={<DetalleProducto />}/>
 
         {/* Clientes */}
         <Route path="/cotizacion" element={<Cotizacion />} />
+        <Route path="/catalogo" element={<Catalogo />} />
+        <Route path="/carrito" element={<Carrito />} />
+        <Route path="/producto/:id" element={<DetalleProducto />}/>
 
         {/* Admin */}
         <Route path="/admin" element={<AdminDashboard />} />

@@ -7,22 +7,35 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 
-const INITIAL_VALUES = { email: "", password: "" };
+const INITIAL_VALUES = {
+  email: "",
+  password: "",
+};
 
-const validateField = (name, value, form) => {
+const validateField = (name, value) => {
   const val = typeof value === "string" ? value.trim() : value;
 
   switch (name) {
     case "email":
-      if (!val) return "Debes ingresar tu correo electrónico.";
-      if (!isValidEmail(val)) return "Correo inválido.";
+      if (!val) {
+        return "Debes ingresar tu correo electrónico.";
+      }
+
+      if (!isValidEmail(val)) {
+        return "Correo inválido.";
+      }
+
       return "";
 
     case "password":
-      if (!val) return "Debes ingresar tu contraseña.";
+      if (!val) {
+        return "Debes ingresar tu contraseña.";
+      }
+
       if (!isValidPassword(val)) {
         return "Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.";
       }
+
       return "";
 
     default:
@@ -38,24 +51,48 @@ const LoginForm = () => {
     validateField,
   );
 
-  const { login, loading, modal, hideModal, profile } = useAuth(); // ← AGREGAR profile
+  const { login, loading, modal, hideModal } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-    if (!validateForm()) return;
+    if (loading) {
+      return;
+    }
 
-    const resultado = await login(values.email, values.password);
+    if (!validateForm()) {
+      return;
+    }
 
-    if (resultado === true) {
-      // 🔹 Redirigir según el rol del usuario
-      if (profile?.rol_user === 2) {
-        navigate("/bodeguero", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+    const perfilAutenticado = await login(values.email, values.password);
+
+    if (!perfilAutenticado) {
+      return;
+    }
+
+    const rol = Number(perfilAutenticado.rol_user);
+
+    switch (rol) {
+      case 1:
+        navigate("/admin", {
+          replace: true,
+        });
+        break;
+
+      case 2:
+        navigate("/bodeguero", {
+          replace: true,
+        });
+        break;
+
+      case 0:
+      default:
+        navigate("/", {
+          replace: true,
+        });
+        break;
     }
   };
 
@@ -95,7 +132,7 @@ const LoginForm = () => {
           <button
             type="button"
             className="login-password-toggle"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => setShowPassword((actual) => !actual)}
           >
             {showPassword ? "Ocultar" : "Mostrar"}
           </button>

@@ -403,7 +403,7 @@ export const useAuth = () => {
       setUser(data.user)
       setProfile(userProfile)
 
-      return true
+      return userProfile
     } catch (error) {
       console.error(
         'Error inesperado durante el inicio de sesión:',
