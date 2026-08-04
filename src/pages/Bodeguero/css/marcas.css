@@ -1,0 +1,444 @@
+/* ============================
+   MÓDULO DE MARCAS
+============================ */
+
+.marcas-page {
+  width: min(1220px, 100%);
+  margin: 0 auto;
+}
+
+.marcas-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+/* ============================
+   FORMULARIO
+============================ */
+
+.marcas-form {
+  margin-bottom: 26px;
+  padding: 24px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+.marcas-form__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 28px;
+  align-items: start;
+}
+
+.marcas-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.marcas-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.marcas-form__field label {
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.marcas-form__field input[type="text"],
+.marcas-form__field input[type="file"],
+.marcas-form__field select {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #172033;
+
+  font: inherit;
+  font-size: 0.95rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.marcas-form__field input[type="text"],
+.marcas-form__field select {
+  min-height: 46px;
+  padding: 0 14px;
+}
+
+.marcas-form__field input[type="file"] {
+  min-height: 46px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.marcas-form__field select {
+  cursor: pointer;
+}
+
+.marcas-form__field input:focus,
+.marcas-form__field select:focus {
+  outline: none;
+  border-color: #0647b9;
+
+  box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.14);
+}
+
+.marcas-form__field input:disabled,
+.marcas-form__field select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.marcas-form__field small {
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+/* ============================
+   VISTA PREVIA
+============================ */
+
+.marcas-form__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.marcas-form__preview > span {
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.marcas-form__preview img,
+.marcas-form__placeholder {
+  width: 100%;
+  height: 180px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+
+  background: #f8fafc;
+}
+
+.marcas-form__preview img {
+  display: block;
+  padding: 16px;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+.marcas-form__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* ============================
+   ACCIONES DEL FORMULARIO
+============================ */
+
+.marcas-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  margin-top: 24px;
+  padding-top: 20px;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.marcas-form__save,
+.marcas-form__cancel {
+  min-height: 44px;
+  padding: 0 18px;
+
+  border-radius: 9px;
+
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.marcas-form__save {
+  border: none;
+
+  background: #0647b9;
+  color: #ffffff;
+}
+
+.marcas-form__save:hover:not(:disabled) {
+  background: #053a98;
+  transform: translateY(-1px);
+}
+
+.marcas-form__cancel {
+  border: 1px solid #cbd5e1;
+
+  background: #ffffff;
+  color: #475569;
+}
+
+.marcas-form__cancel:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.marcas-form__save:disabled,
+.marcas-form__cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ============================
+   TABLA
+============================ */
+
+.marcas-table-wrapper {
+  overflow-x: auto;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+.marcas-table {
+  width: 100%;
+  min-width: 820px;
+
+  border-collapse: collapse;
+}
+
+.marcas-table thead {
+  background: #f8fafc;
+}
+
+.marcas-table th,
+.marcas-table td {
+  padding: 16px 18px;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  text-align: left;
+  vertical-align: middle;
+}
+
+.marcas-table th {
+  color: #475569;
+
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.marcas-table td {
+  color: #1e293b;
+  font-size: 0.94rem;
+}
+
+.marcas-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.marcas-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.marcas-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.marcas-table__empty {
+  padding: 32px !important;
+
+  color: #64748b !important;
+  text-align: center !important;
+}
+
+/* ============================
+   LOGOS
+============================ */
+
+.marcas-table__logo,
+.marcas-table__logo-placeholder {
+  width: 72px;
+  height: 52px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 10px;
+
+  background: #f8fafc;
+}
+
+.marcas-table__logo {
+  display: block;
+  padding: 7px;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+.marcas-table__logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ============================
+   ESTADOS
+============================ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 30px;
+  padding: 0 11px;
+
+  border-radius: 999px;
+
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.status-badge--active {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.status-badge--pending {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.status-badge--own {
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #0647b9;
+}
+
+.status-badge--normal {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+/* ============================
+   BOTÓN EDITAR
+============================ */
+
+.marcas-table__edit {
+  min-height: 38px;
+  padding: 0 14px;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+
+  background: #eff6ff;
+  color: #0647b9;
+
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.marcas-table__edit:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+.marcas-table__edit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ============================
+   RESPONSIVE
+============================ */
+
+@media (max-width: 850px) {
+  .marcas-form__content {
+    grid-template-columns: 1fr;
+  }
+
+  .marcas-form__preview {
+    width: min(260px, 100%);
+  }
+}
+
+@media (max-width: 600px) {
+  .marcas-toolbar {
+    justify-content: stretch;
+  }
+
+  .marcas-toolbar .btn-add {
+    width: 100%;
+  }
+
+  .marcas-form {
+    padding: 18px;
+  }
+
+  .marcas-form__actions {
+    flex-direction: column;
+  }
+
+  .marcas-form__save,
+  .marcas-form__cancel {
+    width: 100%;
+  }
+}

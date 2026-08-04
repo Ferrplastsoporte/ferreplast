@@ -1,46 +1,76 @@
-import { Link, useLocation } from 'react-router-dom'
+import { NavLink } from "react-router-dom";
+
+const enlaces = [
+  {
+    texto: "Dashboard",
+    ruta: "/bodeguero",
+    exacta: true,
+  },
+  {
+    texto: "Productos",
+    ruta: "/bodeguero/productos",
+  },
+  {
+    texto: "Stock",
+    ruta: "/bodeguero/stock",
+  },
+  {
+    texto: "Solicitudes",
+    ruta: "/bodeguero/solicitudes",
+  },
+  {
+    texto: "Familias",
+    ruta: "/bodeguero/familias",
+  },
+  {
+    texto: "Subcategorías",
+    ruta: "/bodeguero/subcategorias",
+  },
+  {
+    texto: "Marcas",
+    ruta: "/bodeguero/marcas",
+  },
+  {
+    texto: "Unidades",
+    ruta: "/bodeguero/unidades",
+  },
+];
 
 function BodegueroSidebar() {
-  const location = useLocation()
-
-  const isActive = (path) => {
-    return location.pathname === path ? 'active' : ''
-  }
-
   return (
-    <aside className="admin-sidebar">
-      <h2>FERREPLAST</h2>
-      <p style={{ textAlign: 'center', fontSize: '14px', color: '#dce6ff', marginBottom: '20px' }}>
-        👨‍🏭 Bodeguero
-      </p>
-      <nav>
-        <Link to="/bodeguero" className={isActive('/bodeguero')}>
-          📊 Dashboard
-        </Link>
-        <Link to="/bodeguero/productos" className={isActive('/bodeguero/productos')}>
-          📦 Productos
-        </Link>
-        <Link to="/bodeguero/stock" className={isActive('/bodeguero/stock')}>
-          📊 Stock
-        </Link>
-        <Link to="/bodeguero/solicitudes" className={isActive('/bodeguero/solicitudes')}>
-          ⏳ Solicitudes
-        </Link>
-        <Link to="/bodeguero/familias" className={isActive('/bodeguero/familias')}>
-          🏷️ Familias
-        </Link>
-        <Link to="/bodeguero/subcategorias" className={isActive('/bodeguero/subcategorias')}>
-          📂 Subcategorías
-        </Link>
-        <Link to="/bodeguero/marcas" className={isActive('/bodeguero/marcas')}>
-          🏢 Marcas
-        </Link>
-        <Link to="/bodeguero/unidades" className={isActive('/bodeguero/unidades')}>
-          📏 Unidades
-        </Link>
+    <aside className="bodeguero-sidebar">
+      <div className="bodeguero-sidebar__brand">
+        <span>FERREPLAST</span>
+        <small>Panel de bodega</small>
+      </div>
+
+      <nav
+        className="bodeguero-sidebar__nav"
+        aria-label="Navegación del bodeguero"
+      >
+        {enlaces.map((enlace) => (
+          <NavLink
+            key={enlace.ruta}
+            to={enlace.ruta}
+            end={enlace.exacta}
+            className={({ isActive }) =>
+              `bodeguero-sidebar__link ${
+                isActive ? "bodeguero-sidebar__link--active" : ""
+              }`
+            }
+          >
+            {enlace.texto}
+          </NavLink>
+        ))}
       </nav>
+
+      <div className="bodeguero-sidebar__footer">
+        <span>Bodeguero</span>
+
+        {/* El cierre de sesión se agregará aquí después */}
+      </div>
     </aside>
-  )
+  );
 }
 
-export default BodegueroSidebar
+export default BodegueroSidebar;
