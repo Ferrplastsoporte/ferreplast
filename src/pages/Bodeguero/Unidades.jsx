@@ -1,162 +1,342 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
-import BodegueroSidebar from './components/BodegueroSidebar'
-import BodegueroHeader from './components/BodegueroHeader'
-import './css/bodeguero.css'
-import '../../components/css/productos.css'
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
+import BodegueroHeader from "./components/BodegueroHeader";
+import "./css/bodeguero.css";
+import "./css/unidades.css";
+
+const LONGITUD_MINIMA = 1;
+const LONGITUD_MAXIMA = 40;
+
+function limpiarNombreUnidad(valor = "") {
+  return String(valor)
+    .replace(/[^\p{L}\p{N}\s²³/%.'’\-]/gu, "")
+    .replace(/\s{2,}/g, " ");
+}
+
+function normalizarComparacion(valor = "") {
+  return String(valor).trim().toLocaleLowerCase("es-CL");
+}
 
 function Unidades() {
-  const [unidades, setUnidades] = useState([])
-  const [cargando, setCargando] = useState(true)
-  const [mostrarForm, setMostrarForm] = useState(false)
-  const [editando, setEditando] = useState(null)
-  const [nombre, setNombre] = useState('')
+  const [unidades, setUnidades] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+  const [unidadEditando, setUnidadEditando] = useState(null);
+
+  const [nombre, setNombre] = useState("");
+
+  const [mensajeError, setMensajeError] = useState("");
+
+  const [mensajeExito, setMensajeExito] = useState("");
 
   useEffect(() => {
-    cargarUnidades()
-  }, [])
+    cargarUnidades();
+  }, []);
 
-  const cargarUnidades = async () => {
-    setCargando(true)
+  async function cargarUnidades() {
+    setCargando(true);
+    setMensajeError("");
+
     const { data, error } = await supabase
-      .from('unidad_medida')
-      .select('*')
-      .order('nom_und_medida', { ascending: true })
-    
+      .from("unidad_medida")
+      .select(
+        `
+        id_und_medida,
+        nom_und_medida
+      `,
+      )
+      .order("nom_und_medida", {
+        ascending: true,
+      });
+
     if (error) {
-      console.error('Error cargando unidades:', error)
-      alert('Error al cargar unidades de medida')
+      console.error("Error al cargar las unidades:", error);
+
+      setUnidades([]);
+
+      setMensajeError("No fue posible cargar las unidades de medida.");
     } else {
-      setUnidades(data || [])
+      setUnidades(data ?? []);
     }
-    setCargando(false)
+
+    setCargando(false);
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!nombre.trim()) {
-      alert('El nombre de la unidad es obligatorio')
-      return
+  function limpiarFormulario() {
+    setUnidadEditando(null);
+    setNombre("");
+    setMostrarFormulario(false);
+  }
+
+  function abrirNuevaUnidad() {
+    limpiarFormulario();
+    setMensajeError("");
+    setMensajeExito("");
+    setMostrarFormulario(true);
+  }
+
+  function abrirEdicionUnidad(unidad) {
+    setUnidadEditando(unidad);
+    setNombre(unidad.nom_und_medida ?? "");
+    setMensajeError("");
+    setMensajeExito("");
+    setMostrarFormulario(true);
+  }
+
+  function cerrarFormulario() {
+    if (guardando) {
+      return;
     }
 
-    if (editando) {
-      const { error } = await supabase
-        .from('unidad_medida')
-        .update({ nom_und_medida: nombre.trim() })
-        .eq('id_und_medida', editando)
-      
-      if (error) {
-        alert('Error al actualizar: ' + error.message)
+    limpiarFormulario();
+    setMensajeError("");
+  }
+
+  function validarNombre() {
+    const nombreLimpio = limpiarNombreUnidad(nombre).trim();
+
+    if (!nombreLimpio) {
+      setMensajeError("Debes ingresar el nombre de la unidad de medida.");
+
+      return null;
+    }
+
+    if (nombreLimpio.length < LONGITUD_MINIMA) {
+      setMensajeError(
+        `El nombre debe tener al menos ${LONGITUD_MINIMA} carácter.`,
+      );
+
+      return null;
+    }
+
+    if (nombreLimpio.length > LONGITUD_MAXIMA) {
+      setMensajeError(
+        `El nombre no puede superar los ${LONGITUD_MAXIMA} caracteres.`,
+      );
+
+      return null;
+    }
+
+    if (!/[\p{L}\p{N}]/u.test(nombreLimpio)) {
+      setMensajeError(
+        "La unidad debe contener al menos una letra o un número.",
+      );
+
+      return null;
+    }
+
+    const nombreNormalizado = normalizarComparacion(nombreLimpio);
+
+    const unidadDuplicada = unidades.some(
+      (unidad) =>
+        unidad.id_und_medida !== unidadEditando?.id_und_medida &&
+        normalizarComparacion(unidad.nom_und_medida) === nombreNormalizado,
+    );
+
+    if (unidadDuplicada) {
+      setMensajeError("Ya existe una unidad de medida con ese nombre.");
+
+      return null;
+    }
+
+    return nombreLimpio;
+  }
+
+  async function guardarUnidad(evento) {
+    evento.preventDefault();
+
+    if (guardando) {
+      return;
+    }
+
+    const nombreValidado = validarNombre();
+
+    if (!nombreValidado) {
+      return;
+    }
+
+    setGuardando(true);
+    setMensajeError("");
+    setMensajeExito("");
+
+    try {
+      if (unidadEditando) {
+        const { error } = await supabase
+          .from("unidad_medida")
+          .update({
+            nom_und_medida: nombreValidado,
+          })
+          .eq("id_und_medida", unidadEditando.id_und_medida);
+
+        if (error) {
+          throw error;
+        }
+
+        setMensajeExito("La unidad de medida fue actualizada correctamente.");
       } else {
-        setEditando(null)
-        setNombre('')
-        setMostrarForm(false)
-        cargarUnidades()
+        const { error } = await supabase.from("unidad_medida").insert({
+          nom_und_medida: nombreValidado,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setMensajeExito("La unidad de medida fue creada correctamente.");
       }
-    } else {
-      const { error } = await supabase
-        .from('unidad_medida')
-        .insert([{ nom_und_medida: nombre.trim() }])
-      
-      if (error) {
-        alert('Error al crear: ' + error.message)
+
+      limpiarFormulario();
+      await cargarUnidades();
+    } catch (error) {
+      console.error("Error al guardar la unidad:", error);
+
+      if (error?.code === "23505") {
+        setMensajeError("Ya existe una unidad de medida con ese nombre.");
+      } else if (error?.message?.toLowerCase().includes("row-level security")) {
+        setMensajeError(
+          "No tienes permisos para guardar esta unidad de medida.",
+        );
       } else {
-        setNombre('')
-        setMostrarForm(false)
-        cargarUnidades()
+        setMensajeError(
+          error?.message || "No fue posible guardar la unidad de medida.",
+        );
       }
+    } finally {
+      setGuardando(false);
     }
-  }
-
-  const handleEdit = (unidad) => {
-    setEditando(unidad.id_und_medida)
-    setNombre(unidad.nom_und_medida)
-    setMostrarForm(true)
-  }
-
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Eliminar esta unidad de medida?')) {
-      const { error } = await supabase
-        .from('unidad_medida')
-        .delete()
-        .eq('id_und_medida', id)
-      
-      if (error) {
-        alert('Error al eliminar: ' + error.message)
-      } else {
-        cargarUnidades()
-      }
-    }
-  }
-
-  if (cargando) {
-    return (
-      <div className="admin-layout">
-        <BodegueroSidebar />
-        <div className="admin-content">
-          <p>Cargando...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className="admin-layout">
-      <BodegueroSidebar />
-      <div className="admin-content">
-        <BodegueroHeader titulo="Administrar Unidades de Medida" />
+    <section className="bodeguero-page unidades-page">
+      <BodegueroHeader
+        titulo="Unidades de medida"
+        descripcion="Crea y actualiza las unidades utilizadas para describir la presentación de los productos."
+      />
 
-        <button className="btn-add" onClick={() => { setMostrarForm(true); setEditando(null); setNombre('') }}>
-          + Nueva Unidad
+      <div className="unidades-toolbar">
+        <button
+          type="button"
+          className="btn-add"
+          onClick={abrirNuevaUnidad}
+          disabled={guardando}
+        >
+          Nueva unidad
         </button>
+      </div>
 
-        {mostrarForm && (
-          <form className="product-form" onSubmit={handleSubmit}>
+      {mensajeExito && (
+        <p
+          className="bodeguero-message bodeguero-message--success"
+          role="status"
+        >
+          {mensajeExito}
+        </p>
+      )}
+
+      {mensajeError && (
+        <p className="bodeguero-message bodeguero-message--error" role="alert">
+          {mensajeError}
+        </p>
+      )}
+
+      {mostrarFormulario && (
+        <form className="unidades-form" onSubmit={guardarUnidad} noValidate>
+          <div className="unidades-form__header">
+            <h2>{unidadEditando ? "Editar unidad" : "Crear unidad"}</h2>
+
+            <p>
+              Usa nombres claros y breves, por ejemplo: Kg, Litro, m², Unidad o
+              Rollo.
+            </p>
+          </div>
+
+          <div className="unidades-form__field">
+            <label htmlFor="nombreUnidad">Nombre de la unidad</label>
+
             <input
+              id="nombreUnidad"
               type="text"
-              placeholder="Nombre de la unidad (ej: Kg, L, m, Unidad)"
               value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-              className="product-form-input"
+              onChange={(evento) =>
+                setNombre(limpiarNombreUnidad(evento.target.value))
+              }
+              placeholder="Ej: Kg"
+              minLength={LONGITUD_MINIMA}
+              maxLength={LONGITUD_MAXIMA}
+              autoComplete="off"
+              disabled={guardando}
+              autoFocus
             />
-            <div className="product-form-actions">
-              <button type="submit" className="product-form-button">
-                {editando ? 'Actualizar' : 'Guardar'}
-              </button>
-              <button
-                type="button"
-                className="product-form-button-cancel"
-                onClick={() => { setMostrarForm(false); setEditando(null); setNombre('') }}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        )}
 
-        <div className="product-table-wrapper">
-          <table className="product-table">
+            <small>
+              Se permiten letras, números, espacios, %, /, puntos, guiones y
+              símbolos ² o ³.
+            </small>
+          </div>
+
+          <div className="unidades-form__actions">
+            <button
+              type="submit"
+              className="unidades-form__save"
+              disabled={guardando}
+            >
+              {guardando
+                ? "Guardando..."
+                : unidadEditando
+                  ? "Actualizar unidad"
+                  : "Crear unidad"}
+            </button>
+
+            <button
+              type="button"
+              className="unidades-form__cancel"
+              onClick={cerrarFormulario}
+              disabled={guardando}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+
+      {cargando ? (
+        <p className="bodeguero-loading">Cargando unidades de medida...</p>
+      ) : (
+        <div className="unidades-table-wrapper">
+          <table className="unidades-table">
             <thead>
               <tr>
-                <th>Nombre</th>
+                <th>Unidad de medida</th>
                 <th>Acciones</th>
               </tr>
             </thead>
+
             <tbody>
               {unidades.length === 0 ? (
                 <tr>
-                  <td colSpan="2" style={{ textAlign: 'center', padding: '20px', color: '#6c757d' }}>
-                    No hay unidades de medida creadas
+                  <td colSpan="2" className="unidades-table__empty">
+                    No hay unidades de medida registradas.
                   </td>
                 </tr>
               ) : (
-                unidades.map(u => (
-                  <tr key={u.id_und_medida}>
-                    <td>{u.nom_und_medida}</td>
+                unidades.map((unidad) => (
+                  <tr key={unidad.id_und_medida}>
                     <td>
-                      <button className="btn-edit" onClick={() => handleEdit(u)}>✏️</button>
-                      <button className="btn-delete" onClick={() => handleDelete(u.id_und_medida)}>🗑️</button>
+                      <strong>{unidad.nom_und_medida}</strong>
+                    </td>
+
+                    <td>
+                      <button
+                        type="button"
+                        className="unidades-table__edit"
+                        onClick={() => abrirEdicionUnidad(unidad)}
+                        disabled={guardando}
+                      >
+                        Editar
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -164,9 +344,9 @@ function Unidades() {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-  )
+      )}
+    </section>
+  );
 }
 
-export default Unidades
+export default Unidades;

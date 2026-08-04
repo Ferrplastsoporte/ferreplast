@@ -7,32 +7,28 @@ const enlaces = [
     exacta: true,
   },
   {
-    texto: "Productos",
-    ruta: "/bodeguero/productos",
-  },
-  {
     texto: "Stock",
     ruta: "/bodeguero/stock",
   },
   {
-    texto: "Solicitudes",
+    texto: "Pedidos o Solicitudes??",
     ruta: "/bodeguero/solicitudes",
   },
   {
-    texto: "Familias",
+    texto: "Familias/Subcategorias",
     ruta: "/bodeguero/familias",
-  },
-  {
-    texto: "Subcategorías",
-    ruta: "/bodeguero/subcategorias",
   },
   {
     texto: "Marcas",
     ruta: "/bodeguero/marcas",
   },
   {
-    texto: "Unidades",
+    texto: "Unidades de medida (productos)",
     ruta: "/bodeguero/unidades",
+  },
+  {
+    texto: "Productos",
+    ruta: "/bodeguero/productos",
   },
 ];
 

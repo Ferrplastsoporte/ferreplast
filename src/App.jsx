@@ -35,7 +35,6 @@ import BodegueroProductos from "./pages/Bodeguero/Productos";
 import BodegueroStock from "./pages/Bodeguero/Stock";
 import BodegueroSolicitudes from "./pages/Bodeguero/Solicitudes";
 import BodegueroFamilias from "./pages/Bodeguero/Familias";
-import BodegueroSubcategorias from "./pages/Bodeguero/Subcategorias";
 import BodegueroMarcas from "./pages/Bodeguero/Marcas";
 import BodegueroUnidades from "./pages/Bodeguero/Unidades";
 
@@ -85,7 +84,6 @@ function App() {
           <Route path="/bodeguero/stock" element={<BodegueroStock />} />
           <Route path="/bodeguero/solicitudes" element={<BodegueroSolicitudes />} />
           <Route path="/bodeguero/familias" element={<BodegueroFamilias />} />
-          <Route path="/bodeguero/subcategorias" element={<BodegueroSubcategorias />} />
           <Route path="/bodeguero/marcas" element={<BodegueroMarcas />} />
           <Route path="/bodeguero/unidades" element={<BodegueroUnidades />} />
         </Route>
