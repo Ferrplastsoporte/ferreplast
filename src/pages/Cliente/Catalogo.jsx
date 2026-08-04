@@ -219,7 +219,7 @@ function Catalogo() {
       `,
       )
       .eq("id_subcategoria", Number(idSubcategoria))
-      .eq("est_prod", 1);
+      .eq("est_prod", 2);
 
     if (error) {
       console.error(
@@ -383,7 +383,7 @@ function Catalogo() {
         `,
         { count: "exact" },
       )
-      .eq("est_prod", 1);
+      .eq("est_prod", 2);
 
     if (filtros.busqueda.trim()) {
       consulta = consulta.ilike("nom_prod", `%${filtros.busqueda.trim()}%`);

@@ -1,20 +1,107 @@
-import { formatPrice } from '../../utils/formatters'
+import { supabase } from "../../lib/supabase";
+import { formatPrice } from "../../utils/formatters";
 
-const ProductTable = ({ 
-  productos, 
-  onEditar, 
-  onEliminar, 
-  onAprobar,
+const BUCKET_IMAGENES = "imagenes_productos";
+
+function ProductTable({
+  productos = [],
+  onEditar,
   onDesactivar,
-  modo = 'cliente'
-}) => {
-  const getEstadoLabel = (estado) => {
-    const estados = {
-      1: { label: '✅ Activo', className: 'estado-activo' },
-      2: { label: '⏳ Pendiente', className: 'estado-pendiente' },
-      3: { label: '⛔ Inactivo', className: 'estado-inactivo' }
+  onAprobar,
+  onEliminar,
+  modo = "bodeguero",
+}) {
+  function obtenerUrlImagen(rutaImagen) {
+    if (!rutaImagen) {
+      return "";
     }
-    return estados[estado] || { label: '❓ Desconocido', className: '' }
+
+    if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
+      return rutaImagen;
+    }
+
+    const { data } = supabase.storage
+      .from(BUCKET_IMAGENES)
+      .getPublicUrl(rutaImagen);
+
+    return data.publicUrl;
+  }
+
+  function obtenerNombreEstado(producto) {
+    return producto.estado_producto?.nom_est_prod || "Sin estado";
+  }
+
+  function obtenerClaseEstado(producto) {
+    const nombreEstado = obtenerNombreEstado(producto)
+      .trim()
+      .toLocaleLowerCase("es-CL");
+
+    if (nombreEstado === "activo") {
+      return "estado-activo";
+    }
+
+    if (nombreEstado === "pendiente") {
+      return "estado-pendiente";
+    }
+
+    if (nombreEstado === "no disponible" || nombreEstado === "inactivo") {
+      return "estado-inactivo";
+    }
+
+    return "estado-desconocido";
+  }
+
+  function obtenerNombreMarca(producto) {
+    return producto.marca_producto?.nom_marca || "Sin marca";
+  }
+
+  function obtenerPrecioProducto(producto) {
+    const precioNormal = Number(producto.precio_prod ?? 0);
+
+    const precioOferta = Number(producto.precio_act ?? 0);
+
+    const tieneOferta = precioOferta > 0 && precioOferta < precioNormal;
+
+    return {
+      tieneOferta,
+      precioNormal,
+      precioVigente: tieneOferta ? precioOferta : precioNormal,
+    };
+  }
+
+  function puedeEditar() {
+    return (
+      (modo === "bodeguero" || modo === "admin") &&
+      typeof onEditar === "function"
+    );
+  }
+
+  function puedeDesactivar(producto) {
+    return (
+      modo === "bodeguero" &&
+      Number(producto.est_prod) === 2 &&
+      typeof onDesactivar === "function"
+    );
+  }
+
+  function puedeAprobar(producto) {
+    return (
+      modo === "admin" &&
+      Number(producto.est_prod) === 1 &&
+      typeof onAprobar === "function"
+    );
+  }
+
+  function puedeEliminar() {
+    return modo === "admin" && typeof onEliminar === "function";
+  }
+
+  if (productos.length === 0) {
+    return (
+      <div className="product-table-wrapper">
+        <div className="product-table-empty">No hay productos registrados.</div>
+      </div>
+    );
   }
 
   return (
@@ -22,61 +109,137 @@ const ProductTable = ({
       <table className="product-table">
         <thead>
           <tr>
+            <th>Imagen</th>
             <th>Producto</th>
+            <th>Marca</th>
             <th>Stock</th>
             <th>Precio</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
+
         <tbody>
-          {productos?.map(producto => {
-            const estadoInfo = getEstadoLabel(producto.est_prod)
-            
+          {productos.map((producto) => {
+            const imagenUrl = obtenerUrlImagen(producto.imagen_url);
+
+            const precio = obtenerPrecioProducto(producto);
+
+            const stock = Number(producto.stock_prod ?? 0);
+
             return (
-              <tr key={producto.id_prod}>  {/* ← CAMBIADO */}
-                <td>{producto.nom_prod}</td>  {/* ← CAMBIADO */}
+              <tr key={producto.id_prod}>
                 <td>
-                  <span className={`stock-badge ${producto.stock_prod < 10 ? 'stock-bajo' : ''}`}>
-                    {producto.stock_prod} unidades  {/* ← CAMBIADO */}
+                  {imagenUrl ? (
+                    <img
+                      src={imagenUrl}
+                      alt={`Imagen de ${producto.nom_prod}`}
+                      className="product-table__image"
+                    />
+                  ) : (
+                    <div className="product-table__image-placeholder">
+                      Sin imagen
+                    </div>
+                  )}
+                </td>
+
+                <td>
+                  <div className="product-table__product">
+                    <strong>{producto.nom_prod}</strong>
+
+                    <span>
+                      {producto.subcategoria?.nom_subcategoria ||
+                        "Sin subcategoría"}
+                    </span>
+                  </div>
+                </td>
+
+                <td>{obtenerNombreMarca(producto)}</td>
+
+                <td>
+                  <span
+                    className={`stock-badge ${stock <= 5 ? "stock-bajo" : ""}`}
+                  >
+                    {stock} {stock === 1 ? "unidad" : "unidades"}
                   </span>
                 </td>
-                <td>{formatPrice(producto.precio_prod)}</td>  {/* ← CAMBIADO */}
+
                 <td>
-                  <span className={estadoInfo.className}>
-                    {estadoInfo.label}
+                  <div className="product-table__prices">
+                    {precio.tieneOferta && (
+                      <span className="product-table__old-price">
+                        {formatPrice(precio.precioNormal)}
+                      </span>
+                    )}
+
+                    <strong>{formatPrice(precio.precioVigente)}</strong>
+                  </div>
+                </td>
+
+                <td>
+                  <span className={obtenerClaseEstado(producto)}>
+                    {obtenerNombreEstado(producto)}
                   </span>
                 </td>
+
                 <td>
                   <div className="table-actions">
-                    {(modo === 'bodeguero' || modo === 'admin') && (
-                      <button onClick={() => onEditar(producto)} className="btn-edit">✏️</button>
+                    {puedeEditar() && (
+                      <button
+                        type="button"
+                        className="btn-edit"
+                        onClick={() => onEditar(producto)}
+                        title="Editar producto"
+                        aria-label={`Editar ${producto.nom_prod}`}
+                      >
+                        ✏️
+                      </button>
                     )}
-                    
-                    {modo === 'bodeguero' && producto.est_prod === 1 && (
-                      <button onClick={() => onDesactivar(producto.id_prod)} className="btn-deactivate">⛔</button>
+
+                    {puedeDesactivar(producto) && (
+                      <button
+                        type="button"
+                        className="btn-deactivate"
+                        onClick={() => onDesactivar(producto.id_prod)}
+                        title="Deshabilitar producto"
+                        aria-label={`Deshabilitar ${producto.nom_prod}`}
+                      >
+                        ⛔
+                      </button>
                     )}
-                    
-                    {modo === 'admin' && producto.est_prod === 2 && (
-                      <button onClick={() => onAprobar(producto.id_prod)} className="btn-approve">✅</button>
+
+                    {puedeAprobar(producto) && (
+                      <button
+                        type="button"
+                        className="btn-approve"
+                        onClick={() => onAprobar(producto.id_prod)}
+                        title="Aprobar producto"
+                        aria-label={`Aprobar ${producto.nom_prod}`}
+                      >
+                        ✅
+                      </button>
                     )}
-                    
-                    {modo === 'admin' && producto.est_prod === 1 && (
-                      <button onClick={() => onDesactivar(producto.id_prod)} className="btn-deactivate">⛔</button>
-                    )}
-                    
-                    {modo === 'admin' && (
-                      <button onClick={() => onEliminar(producto.id_prod)} className="btn-delete">🗑️</button>
+
+                    {puedeEliminar() && (
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        onClick={() => onEliminar(producto.id_prod)}
+                        title="Eliminar producto"
+                        aria-label={`Eliminar ${producto.nom_prod}`}
+                      >
+                        🗑️
+                      </button>
                     )}
                   </div>
                 </td>
               </tr>
-            )
+            );
           })}
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
-export default ProductTable
+export default ProductTable;

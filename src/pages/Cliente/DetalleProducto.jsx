@@ -81,7 +81,7 @@ function DetalleProducto() {
       `,
       )
       .eq("id_prod", idProducto)
-      .eq("est_prod", 1)
+      .eq("est_prod", 2)
       .maybeSingle();
 
     if (error) {

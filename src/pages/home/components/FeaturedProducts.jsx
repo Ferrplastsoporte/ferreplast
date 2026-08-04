@@ -70,7 +70,7 @@ function FeaturedProducts() {
         )
       `,
       )
-      .eq("est_prod", 1)
+      .eq("est_prod", 2)
       .order("created_prod", {
         ascending: false,
       })
