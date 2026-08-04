@@ -10,10 +10,10 @@ import './css/home.css'
 function Home() {
   return (
     <>
+      <Mission />
+      <Brands />
       <Hero />
       <FeaturedProducts />
-      <Brands />
-      <Mission />
       <Benefits />
       <Contact />
       <Footer />
