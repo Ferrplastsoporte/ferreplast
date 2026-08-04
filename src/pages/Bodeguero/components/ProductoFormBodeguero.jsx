@@ -1,10 +1,33 @@
-import { useEffect, useMemo, useState } from "react";
-import "../css/productos-bodeguero.css";
+import { useEffect, useMemo, useRef, useState } from "react";
+import "../css/Productos-bodeguero.css";
 
 const TAMANO_MAXIMO_IMAGEN = 10 * 1024 * 1024;
 const TAMANO_MAXIMO_PDF = 20 * 1024 * 1024;
 
 const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
+
+const TIPOS_DOCUMENTO = [
+  {
+    value: "ficha_tecnica",
+    label: "Ficha técnica",
+  },
+  {
+    value: "hoja_seguridad",
+    label: "Hoja de seguridad",
+  },
+  {
+    value: "certificado",
+    label: "Certificado",
+  },
+  {
+    value: "manual",
+    label: "Manual",
+  },
+  {
+    value: "otro",
+    label: "Otro",
+  },
+];
 
 const ESTADO_INICIAL = {
   nombre: "",
@@ -12,13 +35,13 @@ const ESTADO_INICIAL = {
   detalle: "",
   precioNormal: "",
   precioOferta: "",
-  stock: "0",
+  stock: "1",
   familiaId: "",
   subcategoriaId: "",
   marcaId: "",
   unidadId: "",
   color: "",
-  peso: "",
+  peso: "1",
 };
 
 function limpiarTexto(valor = "") {
@@ -27,8 +50,14 @@ function limpiarTexto(valor = "") {
     .replace(/\s{2,}/g, " ");
 }
 
-function normalizarNumeroDecimal(valor = "") {
-  return String(valor).replace(",", ".");
+function limpiarEnteroPositivo(valor = "") {
+  return String(valor).replace(/\D/g, "");
+}
+
+function obtenerNombreTipoDocumento(tipo = "") {
+  return (
+    TIPOS_DOCUMENTO.find((opcion) => opcion.value === tipo)?.label || "Otro"
+  );
 }
 
 function ProductoFormBodeguero({
@@ -42,10 +71,20 @@ function ProductoFormBodeguero({
   onGuardar,
   onCancelar,
 }) {
+  const inputDocumentosRef = useRef(null);
+
   const [formulario, setFormulario] = useState(ESTADO_INICIAL);
 
   const [imagen, setImagen] = useState(null);
 
+  /*
+   * Estructura:
+   * {
+   *   idTemporal,
+   *   archivo,
+   *   tipoDocumento
+   * }
+   */
   const [documentosPdf, setDocumentosPdf] = useState([]);
 
   const [vistaPreviaImagen, setVistaPreviaImagen] = useState("");
@@ -104,6 +143,12 @@ function ProductoFormBodeguero({
         Number(productoInicial.id_subcategoria),
     );
 
+    const precioNormal =
+      productoInicial.precio_prod !== null &&
+      productoInicial.precio_prod !== undefined
+        ? String(productoInicial.precio_prod)
+        : "";
+
     setFormulario({
       nombre: productoInicial.nom_prod ?? "",
 
@@ -111,23 +156,19 @@ function ProductoFormBodeguero({
 
       detalle: productoInicial.detalle_prod ?? "",
 
-      precioNormal:
-        productoInicial.precio_prod !== null &&
-        productoInicial.precio_prod !== undefined
-          ? String(productoInicial.precio_prod)
-          : "",
+      precioNormal,
 
       precioOferta:
         productoInicial.precio_act !== null &&
         productoInicial.precio_act !== undefined
           ? String(productoInicial.precio_act)
-          : "",
+          : precioNormal,
 
       stock:
         productoInicial.stock_prod !== null &&
         productoInicial.stock_prod !== undefined
           ? String(productoInicial.stock_prod)
-          : "0",
+          : "1",
 
       familiaId: subcategoriaActual
         ? String(subcategoriaActual.id_familia)
@@ -149,7 +190,7 @@ function ProductoFormBodeguero({
         productoInicial.peso_prod !== null &&
         productoInicial.peso_prod !== undefined
           ? String(productoInicial.peso_prod)
-          : "",
+          : "1",
     });
 
     setImagen(null);
@@ -165,6 +206,24 @@ function ProductoFormBodeguero({
       ...estadoAnterior,
       [campo]: valor,
     }));
+  }
+
+  function actualizarEntero(campo, valor) {
+    actualizarCampo(campo, limpiarEnteroPositivo(valor));
+  }
+
+  function normalizarEnteroMinimoUno(campo) {
+    setFormulario((estadoAnterior) => {
+      const valorActual = Number(estadoAnterior[campo]);
+
+      return {
+        ...estadoAnterior,
+        [campo]:
+          Number.isInteger(valorActual) && valorActual >= 1
+            ? String(valorActual)
+            : "1",
+      };
+    });
   }
 
   function cambiarFamilia(evento) {
@@ -192,7 +251,6 @@ function ProductoFormBodeguero({
 
     if (!TIPOS_IMAGEN_PERMITIDOS.includes(archivo.type)) {
       evento.target.value = "";
-
       setImagen(null);
 
       setMensajeError("La imagen debe estar en formato JPG, PNG o WEBP.");
@@ -202,7 +260,6 @@ function ProductoFormBodeguero({
 
     if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
       evento.target.value = "";
-
       setImagen(null);
 
       setMensajeError("La imagen no puede superar los 10 MB.");
@@ -219,14 +276,22 @@ function ProductoFormBodeguero({
     setVistaPreviaImagen(URL.createObjectURL(archivo));
   }
 
+  function crearIdTemporal(archivo) {
+    return [
+      archivo.name,
+      archivo.size,
+      archivo.lastModified,
+      Date.now(),
+      Math.random(),
+    ].join("-");
+  }
+
   function seleccionarDocumentos(evento) {
     const archivos = Array.from(evento.target.files ?? []);
 
     setMensajeError("");
 
     if (archivos.length === 0) {
-      setDocumentosPdf([]);
-
       return;
     }
 
@@ -237,9 +302,9 @@ function ProductoFormBodeguero({
     if (archivoInvalido) {
       evento.target.value = "";
 
-      setDocumentosPdf([]);
-
-      setMensajeError("Todos los documentos deben estar en formato PDF.");
+      setMensajeError(
+        `El archivo "${archivoInvalido.name}" no está en formato PDF.`,
+      );
 
       return;
     }
@@ -251,8 +316,6 @@ function ProductoFormBodeguero({
     if (archivoDemasiadoGrande) {
       evento.target.value = "";
 
-      setDocumentosPdf([]);
-
       setMensajeError(
         `El documento "${archivoDemasiadoGrande.name}" supera los 20 MB.`,
       );
@@ -260,28 +323,59 @@ function ProductoFormBodeguero({
       return;
     }
 
-    const nombresRepetidos = archivos.some(
-      (archivo, indiceActual) =>
-        archivos.findIndex(
-          (otroArchivo) =>
-            otroArchivo.name === archivo.name &&
-            otroArchivo.size === archivo.size,
-        ) !== indiceActual,
+    const documentoRepetido = archivos.find((archivo) =>
+      documentosPdf.some(
+        (documento) =>
+          documento.archivo.name === archivo.name &&
+          documento.archivo.size === archivo.size,
+      ),
     );
 
-    if (nombresRepetidos) {
+    if (documentoRepetido) {
       evento.target.value = "";
 
-      setDocumentosPdf([]);
-
       setMensajeError(
-        "No puedes seleccionar el mismo documento más de una vez.",
+        `El documento "${documentoRepetido.name}" ya fue seleccionado.`,
       );
 
       return;
     }
 
-    setDocumentosPdf(archivos);
+    const nuevosDocumentos = archivos.map((archivo) => ({
+      idTemporal: crearIdTemporal(archivo),
+
+      archivo,
+
+      tipoDocumento: "",
+    }));
+
+    setDocumentosPdf((documentosAnteriores) => [
+      ...documentosAnteriores,
+      ...nuevosDocumentos,
+    ]);
+
+    evento.target.value = "";
+  }
+
+  function cambiarTipoDocumento(idTemporal, tipoDocumento) {
+    setDocumentosPdf((documentosAnteriores) =>
+      documentosAnteriores.map((documento) =>
+        documento.idTemporal === idTemporal
+          ? {
+              ...documento,
+              tipoDocumento,
+            }
+          : documento,
+      ),
+    );
+  }
+
+  function quitarDocumento(idTemporal) {
+    setDocumentosPdf((documentosAnteriores) =>
+      documentosAnteriores.filter(
+        (documento) => documento.idTemporal !== idTemporal,
+      ),
+    );
   }
 
   function validarFormulario() {
@@ -294,14 +388,13 @@ function ProductoFormBodeguero({
     const precioNormal = Number(formulario.precioNormal);
 
     const precioOferta =
-      formulario.precioOferta === "" ? null : Number(formulario.precioOferta);
+      formulario.precioOferta === ""
+        ? precioNormal
+        : Number(formulario.precioOferta);
 
     const stock = Number(formulario.stock);
 
-    const peso =
-      formulario.peso === ""
-        ? null
-        : Number(normalizarNumeroDecimal(formulario.peso));
+    const peso = Number(formulario.peso);
 
     if (nombre.length < 3) {
       return "El nombre debe tener al menos 3 caracteres.";
@@ -323,19 +416,16 @@ function ProductoFormBodeguero({
       return "El detalle no puede superar los 1.000 caracteres.";
     }
 
-    if (!Number.isInteger(precioNormal) || precioNormal <= 0) {
-      return "El precio normal debe ser un número entero mayor que cero.";
+    if (!Number.isInteger(precioNormal) || precioNormal < 1) {
+      return "El precio normal debe ser un número entero desde 1 en adelante.";
     }
 
-    if (
-      precioOferta !== null &&
-      (!Number.isInteger(precioOferta) || precioOferta <= 0)
-    ) {
-      return "El precio de oferta debe ser un número entero mayor que cero.";
+    if (!Number.isInteger(precioOferta) || precioOferta < 1) {
+      return "El precio vigente debe ser un número entero desde 1 en adelante.";
     }
 
-    if (precioOferta !== null && precioOferta >= precioNormal) {
-      return "El precio de oferta debe ser menor que el precio normal.";
+    if (precioOferta > precioNormal) {
+      return "El precio de oferta no puede ser mayor que el precio normal.";
     }
 
     if (!formulario.familiaId) {
@@ -360,18 +450,28 @@ function ProductoFormBodeguero({
       return "Debes seleccionar una unidad de medida.";
     }
 
-    if (!Number.isInteger(stock) || stock < 0) {
-      return "El stock debe ser un número entero igual o mayor que cero.";
+    if (!Number.isInteger(stock) || stock < 1) {
+      return "El stock debe ser un número entero desde 1 en adelante.";
     }
 
-    if (peso !== null && (!Number.isFinite(peso) || peso <= 0)) {
-      return "El peso o contenido debe ser mayor que cero.";
+    if (!Number.isInteger(peso) || peso < 1) {
+      return "El peso o contenido debe ser un número entero desde 1 en adelante.";
+    }
+
+    const documentoSinTipo = documentosPdf.find(
+      (documento) => !documento.tipoDocumento,
+    );
+
+    if (documentoSinTipo) {
+      return `Debes seleccionar el tipo del documento "${documentoSinTipo.archivo.name}".`;
     }
 
     return null;
   }
 
   function construirDatosProducto() {
+    const precioNormal = Number(formulario.precioNormal);
+
     return {
       nom_prod: formulario.nombre.trim(),
 
@@ -379,10 +479,16 @@ function ProductoFormBodeguero({
 
       detalle_prod: formulario.detalle.trim() || null,
 
-      precio_prod: Number(formulario.precioNormal),
+      precio_prod: precioNormal,
 
+      /*
+       * Si queda vacío, se almacena el
+       * mismo precio normal.
+       */
       precio_act:
-        formulario.precioOferta === "" ? null : Number(formulario.precioOferta),
+        formulario.precioOferta === ""
+          ? precioNormal
+          : Number(formulario.precioOferta),
 
       stock_prod: Number(formulario.stock),
 
@@ -394,12 +500,10 @@ function ProductoFormBodeguero({
 
       color_prod: formulario.color.trim() || null,
 
-      peso_prod:
-        formulario.peso === ""
-          ? null
-          : Number(normalizarNumeroDecimal(formulario.peso)),
+      peso_prod: Number(formulario.peso),
 
       imagen,
+
       documentosPdf,
     };
   }
@@ -512,12 +616,11 @@ function ProductoFormBodeguero({
 
           <input
             id="precioNormal"
-            type="number"
-            min="1"
-            step="1"
+            type="text"
+            inputMode="numeric"
             value={formulario.precioNormal}
             onChange={(evento) =>
-              actualizarCampo("precioNormal", evento.target.value)
+              actualizarEntero("precioNormal", evento.target.value)
             }
             placeholder="29990"
             disabled={guardando}
@@ -525,22 +628,21 @@ function ProductoFormBodeguero({
         </div>
 
         <div className="producto-bodega-form__field">
-          <label htmlFor="precioOferta">Precio de oferta</label>
+          <label htmlFor="precioOferta">Precio vigente u oferta</label>
 
           <input
             id="precioOferta"
-            type="number"
-            min="1"
-            step="1"
+            type="text"
+            inputMode="numeric"
             value={formulario.precioOferta}
             onChange={(evento) =>
-              actualizarCampo("precioOferta", evento.target.value)
+              actualizarEntero("precioOferta", evento.target.value)
             }
-            placeholder="Opcional"
+            placeholder="Vacío = precio normal"
             disabled={guardando}
           />
 
-          <small>Debe ser menor que el precio normal.</small>
+          <small>Puede ser igual o menor que el precio normal.</small>
         </div>
 
         <div className="producto-bodega-form__field">
@@ -548,13 +650,17 @@ function ProductoFormBodeguero({
 
           <input
             id="stockProducto"
-            type="number"
-            min="0"
-            step="1"
+            type="text"
+            inputMode="numeric"
             value={formulario.stock}
-            onChange={(evento) => actualizarCampo("stock", evento.target.value)}
+            onChange={(evento) =>
+              actualizarEntero("stock", evento.target.value)
+            }
+            onBlur={() => normalizarEnteroMinimoUno("stock")}
             disabled={guardando}
           />
+
+          <small>Solo números enteros desde 1.</small>
         </div>
 
         <div className="producto-bodega-form__field">
@@ -665,16 +771,16 @@ function ProductoFormBodeguero({
 
           <input
             id="pesoProducto"
-            type="number"
-            min="0.01"
-            step="0.01"
+            type="text"
+            inputMode="numeric"
             value={formulario.peso}
-            onChange={(evento) => actualizarCampo("peso", evento.target.value)}
+            onChange={(evento) => actualizarEntero("peso", evento.target.value)}
+            onBlur={() => normalizarEnteroMinimoUno("peso")}
             placeholder="Ej: 2"
             disabled={guardando}
           />
 
-          <small>La unidad se define en el selector correspondiente.</small>
+          <small>Solo números enteros desde 1.</small>
         </div>
 
         <div className="producto-bodega-form__field">
@@ -695,6 +801,7 @@ function ProductoFormBodeguero({
           <label htmlFor="documentoProducto">Documentos técnicos</label>
 
           <input
+            ref={inputDocumentosRef}
             id="documentoProducto"
             type="file"
             accept="application/pdf"
@@ -703,11 +810,62 @@ function ProductoFormBodeguero({
             disabled={guardando}
           />
 
-          <small>
-            Puedes seleccionar uno o más PDF. Máximo 20 MB por documento.
-          </small>
+          <small>Puedes agregar varios PDF. Máximo 20 MB por archivo.</small>
         </div>
       </div>
+
+      {documentosPdf.length > 0 && (
+        <section className="producto-bodega-form__new-documents">
+          <h3>Nuevos documentos seleccionados</h3>
+
+          <div className="producto-bodega-form__document-selection">
+            {documentosPdf.map((documento) => (
+              <div
+                className="producto-bodega-form__document-row"
+                key={documento.idTemporal}
+              >
+                <div className="producto-bodega-form__document-name">
+                  <strong>{documento.archivo.name}</strong>
+
+                  <span>
+                    {(documento.archivo.size / 1024 / 1024).toFixed(2)} MB
+                  </span>
+                </div>
+
+                <select
+                  value={documento.tipoDocumento}
+                  onChange={(evento) =>
+                    cambiarTipoDocumento(
+                      documento.idTemporal,
+                      evento.target.value,
+                    )
+                  }
+                  disabled={guardando}
+                  aria-label={`Tipo del documento ${documento.archivo.name}`}
+                >
+                  <option value="">Selecciona el tipo</option>
+
+                  {TIPOS_DOCUMENTO.map((tipo) => (
+                    <option key={tipo.value} value={tipo.value}>
+                      {tipo.label}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  className="producto-bodega-form__remove-document"
+                  onClick={() => quitarDocumento(documento.idTemporal)}
+                  disabled={guardando}
+                  aria-label={`Quitar ${documento.archivo.name}`}
+                >
+                  Quitar
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="producto-bodega-form__resources">
         <div className="producto-bodega-form__preview">
@@ -723,39 +881,17 @@ function ProductoFormBodeguero({
         <div className="producto-bodega-form__document">
           <span>Documentos asociados</span>
 
-          {documentosPdf.length > 0 ? (
-            <>
-              <p>Nuevos documentos seleccionados:</p>
-
-              <ul className="producto-bodega-form__document-list">
-                {documentosPdf.map((archivo) => (
-                  <li
-                    key={`${archivo.name}-${archivo.size}-${archivo.lastModified}`}
-                  >
-                    {archivo.name}
-                  </li>
-                ))}
-              </ul>
-
-              {documentosActuales.length > 0 && (
-                <>
-                  <p>Documentos actuales:</p>
-
-                  <ul className="producto-bodega-form__document-list">
-                    {documentosActuales.map((documento) => (
-                      <li key={documento.id_documento}>
-                        {documento.nombre_documento || "Documento PDF"}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </>
-          ) : documentosActuales.length > 0 ? (
+          {documentosActuales.length > 0 ? (
             <ul className="producto-bodega-form__document-list">
               {documentosActuales.map((documento) => (
                 <li key={documento.id_documento}>
-                  {documento.nombre_documento || "Documento PDF"}
+                  <strong>
+                    {documento.nombre_documento || "Documento PDF"}
+                  </strong>
+
+                  <span>
+                    {obtenerNombreTipoDocumento(documento.tipo_documento)}
+                  </span>
                 </li>
               ))}
             </ul>

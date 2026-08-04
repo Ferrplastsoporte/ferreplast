@@ -11,6 +11,14 @@ import "./css/productos-bodeguero.css";
 const BUCKET_IMAGENES = "imagenes_productos";
 const BUCKET_DOCUMENTOS = "producto-documentos";
 
+const TIPOS_DOCUMENTO_VALIDOS = [
+  "ficha_tecnica",
+  "hoja_seguridad",
+  "certificado",
+  "manual",
+  "otro",
+];
+
 function BodegueroProductos() {
   const [productos, setProductos] = useState([]);
 
@@ -331,8 +339,32 @@ function BodegueroProductos() {
     return rutaDocumento;
   }
 
-  async function guardarDocumentosProducto(idProducto, archivos = []) {
-    for (const archivo of archivos) {
+  function validarDocumento(documento) {
+    if (!documento?.archivo) {
+      throw new Error(
+        "Uno de los documentos seleccionados no contiene un archivo válido.",
+      );
+    }
+
+    if (documento.archivo.type !== "application/pdf") {
+      throw new Error(
+        `El archivo "${documento.archivo.name}" no está en formato PDF.`,
+      );
+    }
+
+    if (!TIPOS_DOCUMENTO_VALIDOS.includes(documento.tipoDocumento)) {
+      throw new Error(
+        `Debes seleccionar un tipo válido para "${documento.archivo.name}".`,
+      );
+    }
+  }
+
+  async function guardarDocumentosProducto(idProducto, documentos = []) {
+    for (const documento of documentos) {
+      validarDocumento(documento);
+
+      const archivo = documento.archivo;
+
       let rutaDocumento = null;
 
       try {
@@ -340,9 +372,13 @@ function BodegueroProductos() {
 
         const { error } = await supabase.from("producto_documento").insert({
           id_prod: idProducto,
+
           nombre_documento: archivo.name,
-          tipo_documento: "otro",
+
+          tipo_documento: documento.tipoDocumento,
+
           archivo_path: rutaDocumento,
+
           est_documento: true,
         });
 
@@ -351,9 +387,10 @@ function BodegueroProductos() {
         }
       } catch (error) {
         /*
-         * Si el archivo alcanzó a subirse,
-         * pero falló el registro en la
-         * tabla, se intenta limpiar Storage.
+         * Si Storage recibió el PDF pero
+         * falló el registro en la tabla,
+         * se intenta eliminar el archivo
+         * huérfano.
          */
         if (rutaDocumento) {
           const { error: errorLimpieza } = await supabase.storage
@@ -379,6 +416,7 @@ function BodegueroProductos() {
     return {
       datosProducto,
       imagen,
+
       documentosPdf: Array.isArray(documentosPdf) ? documentosPdf : [],
     };
   }
@@ -397,13 +435,9 @@ function BodegueroProductos() {
 
     try {
       /*
-       * No enviamos:
-       * created_prod
-       * ultima_act_prod
-       * est_prod
-       *
-       * Supabase utilizará los defaults
-       * configurados en la tabla.
+       * created_prod, ultima_act_prod y
+       * est_prod utilizan los valores
+       * predeterminados de la BD.
        */
       const { data: productoCreado, error } = await supabase
         .from("producto")
@@ -486,10 +520,9 @@ function BodegueroProductos() {
 
     try {
       /*
-       * Cada edición vuelve a dejar el
-       * producto en estado Pendiente.
-       *
-       * 1 = Pendiente
+       * Cada modificación realizada por
+       * bodega devuelve el producto al
+       * estado 1 = Pendiente.
        */
       const { error } = await supabase
         .from("producto")
@@ -524,9 +557,9 @@ function BodegueroProductos() {
       }
 
       /*
-       * Los PDF nuevos se agregan.
-       * No reemplazan los documentos
-       * que el producto ya tenía.
+       * Los PDF nuevos se agregan como
+       * registros independientes. No se
+       * reemplazan los documentos actuales.
        */
       if (documentosPdf.length > 0) {
         await guardarDocumentosProducto(
@@ -585,6 +618,7 @@ function BodegueroProductos() {
     );
 
     setProductoEditando(producto);
+
     setDocumentosActuales(documentosActivos);
 
     setMensajeError("");
