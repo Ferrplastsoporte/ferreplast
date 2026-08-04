@@ -37,6 +37,74 @@
 }
 
 /* ============================
+   Documentos del prodcuto 
+============================ */
+
+.product-detail__section-card,
+.product-detail__full-description {
+  margin-top: 24px;
+  padding: 28px 32px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.07);
+}
+
+.product-detail__section-card h2,
+.product-detail__full-description h2 {
+  margin: 0 0 18px;
+
+  color: #172033;
+  font-size: 1.35rem;
+}
+
+.product-detail__documents {
+  border-top: none;
+}
+
+.product-detail__document-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.product-detail__document {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 12px;
+
+  min-width: 0;
+  padding: 14px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 11px;
+
+  background: #ffffff;
+  color: inherit;
+  text-decoration: none;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.product-detail__document:hover {
+  border-color: #93c5fd;
+  background: #f8fbff;
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+/* ============================
    STOCK BADGE
 ============================ */
 .stock-badge {
@@ -297,5 +365,16 @@
     width: 24px;
     height: 24px;
     font-size: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .product-detail__document-list {
+    grid-template-columns: 1fr;
+  }
+
+  .product-detail__section-card,
+  .product-detail__full-description {
+    padding: 22px;
   }
 }
