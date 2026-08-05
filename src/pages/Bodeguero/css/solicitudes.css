@@ -1,0 +1,220 @@
+/* =======================================================
+   SOLICITUDES PENDIENTES
+======================================================= */
+
+.solicitudes-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.solicitudes-table-wrapper {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.solicitudes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.solicitudes-table thead {
+    background: #ffffff;
+}
+
+.solicitudes-table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: .95rem;
+    font-weight: 700;
+    color: #334155;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.solicitudes-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
+
+.solicitudes-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+/* =======================================================
+   IMAGEN
+======================================================= */
+
+.solicitudes-table__image,
+.solicitudes-table__placeholder {
+    width: 92px;
+    height: 92px;
+    border-radius: 14px;
+    border: 1px solid #dbe5f1;
+}
+
+.solicitudes-table__image {
+    object-fit: cover;
+}
+
+.solicitudes-table__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fa;
+    color: #94a3b8;
+    font-size: .9rem;
+    font-weight: 600;
+}
+
+/* =======================================================
+   PRODUCTO
+======================================================= */
+
+.solicitudes-table__product {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.solicitudes-table__product strong {
+    font-size: 1.1rem;
+    color: #0f172a;
+}
+
+.solicitudes-table__product span {
+    color: #64748b;
+    font-size: .95rem;
+}
+
+/* =======================================================
+   PRECIOS
+======================================================= */
+
+.solicitudes-table__prices {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.solicitudes-table__old-price {
+    color: #94a3b8;
+    text-decoration: line-through;
+    font-size: .9rem;
+}
+
+.solicitudes-table__prices strong {
+    color: #0b4fb3;
+    font-size: 1.2rem;
+}
+
+/* =======================================================
+   STOCK
+======================================================= */
+
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .4rem .9rem;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #334155;
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+/* =======================================================
+   ESTADO
+======================================================= */
+
+.estado-pendiente {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .45rem .95rem;
+    border-radius: 999px;
+    background: #fff3d6;
+    color: #d97706;
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+/* =======================================================
+   CAMBIOS
+======================================================= */
+
+.solicitudes-change {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    max-width: 280px;
+}
+
+.solicitudes-change strong {
+    color: #0f172a;
+    font-size: .95rem;
+}
+
+.solicitudes-change span {
+    color: #475569;
+    font-size: .9rem;
+    line-height: 1.4;
+}
+
+.solicitudes-change small {
+    color: #94a3b8;
+    font-size: .8rem;
+}
+
+.solicitudes-change--empty {
+    color: #64748b;
+}
+
+/* =======================================================
+   MENSAJES
+======================================================= */
+
+.bodeguero-message--info {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.bodeguero-message--error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+/* =======================================================
+   RESPONSIVE
+======================================================= */
+
+@media (max-width: 1200px) {
+
+    .solicitudes-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .solicitudes-table {
+        min-width: 1200px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .solicitudes-table__image,
+    .solicitudes-table__placeholder {
+        width: 70px;
+        height: 70px;
+    }
+
+    .solicitudes-table th,
+    .solicitudes-table td {
+        padding: .8rem;
+    }
+}
