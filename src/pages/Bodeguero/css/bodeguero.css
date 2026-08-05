@@ -296,6 +296,32 @@
   text-align: center;
 }
 
+.bodeguero-sidebar__logout {
+  width: 100%;
+  padding: 12px 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+
+  background: transparent;
+  color: #fff;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bodeguero-sidebar__logout:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.bodeguero-sidebar__logout:active {
+  transform: scale(0.98);
+}
+
 /* ============================
    RESPONSIVE
 ============================ */

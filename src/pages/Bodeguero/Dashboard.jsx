@@ -1,78 +1,199 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../../lib/supabase'
-import { useAuth } from '../../hooks/useAuth'
-import BodegueroSidebar from './components/BodegueroSidebar'
-import BodegueroHeader from './components/BodegueroHeader'
-import StatsCard from '../../components/estadisticas/StatsCard'
-import ProductTable from '../../components/productos/ProductTable'
-import './css/bodeguero.css'
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
+
+import BodegueroHeader from "./components/BodegueroHeader";
+import StatsCard from "../../components/estadisticas/StatsCard";
+import ProductTable from "../../components/productos/ProductTable";
+
+import "./css/bodeguero.css";
+import "./css/productos-bodeguero.css";
+
+const LIMITE_STOCK_BAJO = 10;
 
 function BodegueroDashboard() {
-  const { profile } = useAuth()
-  const [productos, setProductos] = useState([])
-  const [cargando, setCargando] = useState(true)
+  const [productos, setProductos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [mensajeError, setMensajeError] = useState("");
 
   useEffect(() => {
-    cargarProductos()
-  }, [])
+    cargarProductos();
+  }, []);
 
-  const cargarProductos = async () => {
-    setCargando(true)
-    try {
-      // 🔹 Bodeguero ve TODOS los productos (activos + pendientes)
-      const { data } = await supabase
-        .from('productos')
-        .select('*')
-        .order('created_prod', { ascending: false })
-      
-      setProductos(data || [])
-    } catch (error) {
-      console.error('Error:', error)
-    } finally {
-      setCargando(false)
+  async function cargarProductos() {
+    setCargando(true);
+    setMensajeError("");
+
+    const { data, error } = await supabase
+      .from("producto")
+      .select(
+        `
+        id_prod,
+        nom_prod,
+        precio_prod,
+        precio_act,
+        imagen_url,
+        created_prod,
+        est_prod,
+        stock_prod,
+
+        estado_producto (
+          id_est_prod,
+          nom_est_prod
+        ),
+
+        marca_producto (
+          id_marca,
+          nom_marca
+        ),
+
+        subcategoria (
+          id_subcategoria,
+          nom_subcategoria
+        )
+      `,
+      )
+      .order("created_prod", {
+        ascending: false,
+      });
+
+    if (error) {
+      console.error("Error al cargar el dashboard del bodeguero:", error);
+
+      setMensajeError("No fue posible cargar el resumen de productos.");
+
+      setProductos([]);
+      setCargando(false);
+      return;
     }
+
+    setProductos(data ?? []);
+    setCargando(false);
   }
 
-  const productosPendientes = productos.filter(p => p.est_prod === 2)
-  const productosActivos = productos.filter(p => p.est_prod === 1)
-  const stockBajo = productos.filter(p => p.stock_prod < 10)
+  const resumen = useMemo(() => {
+    const pendientes = productos.filter(
+      (producto) => Number(producto.est_prod) === 1,
+    );
+
+    const activos = productos.filter(
+      (producto) => Number(producto.est_prod) === 2,
+    );
+
+    const noDisponibles = productos.filter(
+      (producto) => Number(producto.est_prod) === 3,
+    );
+
+    const stockBajo = productos.filter(
+      (producto) =>
+        Number(producto.est_prod) === 2 &&
+        Number(producto.stock_prod) < LIMITE_STOCK_BAJO,
+    );
+
+    return {
+      pendientes,
+      activos,
+      noDisponibles,
+      stockBajo,
+    };
+  }, [productos]);
 
   if (cargando) {
     return (
-      <div className="admin-layout">
-        <BodegueroSidebar />
-        <div className="admin-content">
-          <p>Cargando datos...</p>
-        </div>
-      </div>
-    )
+      <section className="bodeguero-page">
+        <p className="bodeguero-loading">Cargando resumen...</p>
+      </section>
+    );
   }
 
   return (
-    <div className="admin-layout">
-      <BodegueroSidebar />
-      <div className="admin-content">
-        <BodegueroHeader titulo="Panel de Bodeguero" />
+    <section className="bodeguero-page">
+      <BodegueroHeader
+        titulo="Panel de Bodeguero"
+        descripcion="Consulta el estado general del catálogo y accede rápidamente a las tareas de bodega."
+      />
 
-        {/* Stats */}
-        <div className="bodega-stats">
-          <StatsCard titulo="Total Productos" valor={productos.length} icono="📦" color="blue" />
-          <StatsCard titulo="Pendientes" valor={productosPendientes.length} icono="⏳" color="yellow" />
-          <StatsCard titulo="Stock Bajo" valor={stockBajo.length} icono="⚠️" color="red" />
-        </div>
+      {mensajeError && (
+        <div
+          className="bodeguero-message bodeguero-message--error"
+          role="alert"
+        >
+          <p>{mensajeError}</p>
 
-        {/* Tabla de productos */}
-        <div className="bodega-section">
-          <h2>📦 Últimos Productos</h2>
-          <ProductTable 
-            productos={productos.slice(0, 10)}
-            onEditar={() => {}}
-            onEliminar={() => {}}
-          />
+          <button type="button" onClick={cargarProductos}>
+            Reintentar
+          </button>
         </div>
+      )}
+
+      <div className="bodega-stats">
+        <StatsCard
+          titulo="Total productos"
+          valor={productos.length}
+          icono="📦"
+          color="blue"
+        />
+
+        <StatsCard
+          titulo="Activos"
+          valor={resumen.activos.length}
+          icono="✅"
+          color="green"
+        />
+
+        <StatsCard
+          titulo="Pendientes"
+          valor={resumen.pendientes.length}
+          icono="⏳"
+          color="yellow"
+        />
+
+        <StatsCard
+          titulo="Stock bajo"
+          valor={resumen.stockBajo.length}
+          icono="⚠️"
+          color="red"
+        />
       </div>
-    </div>
-  )
+
+      <div className="bodega-dashboard-actions">
+        <Link
+          to="/bodeguero/productos"
+          className="bodega-dashboard-actions__link"
+        >
+          Gestionar productos
+        </Link>
+
+        <Link
+          to="/bodeguero/stock"
+          className="bodega-dashboard-actions__link bodega-dashboard-actions__link--secondary"
+        >
+          Revisar stock
+        </Link>
+
+        <Link
+          to="/bodeguero/solicitudes"
+          className="bodega-dashboard-actions__link bodega-dashboard-actions__link--secondary"
+        >
+          Ver productos pendientes
+        </Link>
+      </div>
+
+      <section className="bodega-section">
+        <div className="bodega-section__header">
+          <div>
+            <h2>Últimos productos</h2>
+
+            <p>Se muestran los diez productos registrados más recientemente.</p>
+          </div>
+
+          <Link to="/bodeguero/productos">Ver todos</Link>
+        </div>
+
+        <ProductTable productos={productos.slice(0, 10)} modo="consulta" />
+      </section>
+    </section>
+  );
 }
 
-export default BodegueroDashboard
+export default BodegueroDashboard;

@@ -1,4 +1,5 @@
 import useCartView from "../../hooks/useCartView";
+import { supabase } from "../../lib/supabase";
 import "../css/Carrito.css";
 
 function formatearPrecio(valor) {
@@ -7,6 +8,22 @@ function formatearPrecio(valor) {
     currency: "CLP",
     maximumFractionDigits: 0,
   }).format(valor);
+}
+
+function obtenerUrlImagen(rutaImagen) {
+  if (!rutaImagen) {
+    return "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
+  }
+
+  if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
+    return rutaImagen;
+  }
+
+  const { data } = supabase.storage
+    .from("imagenes_productos")
+    .getPublicUrl(rutaImagen);
+
+  return data.publicUrl;
 }
 
 function Carrito() {
@@ -80,11 +97,15 @@ function Carrito() {
               return (
                 <article key={producto.id_prod} className="cart-item">
                   <img
-                    src={producto.imagen_url || "/img/producto-sin-imagen.png"}
+                    src={obtenerUrlImagen(producto.imagen_url)}
                     alt={producto.nom_prod}
                     className="cart-item__image"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src =
+                        "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
+                    }}
                   />
-
                   <div className="cart-item__information">
                     <h2>{producto.nom_prod}</h2>
 

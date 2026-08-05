@@ -1,0 +1,435 @@
+/* ==========================================================
+   PÁGINA DE GESTIÓN DE STOCK
+========================================================== */
+
+.stock-page {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   RESUMEN
+========================================================== */
+
+.stock-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 260px));
+  gap: 16px;
+
+  margin-bottom: 22px;
+}
+
+.stock-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  min-height: 92px;
+  box-sizing: border-box;
+  padding: 18px 20px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.stock-summary span {
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.stock-summary strong {
+  color: #172033;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+/* ==========================================================
+   BUSCADOR Y FILTRO
+========================================================== */
+
+.stock-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+
+  margin-bottom: 20px;
+  padding: 18px 20px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.stock-toolbar__search {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  width: min(420px, 100%);
+}
+
+.stock-toolbar__search label {
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.stock-toolbar__search input {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 13px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #172033;
+
+  font: inherit;
+  font-size: 0.88rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stock-toolbar__search input:focus {
+  outline: none;
+  border-color: #0647b9;
+
+  box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.13);
+}
+
+.stock-toolbar__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 42px;
+
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.stock-toolbar__filter input {
+  width: 17px;
+  height: 17px;
+
+  accent-color: #0647b9;
+  cursor: pointer;
+}
+
+/* ==========================================================
+   TABLA
+========================================================== */
+
+.stock-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
+}
+
+.stock-table {
+  width: 100%;
+  min-width: 860px;
+
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.stock-table thead {
+  background: #f8fafc;
+}
+
+.stock-table th,
+.stock-table td {
+  padding: 16px 18px;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  text-align: left;
+  vertical-align: middle;
+}
+
+.stock-table th {
+  color: #475569;
+
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  white-space: nowrap;
+}
+
+.stock-table td {
+  color: #334155;
+  font-size: 0.86rem;
+}
+
+.stock-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.stock-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.stock-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.stock-table td[colspan] {
+  padding: 32px;
+
+  color: #64748b;
+  text-align: center;
+}
+
+/* Anchos */
+
+.stock-table th:nth-child(1),
+.stock-table td:nth-child(1) {
+  width: 30%;
+}
+
+.stock-table th:nth-child(2),
+.stock-table td:nth-child(2) {
+  width: 14%;
+}
+
+.stock-table th:nth-child(3),
+.stock-table td:nth-child(3) {
+  width: 16%;
+}
+
+.stock-table th:nth-child(4),
+.stock-table td:nth-child(4) {
+  width: 13%;
+}
+
+.stock-table th:nth-child(5),
+.stock-table td:nth-child(5) {
+  width: 14%;
+}
+
+.stock-table th:nth-child(6),
+.stock-table td:nth-child(6) {
+  width: 13%;
+  text-align: center;
+}
+
+.stock-table td:first-child strong {
+  display: block;
+
+  color: #172033;
+  font-size: 0.9rem;
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   BADGE DE STOCK
+========================================================== */
+
+.stock-page .stock-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 70px;
+  min-height: 32px;
+  padding: 0 11px;
+
+  border-radius: 999px;
+
+  background: #eef2f7;
+  color: #334155;
+
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.stock-page .stock-badge.stock-bajo {
+  border: 1px solid #fecaca;
+
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ==========================================================
+   BOTÓN AJUSTAR
+========================================================== */
+
+.stock-table__adjust {
+  min-height: 36px;
+  padding: 0 13px;
+
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+
+  background: #eff6ff;
+  color: #0647b9;
+
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.stock-table__adjust:hover {
+  border-color: #93c5fd;
+  background: #dbeafe;
+
+  transform: translateY(-1px);
+}
+
+.stock-table__adjust:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================
+   CAMPO DEL MODAL
+========================================================== */
+
+.stock-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  margin-top: 20px;
+}
+
+.stock-modal__field label {
+  color: #1e293b;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.stock-modal__field input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 13px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #172033;
+
+  font: inherit;
+  font-size: 0.95rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.stock-modal__field input:focus {
+  outline: none;
+  border-color: #0647b9;
+
+  box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.14);
+}
+
+.stock-modal__field input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+/* ==========================================================
+   BOTÓN CONFIRMAR DEL MODAL
+========================================================== */
+
+.stock-modal__confirm {
+  min-height: 42px;
+  padding: 0 18px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #0647b9;
+  color: #ffffff;
+
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.stock-modal__confirm:hover:not(:disabled) {
+  background: #053a98;
+  transform: translateY(-1px);
+}
+
+.stock-modal__confirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 900px) {
+  .stock-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stock-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .stock-toolbar__search {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .stock-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-toolbar {
+    padding: 16px;
+  }
+
+  .stock-table th,
+  .stock-table td {
+    padding: 14px;
+  }
+}

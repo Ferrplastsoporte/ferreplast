@@ -1,17 +1,21 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "../../../lib/supabase";
+import "../css/bodeguero.css";
+import "../css/productos-bodeguero.css";
+import "../css/stock.css";
 
 const enlaces = [
   {
-    texto: "Dashboard",
+    texto: "Dashboard (REVISAR)",
     ruta: "/bodeguero",
     exacta: true,
   },
   {
-    texto: "Stock",
+    texto: "Stock (REVISAR)",
     ruta: "/bodeguero/stock",
   },
   {
-    texto: "Pedidos o Solicitudes??",
+    texto: "Solicitudes pendientes",
     ruta: "/bodeguero/solicitudes",
   },
   {
@@ -30,9 +34,27 @@ const enlaces = [
     texto: "Productos",
     ruta: "/bodeguero/productos",
   },
+  {
+    texto: "Pedidos (PRÓXIMAMENTE)",
+    ruta: "/bodeguero/pedidos",
+  },
 ];
 
 function BodegueroSidebar() {
+  const navigate = useNavigate();
+
+  const cerrarSesion = async () => {
+    try {
+      await supabase.auth.signOut();
+
+      navigate("/", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
   return (
     <aside className="bodeguero-sidebar">
       <div className="bodeguero-sidebar__brand">
@@ -61,9 +83,13 @@ function BodegueroSidebar() {
       </nav>
 
       <div className="bodeguero-sidebar__footer">
-        <span>Bodeguero</span>
-
-        {/* El cierre de sesión se agregará aquí después */}
+        <button
+          type="button"
+          className="bodeguero-sidebar__logout"
+          onClick={cerrarSesion}
+        >
+          Cerrar sesión
+        </button>
       </div>
     </aside>
   );
