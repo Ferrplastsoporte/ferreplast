@@ -11,7 +11,7 @@ import Select from "../ui/Select";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 
-const BASE_VALUES = {
+const INITIAL_VALUES = {
   nombre: "",
   rut: "",
   email: "",
@@ -23,18 +23,8 @@ const BASE_VALUES = {
   comuna: "",
 };
 
-const ADMIN_VALUES = {
-  rol: "bodeguero",
-  estado: "activo",
-};
-
-const RegistroForm = ({ mode = "client" }) => {
+const RegistroForm = () => {
   const navigate = useNavigate();
-
-  const initialValues = {
-    ...BASE_VALUES,
-    ...(mode === "admin" ? ADMIN_VALUES : {}),
-  };
 
   const {
     values,
@@ -45,18 +35,22 @@ const RegistroForm = ({ mode = "client" }) => {
     resetForm,
     setFieldValue,
     clearFieldError,
-  } = useForm(initialValues, validateRegisterField, sanitizeRegisterField);
+  } = useForm(INITIAL_VALUES, validateRegisterField, sanitizeRegisterField);
 
   const { register, loading, modal, hideModal } = useAuth();
 
   const [regiones, setRegiones] = useState([]);
+
   const [comunas, setComunas] = useState([]);
+
   const [loadingRegiones, setLoadingRegiones] = useState(false);
+
   const [loadingComunas, setLoadingComunas] = useState(false);
 
   /*
-   * Indica si debemos enviar al cliente al Login
-   * después de que cierre el modal de registro exitoso.
+   * Después de un registro exitoso,
+   * esperamos a que el cliente cierre
+   * el modal antes de enviarlo al Login.
    */
   const [redirectToLogin, setRedirectToLogin] = useState(false);
 
@@ -71,10 +65,13 @@ const RegistroForm = ({ mode = "client" }) => {
       const { data, error } = await supabase
         .from("region")
         .select("id_reg, nom_reg")
-        .order("nom_reg", { ascending: true });
+        .order("nom_reg", {
+          ascending: true,
+        });
 
       if (error) {
         console.error("Error al cargar regiones:", error);
+
         setRegiones([]);
         return;
       }
@@ -102,10 +99,13 @@ const RegistroForm = ({ mode = "client" }) => {
         .from("comuna")
         .select("id_comuna, nom_comuna")
         .eq("id_reg", idRegion)
-        .order("nom_comuna", { ascending: true });
+        .order("nom_comuna", {
+          ascending: true,
+        });
 
       if (error) {
         console.error("Error al cargar comunas:", error);
+
         setComunas([]);
         return;
       }
@@ -123,23 +123,20 @@ const RegistroForm = ({ mode = "client" }) => {
   const handleRegionChange = async (event) => {
     const idRegion = event.target.value;
 
-    /*
-     * Actualizamos la región y limpiamos cualquier
-     * error anterior de ese campo.
-     */
     setFieldValue("region", idRegion, {
       validate: true,
     });
 
     /*
-     * Al cambiar la región, la comuna seleccionada
-     * anteriormente deja de ser válida.
+     * Si cambia la región,
+     * limpiamos la comuna anterior.
      */
     setFieldValue("comuna", "", {
       clearError: true,
     });
 
     clearFieldError("comuna");
+
     setComunas([]);
 
     if (idRegion) {
@@ -160,35 +157,26 @@ const RegistroForm = ({ mode = "client" }) => {
       return;
     }
 
-    const resultado = await register(values, mode);
+    /*
+     * Este formulario corresponde
+     * exclusivamente al registro
+     * público de clientes.
+     */
+    const resultado = await register(values, "client");
 
     if (resultado === true) {
       resetForm();
+
       setComunas([]);
 
-      /*
-       * En el registro de clientes esperamos a que
-       * cierre el modal antes de enviarlo al Login.
-       *
-       * El modo administrador no será redirigido.
-       */
-      if (mode === "client") {
-        setRedirectToLogin(true);
-      }
+      setRedirectToLogin(true);
     }
   };
 
   const handleModalClose = () => {
-    /*
-     * Primero cerramos el modal.
-     */
     hideModal();
 
-    /*
-     * Solo navegamos si el registro fue exitoso
-     * y corresponde al registro de un cliente.
-     */
-    if (redirectToLogin === true) {
+    if (redirectToLogin) {
       setRedirectToLogin(false);
 
       navigate("/login", {
@@ -322,59 +310,13 @@ const RegistroForm = ({ mode = "client" }) => {
           }
         />
 
-        {mode === "admin" && (
-          <>
-            <Select
-              label="Rol"
-              name="rol"
-              value={values.rol}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.rol}
-              options={[
-                {
-                  id: "bodeguero",
-                  nombre: "Bodeguero",
-                },
-                {
-                  id: "vendedor",
-                  nombre: "Vendedor",
-                },
-                {
-                  id: "admin",
-                  nombre: "Administrador",
-                },
-              ]}
-            />
-
-            <Select
-              label="Estado"
-              name="estado"
-              value={values.estado}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.estado}
-              options={[
-                {
-                  id: "activo",
-                  nombre: "Activo",
-                },
-                {
-                  id: "inactivo",
-                  nombre: "Inactivo",
-                },
-              ]}
-            />
-          </>
-        )}
-
         <Button
           type="submit"
           loading={loading}
           disabled={loading || loadingRegiones || loadingComunas}
           className="registro-boton"
         >
-          {mode === "admin" ? "Crear usuario" : "Registrarse"}
+          Registrarse
         </Button>
       </form>
 

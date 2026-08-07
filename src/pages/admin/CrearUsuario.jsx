@@ -1,21 +1,31 @@
-import AdminSidebar from './components/AdminSidebar'
-import AdminHeader from './components/AdminHeader'
-import RegistroForm from '../../components/auth/RegistroForm'
-import './css/admin.css'  
+import AdminSidebar from "./components/AdminSidebar";
+import AdminHeader from "./components/AdminHeader";
+import UsuarioFormAdmin from "./components/UsuarioInvitacionForm";
+
+import "./css/admin.css";
 
 function CrearUsuario() {
+  async function handleCrearUsuario(datos) {
+    // Paso 2:
+    // Aquí llamaremos la Edge Function.
+    console.log(datos);
+
+    return false;
+  }
+
   return (
     <div className="admin-layout">
       <AdminSidebar />
+
       <div className="admin-content">
         <AdminHeader titulo="Crear Nuevo Usuario" />
+
         <div className="crear-usuario-container">
-          <p>Registra bodegueros, vendedores o administradores</p>
-          <RegistroForm mode="admin" />
+          <UsuarioFormAdmin onEnviar={handleCrearUsuario} />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default CrearUsuario
+export default CrearUsuario;
