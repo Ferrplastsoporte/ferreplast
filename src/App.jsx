@@ -6,6 +6,8 @@ import FloatingButtons from "./components/layout/FloatingButtons";
 
 // Layout bodeguero
 import BodegueroLayout from "./pages/Bodeguero/components/BodegueroLayout";
+// Layout Administrador
+import AdministradorLayout from "./pages/admin/components/AdminLayout";
 
 // Páginas públicas
 import Login from "./pages/Autenticación-Registro/Login";
@@ -20,14 +22,15 @@ import Cotizacion from "./pages/Cliente/Cotizacion";
 
 // Páginas administrador
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import Bodega from "./pages/admin/Bodega";
-import Productos from "./pages/admin/Productos";
 import CrearUsuario from "./pages/admin/CrearUsuario";
 import Usuarios from "./pages/admin/Usuarios";
-import Ventas from "./pages/admin/Ventas";
+import Pedidos from "./pages/admin/Pedidos";
 import Configuracion from "./pages/admin/Configuracion";
-import Dashboard from "./pages/admin/Dashboard";
-import Reportes from "./pages/admin/reportes";
+import Reportes from "./pages/admin/Reportes";
+import Aprobaciones from "./pages/admin/Aprobaciones";
+import Pagos from "./pages/admin/Pagos";
+import Cotizaciones from "./pages/admin/Cotizaciones";
+import Auditoria from "./pages/admin/Auditoria";
 
 // Páginas bodeguero
 import BodegueroDashboard from "./pages/Bodeguero/Dashboard";
@@ -37,7 +40,6 @@ import BodegueroSolicitudes from "./pages/Bodeguero/Solicitudes";
 import BodegueroFamilias from "./pages/Bodeguero/Familias";
 import BodegueroMarcas from "./pages/Bodeguero/Marcas";
 import BodegueroUnidades from "./pages/Bodeguero/Unidades";
-
 
 function ClienteLayout() {
   return (
@@ -67,22 +69,28 @@ function App() {
         </Route>
 
         {/* Administrador */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/bodega" element={<Bodega />} />
-        <Route path="/admin/productos" element={<Productos />} />
-        <Route path="/admin/crear-usuario" element={<CrearUsuario />} />
-        <Route path="/admin/usuarios" element={<Usuarios />} />
-        <Route path="/admin/ventas" element={<Ventas />} />
-        <Route path="/admin/configuracion" element={<Configuracion />} />
-        <Route path="/admin/dashboard" element={<Dashboard />} />
-        <Route path="/admin/reportes" element={<Reportes />} />
+        <Route element={<AdministradorLayout />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/usuarios" element={<Usuarios />} />
+          <Route path="/admin/crear-usuario" element={<CrearUsuario />} />
+          <Route path="/admin/aprobaciones" element={<Aprobaciones />} />
+          <Route path="/admin/cotizaciones" element={<Cotizaciones />} />
+          <Route path="/admin/pedidos" element={<Pedidos />} />
+          <Route path="/admin/pagos" element={<Pagos />} />
+          <Route path="/admin/reportes" element={<Reportes />} />
+          <Route path="/admin/auditoria" element={<Auditoria />} />
+          <Route path="/admin/configuracion" element={<Configuracion />} />
+        </Route>
 
         {/* Bodeguero */}
         <Route element={<BodegueroLayout />}>
           <Route path="/bodeguero" element={<BodegueroDashboard />} />
           <Route path="/bodeguero/productos" element={<BodegueroProductos />} />
           <Route path="/bodeguero/stock" element={<BodegueroStock />} />
-          <Route path="/bodeguero/solicitudes" element={<BodegueroSolicitudes />} />
+          <Route
+            path="/bodeguero/solicitudes"
+            element={<BodegueroSolicitudes />}
+          />
           <Route path="/bodeguero/familias" element={<BodegueroFamilias />} />
           <Route path="/bodeguero/marcas" element={<BodegueroMarcas />} />
           <Route path="/bodeguero/unidades" element={<BodegueroUnidades />} />
