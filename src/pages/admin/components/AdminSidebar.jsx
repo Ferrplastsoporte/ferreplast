@@ -13,6 +13,10 @@ const enlaces = [
     ruta: "/admin/usuarios",
   },
   {
+    texto: "Nuevo trabajador",
+    ruta: "/admin/crear-usuario",
+  },
+  {
     texto: "Aprobaciones",
     ruta: "/admin/aprobaciones",
   },
