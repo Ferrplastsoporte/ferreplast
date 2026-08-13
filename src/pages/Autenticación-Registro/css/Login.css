@@ -191,6 +191,31 @@
 }
 
 /* ============================
+   ENLACE DE RECUPERAR CONTRASEÑA
+============================ */
+.login-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.login-forgot button {
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  color: #0b57b7;
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.login-forgot button:hover {
+  text-decoration: underline;
+}
+
+/* ============================
    ENLACE A REGISTRO
 ============================ */
 .login-register {

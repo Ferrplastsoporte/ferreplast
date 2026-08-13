@@ -141,6 +141,15 @@ const LoginForm = () => {
         {errors.password && (
           <span className="login-error">{errors.password}</span>
         )}
+
+        <div className="login-forgot">
+          <button
+            type="button"
+            onClick={() => navigate("/RecuperarContrasena")}
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
       </div>
 
       <Button type="submit" loading={loading} className="login-submit">

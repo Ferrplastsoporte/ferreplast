@@ -13,6 +13,7 @@ import AdministradorLayout from "./pages/admin/components/AdminLayout";
 import Login from "./pages/Autenticación-Registro/Login";
 import Registro from "./pages/Autenticación-Registro/Registro";
 import NuevaContrasena from "./pages/Autenticación-Registro/NuevaPassword";
+import RecuperarContrasena from "./pages/Autenticación-Registro/RecuperarPassword";
 
 // Páginas cliente
 import Home from "./pages/home/Home";
@@ -60,6 +61,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/NuevaContrasena" element={<NuevaContrasena />} />
+        <Route path="/RecuperarContrasena" element={<RecuperarContrasena />} />
 
         {/* Cliente y sitio público */}
         <Route element={<ClienteLayout />}>
