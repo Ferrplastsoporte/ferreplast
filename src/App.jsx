@@ -12,6 +12,7 @@ import AdministradorLayout from "./pages/admin/components/AdminLayout";
 // Páginas públicas
 import Login from "./pages/Autenticación-Registro/Login";
 import Registro from "./pages/Autenticación-Registro/Registro";
+import NuevaContrasena from "./pages/Autenticación-Registro/NuevaPassword";
 
 // Páginas cliente
 import Home from "./pages/home/Home";
@@ -58,6 +59,7 @@ function App() {
         {/* Autenticación */}
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/NuevaContrasena" element={<NuevaContrasena />} />
 
         {/* Cliente y sitio público */}
         <Route element={<ClienteLayout />}>
@@ -72,7 +74,7 @@ function App() {
         <Route element={<AdministradorLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/usuarios" element={<Usuarios />} />
-          <Route path="/admin/crear-usuario" element={<CrearUsuario />} />
+          <Route path="/admin/crearUsuario" element={<CrearUsuario />} />
           <Route path="/admin/aprobaciones" element={<Aprobaciones />} />
           <Route path="/admin/cotizaciones" element={<Cotizaciones />} />
           <Route path="/admin/pedidos" element={<Pedidos />} />

@@ -14,7 +14,7 @@ const enlaces = [
   },
   {
     texto: "Nuevo trabajador",
-    ruta: "/admin/crear-usuario",
+    ruta: "/admin/crearUsuario",
   },
   {
     texto: "Aprobaciones",
