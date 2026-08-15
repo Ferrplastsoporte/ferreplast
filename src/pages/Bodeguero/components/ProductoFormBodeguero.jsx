@@ -70,6 +70,7 @@ function ProductoFormBodeguero({
   documentoActual = [],
   onGuardar,
   onCancelar,
+  esEdicion = false,
 }) {
   const inputDocumentosRef = useRef(null);
 
@@ -645,23 +646,23 @@ function ProductoFormBodeguero({
           <small>Puede ser igual o menor que el precio normal.</small>
         </div>
 
-        <div className="producto-bodega-form__field">
-          <label htmlFor="stockProducto">Stock inicial</label>
-
-          <input
-            id="stockProducto"
-            type="text"
-            inputMode="numeric"
-            value={formulario.stock}
-            onChange={(evento) =>
-              actualizarEntero("stock", evento.target.value)
-            }
-            onBlur={() => normalizarEnteroMinimoUno("stock")}
-            disabled={guardando}
-          />
-
-          <small>Solo números enteros desde 1.</small>
-        </div>
+        {!esEdicion && (
+  <div className="producto-bodega-form__field">
+    <label htmlFor="stockProducto">Stock inicial</label>
+    <input
+      id="stockProducto"
+      type="text"
+      inputMode="numeric"
+      value={formulario.stock}
+      onChange={(evento) =>
+        actualizarEntero("stock", evento.target.value)
+      }
+      onBlur={() => normalizarEnteroMinimoUno("stock")}
+      disabled={guardando}
+    />
+    <small>Solo números enteros desde 1.</small>
+  </div>
+)}
 
         <div className="producto-bodega-form__field">
           <label htmlFor="familiaProducto">Familia</label>

@@ -759,6 +759,7 @@ function BodegueroProductos() {
           documentoActual={documentosActuales}
           onGuardar={productoEditando ? actualizarProducto : crearProducto}
           onCancelar={cerrarFormulario}
+          esEdicion={!!productoEditando} 
         />
       )}
 
