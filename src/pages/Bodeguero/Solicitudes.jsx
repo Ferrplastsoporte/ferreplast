@@ -46,7 +46,6 @@ function formatearFecha(fecha) {
   if (!fecha) {
     return "";
   }
-
   return new Intl.DateTimeFormat("es-CL", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -58,7 +57,6 @@ function obtenerCamposModificados(campos = {}) {
   if (!campos || typeof campos !== "object" || Array.isArray(campos)) {
     return [];
   }
-
   return Object.keys(campos);
 }
 
@@ -66,52 +64,47 @@ function resumirCamposModificados(campos = {}) {
   const nombres = obtenerCamposModificados(campos).map(
     (campo) => NOMBRES_CAMPOS[campo] || campo,
   );
-
   if (nombres.length === 0) {
     return "Sin detalle de campos";
   }
-
   if (nombres.length <= 3) {
     return nombres.join(", ");
   }
-
   return `${nombres.slice(0, 3).join(", ")} y ${nombres.length - 3} más`;
 }
 
 function BodegueroSolicitudes() {
-  const [pendientes, setPendientes] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [mensajeError, setMensajeError] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("todos");
 
   useEffect(() => {
-    cargarPendientes();
+    cargarSolicitudes();
   }, []);
 
   function obtenerUrlImagen(rutaImagen) {
-    if (!rutaImagen) {
-      return "";
-    }
-
+    if (!rutaImagen) return "";
     if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
       return rutaImagen;
     }
-
     const { data } = supabase.storage
       .from(BUCKET_IMAGENES)
       .getPublicUrl(rutaImagen);
-
     return data.publicUrl;
   }
 
-  async function cargarPendientes() {
+  async function cargarSolicitudes() {
     setCargando(true);
     setMensajeError("");
 
     try {
-      const { data: productos, error: errorProductos } = await supabase
+      // ==========================================
+      // 1. PRODUCTOS PENDIENTES (est_prod = 1)
+      // ==========================================
+      const { data: productosPendientes, error: errorPendientes } = await supabase
         .from("producto")
-        .select(
-          `
+        .select(`
           id_prod,
           nom_prod,
           precio_prod,
@@ -120,109 +113,184 @@ function BodegueroSolicitudes() {
           created_prod,
           est_prod,
           stock_prod,
-
-          estado_producto (
-            id_est_prod,
-            nom_est_prod
-          ),
-
-          marca_producto (
-            id_marca,
-            nom_marca
-          ),
-
-          subcategoria (
-            id_subcategoria,
-            nom_subcategoria
-          )
-        `,
-        )
+          estado_producto (id_est_prod, nom_est_prod),
+          marca_producto (id_marca, nom_marca),
+          subcategoria (id_subcategoria, nom_subcategoria)
+        `)
         .eq("est_prod", 1)
-        .order("created_prod", {
-          ascending: false,
-        });
+        .order("created_prod", { ascending: false });
 
-      if (errorProductos) {
-        throw errorProductos;
-      }
+      if (errorPendientes) throw errorPendientes;
 
-      const productosPendientes = productos ?? [];
-
-      if (productosPendientes.length === 0) {
-        setPendientes([]);
-        return;
-      }
-
-      const idsProductos = productosPendientes.map(
-        (producto) => producto.id_prod,
-      );
-
-      const { data: cambios, error: errorCambios } = await supabase
-        .from("producto_cambio")
-        .select(
-          `
-          id_cambio,
+      // ==========================================
+      // 2. PRODUCTOS DESACTIVADOS CON CAMBIOS PENDIENTES (est_prod = 3)
+      // ==========================================
+      const { data: productosDesactivados, error: errorDesactivados } = await supabase
+        .from("producto")
+        .select(`
           id_prod,
-          id_user,
-          fecha_cambio,
-          tipo_accion,
-          campos_modificados,
-          estado_anterior,
-          estado_nuevo,
-          revisado,
+          nom_prod,
+          precio_prod,
+          precio_act,
+          imagen_url,
+          created_prod,
+          est_prod,
+          stock_prod,
+          estado_producto (id_est_prod, nom_est_prod),
+          marca_producto (id_marca, nom_marca),
+          subcategoria (id_subcategoria, nom_subcategoria)
+        `)
+        .eq("est_prod", 3)
+        .order("created_prod", { ascending: false });
 
-          usuario (
-            id_user,
-            nom_user
-          )
-        `,
-        )
-        .in("id_prod", idsProductos)
-        .eq("revisado", false)
-        .order("fecha_cambio", {
-          ascending: false,
-        });
+      if (errorDesactivados) throw errorDesactivados;
 
-      if (errorCambios) {
-        throw errorCambios;
-      }
+      // ==========================================
+      // 3. FILTRAR SOLO LOS DESACTIVADOS QUE TIENEN CAMBIO PENDIENTE
+      // ==========================================
+      const idsDesactivados = (productosDesactivados ?? []).map(p => p.id_prod);
 
-      /*
-       * Como los cambios vienen ordenados
-       * desde el más reciente, conservamos
-       * únicamente el primero de cada producto.
-       */
-      const ultimoCambioPorProducto = new Map();
+      let desactivadosConCambio = [];
 
-      for (const cambio of cambios ?? []) {
-        if (!ultimoCambioPorProducto.has(cambio.id_prod)) {
-          ultimoCambioPorProducto.set(cambio.id_prod, cambio);
+      if (idsDesactivados.length > 0) {
+        const { data: cambios, error: errorCambios } = await supabase
+          .from("producto_cambio")
+          .select("id_prod, tipo_accion, fecha_cambio, usuario (nom_user)")
+          .in("id_prod", idsDesactivados)
+          .eq("revisado", false)
+          .order("fecha_cambio", { ascending: false });
+
+        if (errorCambios) throw errorCambios;
+
+        const cambiosMap = new Map();
+        for (const cambio of cambios ?? []) {
+          if (!cambiosMap.has(cambio.id_prod)) {
+            cambiosMap.set(cambio.id_prod, cambio);
+          }
         }
+
+        desactivadosConCambio = (productosDesactivados ?? [])
+          .filter(p => cambiosMap.has(p.id_prod))
+          .map(p => ({
+            ...p,
+            tipo: "producto",
+            ultimoCambio: cambiosMap.get(p.id_prod),
+            fecha: cambiosMap.get(p.id_prod)?.fecha_cambio || p.created_prod,
+          }));
       }
 
-      const productosConCambio = productosPendientes.map((producto) => ({
+      // ==========================================
+      // 4. UNIFICAR SOLICITUDES
+      // ==========================================
+
+      // Productos pendientes (est_prod = 1)
+      const solicitudesPendientes = (productosPendientes ?? []).map((producto) => ({
         ...producto,
-        ultimoCambio: ultimoCambioPorProducto.get(producto.id_prod) ?? null,
+        tipo: "producto",
+        id: producto.id_prod,
+        fecha: producto.created_prod,
+        titulo: producto.nom_prod,
+        subtitulo: producto.subcategoria?.nom_subcategoria || "Sin subcategoría",
+        detalle: producto.marca_producto?.nom_marca || "Sin marca",
+        estado: "Pendiente",
+        ultimoCambio: null,
       }));
 
-      setPendientes(productosConCambio);
+      // Productos desactivados con cambio pendiente
+      const solicitudesDesactivados = desactivadosConCambio.map((producto) => ({
+        ...producto,
+        tipo: "producto",
+        id: producto.id_prod,
+        titulo: producto.nom_prod,
+        subtitulo: producto.subcategoria?.nom_subcategoria || "Sin subcategoría",
+        detalle: producto.marca_producto?.nom_marca || "Sin marca",
+        estado: "Deshabilitado",
+        ultimoCambio: producto.ultimoCambio,
+      }));
+
+      // ==========================================
+      // 5. MARCAS PENDIENTES (est_marca = false)
+      // ==========================================
+      const { data: marcas, error: errorMarcas } = await supabase
+        .from("marca_producto")
+        .select(`
+          id_marca,
+          nom_marca,
+          logo_url,
+          marca_destacar,
+          est_marca
+        `)
+        .eq("est_marca", false);
+
+      if (errorMarcas) throw errorMarcas;
+
+      const solicitudesMarcas = (marcas ?? []).map((marca) => ({
+        ...marca,
+        tipo: "marca",
+        id: marca.id_marca,
+        fecha: new Date().toISOString(),
+        titulo: marca.nom_marca,
+        subtitulo: marca.marca_destacar ? "Marca destacada" : "Marca normal",
+        detalle: "Pendiente de aprobación",
+        estado: "Pendiente",
+        logo_url: marca.logo_url,
+        ultimoCambio: null,
+      }));
+
+      // ==========================================
+      // 6. UNIFICAR Y ORDENAR
+      // ==========================================
+      const todas = [
+        ...solicitudesPendientes,
+        ...solicitudesDesactivados,
+        ...solicitudesMarcas,
+      ].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+      setSolicitudes(todas);
     } catch (error) {
-      console.error("Error al cargar productos pendientes:", error);
-
-      setMensajeError(
-        "No fue posible cargar los productos pendientes y su historial de cambios.",
-      );
-
-      setPendientes([]);
+      console.error("❌ Error al cargar solicitudes:", error);
+      setMensajeError("No fue posible cargar las solicitudes pendientes.");
+      setSolicitudes([]);
     } finally {
       setCargando(false);
     }
   }
 
+  // ==========================================
+  // FILTRAR POR TIPO
+  // ==========================================
+  const totalProductos = solicitudes.filter(
+    (s) => s.tipo === "producto" && s.estado !== "Deshabilitado"
+  ).length;
+
+  const totalDeshabilitados = solicitudes.filter(
+    (s) => s.tipo === "producto" && s.estado === "Deshabilitado"
+  ).length;
+
+  const totalMarcas = solicitudes.filter((s) => s.tipo === "marca").length;
+
+  const solicitudesFiltradas = (() => {
+    if (filtroTipo === "todos") return solicitudes;
+    if (filtroTipo === "productos") {
+      return solicitudes.filter(
+        (s) => s.tipo === "producto" && s.estado !== "Deshabilitado"
+      );
+    }
+    if (filtroTipo === "deshabilitados") {
+      return solicitudes.filter(
+        (s) => s.tipo === "producto" && s.estado === "Deshabilitado"
+      );
+    }
+    if (filtroTipo === "marcas") {
+      return solicitudes.filter((s) => s.tipo === "marca");
+    }
+    return solicitudes;
+  })();
+
   if (cargando) {
     return (
       <section className="bodeguero-page solicitudes-page">
-        <p className="bodeguero-loading">Cargando productos pendientes...</p>
+        <p className="bodeguero-loading">Cargando solicitudes...</p>
       </section>
     );
   }
@@ -230,44 +298,73 @@ function BodegueroSolicitudes() {
   return (
     <section className="bodeguero-page solicitudes-page">
       <BodegueroHeader
-        titulo="Productos pendientes"
-        descripcion="Consulta los productos que esperan revisión y aprobación del administrador."
+        titulo="Solicitudes pendientes"
+        descripcion="Consulta los productos y marcas que esperan revisión del administrador."
       />
 
       {mensajeError && (
-        <div
-          className="bodeguero-message bodeguero-message--error"
-          role="alert"
-        >
+        <div className="bodeguero-message bodeguero-message--error" role="alert">
           <p>{mensajeError}</p>
-
-          <button type="button" onClick={cargarPendientes}>
+          <button type="button" onClick={cargarSolicitudes}>
             Reintentar
           </button>
         </div>
       )}
 
-      {pendientes.length === 0 ? (
+      <div className="solicitudes-filtros">
+        <button
+          type="button"
+          className={`solicitudes-filtro ${filtroTipo === "todos" ? "active" : ""}`}
+          onClick={() => setFiltroTipo("todos")}
+        >
+          Todos ({solicitudes.length})
+        </button>
+        <button
+          type="button"
+          className={`solicitudes-filtro ${filtroTipo === "productos" ? "active" : ""}`}
+          onClick={() => setFiltroTipo("productos")}
+        >
+          Productos ({totalProductos})
+        </button>
+        <button
+          type="button"
+          className={`solicitudes-filtro ${filtroTipo === "deshabilitados" ? "active" : ""}`}
+          onClick={() => setFiltroTipo("deshabilitados")}
+        >
+          Deshabilitados ({totalDeshabilitados})
+        </button>
+        <button
+          type="button"
+          className={`solicitudes-filtro ${filtroTipo === "marcas" ? "active" : ""}`}
+          onClick={() => setFiltroTipo("marcas")}
+        >
+          Marcas ({totalMarcas})
+        </button>
+      </div>
+
+      {solicitudesFiltradas.length === 0 ? (
         <section className="bodega-empty-state">
-          <h2>No hay productos pendientes</h2>
-
+          <h2>No hay solicitudes pendientes</h2>
           <p>
-            Todos los productos registrados ya fueron revisados o no existen
-            modificaciones pendientes.
+            {filtroTipo === "todos"
+              ? "No hay productos ni marcas pendientes de revisión."
+              : filtroTipo === "productos"
+              ? "No hay productos pendientes de revisión."
+              : filtroTipo === "deshabilitados"
+              ? "No hay productos deshabilitados pendientes de revisión."
+              : "No hay marcas pendientes de revisión."}
           </p>
-
           <Link to="/bodeguero/productos">Ir a gestión de productos</Link>
         </section>
       ) : (
         <>
-          <div
-            className="bodeguero-message bodeguero-message--info"
-            role="status"
-          >
+          <div className="bodeguero-message bodeguero-message--info" role="status">
             <p>
-              {pendientes.length}{" "}
-              {pendientes.length === 1 ? "producto está" : "productos están"}{" "}
-              esperando la revisión del administrador.
+              {solicitudesFiltradas.length}{" "}
+              {solicitudesFiltradas.length === 1
+                ? "solicitud está"
+                : "solicitudes están"}{" "}
+              esperando revisión del administrador.
             </p>
           </div>
 
@@ -275,119 +372,118 @@ function BodegueroSolicitudes() {
             <table className="solicitudes-table">
               <thead>
                 <tr>
-                  <th>Imagen</th>
-                  <th>Producto</th>
-                  <th>Marca</th>
-                  <th>Stock</th>
-                  <th>Precio</th>
+                  <th>Tipo</th>
+                  <th>Imagen / Logo</th>
+                  <th>Nombre</th>
+                  <th>Detalle</th>
                   <th>Estado</th>
+                  <th>Fecha</th>
                   <th>Acciones realizadas</th>
                 </tr>
               </thead>
 
               <tbody>
-                {pendientes.map((producto) => {
-                  const precioNormal = Number(producto.precio_prod);
-
-                  const precioActual = Number(producto.precio_act);
-
-                  const precioVigente =
-                    precioActual > 0 ? precioActual : precioNormal;
-
-                  const tieneOferta =
-                    precioActual > 0 && precioActual < precioNormal;
-
-                  const cambio = producto.ultimoCambio;
-
-                  const nombreUsuario =
-                    cambio?.usuario?.nom_user || "Bodeguero";
+                {solicitudesFiltradas.map((solicitud) => {
+                  const esProducto = solicitud.tipo === "producto";
+                  const cambio = solicitud.ultimoCambio;
+                  const nombreUsuario = cambio?.usuario?.nom_user || "Bodeguero";
+                  
+                  // 🔹 CORREGIDO: Usar est_prod para determinar si es deshabilitado
+                  const esDeshabilitado = solicitud.estado === "Deshabilitado";
+                  const estadoClase = esDeshabilitado ? "estado-deshabilitado" : "estado-pendiente";
+                  const estadoTexto = esDeshabilitado ? "⛔ Deshabilitado" : "⏳ Pendiente";
 
                   return (
-                    <tr key={producto.id_prod}>
+                    <tr key={`${solicitud.tipo}-${solicitud.id}`}>
                       <td>
-                        {producto.imagen_url ? (
-                          <img
-                            className="solicitudes-table__image"
-                            src={obtenerUrlImagen(producto.imagen_url)}
-                            alt={producto.nom_prod}
-                            onError={(evento) => {
-                              evento.currentTarget.style.display = "none";
-
-                              evento.currentTarget.nextElementSibling?.removeAttribute(
-                                "hidden",
-                              );
-                            }}
-                          />
-                        ) : null}
-
-                        <div
-                          className="solicitudes-table__placeholder"
-                          hidden={Boolean(producto.imagen_url)}
-                        >
-                          Sin imagen
-                        </div>
-                      </td>
-
-                      <td>
-                        <div className="solicitudes-table__product">
-                          <strong>{producto.nom_prod}</strong>
-
-                          <span>
-                            {producto.subcategoria?.nom_subcategoria ||
-                              "Sin subcategoría"}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td>
-                        {producto.marca_producto?.nom_marca || "Sin marca"}
-                      </td>
-
-                      <td>
-                        <span className="stock-badge">
-                          {producto.stock_prod} unidades
+                        <span className={`tipo-badge tipo-${solicitud.tipo}`}>
+                          {esProducto ? "📦 Producto" : "🏷️ Marca"}
                         </span>
                       </td>
 
                       <td>
-                        <div className="solicitudes-table__prices">
-                          {tieneOferta && (
-                            <span className="solicitudes-table__old-price">
-                              {formatearPrecio(precioNormal)}
-                            </span>
-                          )}
+                        {esProducto ? (
+                          solicitud.imagen_url ? (
+                            <img
+                              className="solicitudes-table__image"
+                              src={obtenerUrlImagen(solicitud.imagen_url)}
+                              alt={solicitud.nom_prod}
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                e.currentTarget.nextElementSibling?.removeAttribute(
+                                  "hidden"
+                                );
+                              }}
+                            />
+                          ) : (
+                            <div className="solicitudes-table__placeholder">
+                              Sin imagen
+                            </div>
+                          )
+                        ) : (
+                          solicitud.logo_url ? (
+                            <img
+                              className="solicitudes-table__image"
+                              src={obtenerUrlImagen(solicitud.logo_url)}
+                              alt={solicitud.nom_marca}
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                e.currentTarget.nextElementSibling?.removeAttribute(
+                                  "hidden"
+                                );
+                              }}
+                            />
+                          ) : (
+                            <div className="solicitudes-table__placeholder">
+                              Sin logo
+                            </div>
+                          )
+                        )}
+                      </td>
 
-                          <strong>{formatearPrecio(precioVigente)}</strong>
+                      <td>
+                        <div className="solicitudes-table__product">
+                          <strong>{solicitud.titulo}</strong>
+                          <span>{solicitud.subtitulo}</span>
                         </div>
                       </td>
 
+                      <td>{solicitud.detalle}</td>
+
                       <td>
-                        <span className="estado-pendiente">Pendiente</span>
+                        <span className={estadoClase}>
+                          {estadoTexto}
+                        </span>
                       </td>
 
                       <td>
-                        {cambio ? (
+                        <small>{formatearFecha(solicitud.fecha)}</small>
+                      </td>
+
+                      <td>
+                        {esProducto && cambio ? (
                           <div className="solicitudes-change">
                             <strong>
                               {NOMBRES_ACCIONES[cambio.tipo_accion] ||
                                 "Producto modificado"}
                             </strong>
-
                             <span>
                               {resumirCamposModificados(
-                                cambio.campos_modificados,
+                                cambio.campos_modificados
                               )}
                             </span>
-
                             <small>Por {nombreUsuario}</small>
-
                             <small>{formatearFecha(cambio.fecha_cambio)}</small>
+                          </div>
+                        ) : esProducto ? (
+                          <div className="solicitudes-change solicitudes-change--empty">
+                            <strong>Producto nuevo</strong>
+                            <span>Pendiente de revisión inicial.</span>
                           </div>
                         ) : (
                           <div className="solicitudes-change solicitudes-change--empty">
-                            <strong>Producto nuevo</strong>
-
-                            <span>Pendiente de revisión inicial.</span>
+                            <strong>Marca nueva</strong>
+                            <span>Pendiente de aprobación.</span>
                           </div>
                         )}
                       </td>

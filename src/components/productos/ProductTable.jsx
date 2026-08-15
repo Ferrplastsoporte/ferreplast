@@ -200,7 +200,7 @@ function ProductTable({
                       <button
                         type="button"
                         className="btn-deactivate"
-                        onClick={() => onDesactivar(producto.id_prod)}
+                        onClick={() => onDesactivar(producto)}
                         title="Deshabilitar producto"
                         aria-label={`Deshabilitar ${producto.nom_prod}`}
                       >

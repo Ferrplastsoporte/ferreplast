@@ -506,6 +506,25 @@ function BodegueroProductos() {
     }
   }
 
+  async function registrarCambioProducto(idProducto, tipoAccion, campos = {}) {
+  const { error } = await supabase
+    .from("producto_cambio")
+    .insert({
+      id_prod: idProducto,
+      id_user: (await supabase.auth.getUser()).data.user?.id,
+      tipo_accion: tipoAccion,
+      campos_modificados: campos,
+      estado_anterior: null,
+      estado_nuevo: null,
+      revisado: false,
+    });
+
+  if (error) {
+    console.error("Error al registrar el cambio:", error);
+    throw error;
+  }
+}
+
   async function actualizarProducto(datosFormulario) {
     if (guardando || !productoEditando) {
       return;
@@ -648,49 +667,77 @@ function BodegueroProductos() {
   }
 
   async function confirmarDesactivacion() {
-    if (!productoPorDesactivar || desactivando) {
-      return;
-    }
-
-    setDesactivando(true);
-    setMensajeError("");
-    setMensajeExito("");
-
-    try {
-      const { error } = await supabase
-        .from("producto")
-        .update({
-          /*
-           * 3 = No disponible
-           */
-          est_prod: 3,
-        })
-        .eq("id_prod", productoPorDesactivar.id_prod);
-
-      if (error) {
-        throw error;
-      }
-
-      setProductoPorDesactivar(null);
-
-      await cargarProductos();
-
-      setMensajeExito("El producto fue marcado como no disponible.");
-    } catch (error) {
-      console.error("Error al deshabilitar el producto:", error);
-
-      if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError("No tienes permisos para deshabilitar productos.");
-      } else {
-        setMensajeError(
-          error?.message ||
-            "No fue posible marcar el producto como no disponible.",
-        );
-      }
-    } finally {
-      setDesactivando(false);
-    }
+  if (!productoPorDesactivar || desactivando) {
+    return;
   }
+
+  // 🔹 VALIDAR ID ANTES DE CONTINUAR
+  const id = productoPorDesactivar.id_prod;
+  if (!id) {
+    setMensajeError("No se pudo identificar el producto.");
+    return;
+  }
+
+  setDesactivando(true);
+  setMensajeError("");
+  setMensajeExito("");
+
+  try {
+    // 1. Actualizar el producto (est_prod = 3)
+    const { error } = await supabase
+      .from("producto")
+      .update({
+        est_prod: 3,
+      })
+      .eq("id_prod", id);
+
+    if (error) {
+      throw error;
+    }
+
+    // 2. Registrar el cambio en producto_cambio (NUEVO)
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const { error: cambioError } = await supabase
+        .from("producto_cambio")
+        .insert({
+          id_prod: id,
+          id_user: userData.user?.id,
+          tipo_accion: "producto_no_disponible",
+          campos_modificados: { est_prod: 3 },
+          estado_anterior: productoPorDesactivar.est_prod,
+          estado_nuevo: 3,
+          revisado: false,
+        });
+
+      if (cambioError) {
+        console.error("Error al registrar el cambio:", cambioError);
+        // No interrumpimos el flujo, solo mostramos advertencia
+      }
+    } catch (cambioError) {
+      console.error("Error inesperado al registrar el cambio:", cambioError);
+    }
+
+    setProductoPorDesactivar(null);
+
+    await cargarProductos();
+
+    setMensajeExito("El producto fue marcado como no disponible.");
+  } catch (error) {
+    console.error("Error al deshabilitar el producto:", error);
+
+    if (error?.message?.toLowerCase().includes("row-level security")) {
+      setMensajeError("No tienes permisos para deshabilitar productos.");
+    } else {
+      setMensajeError(
+        error?.message ||
+          "No fue posible marcar el producto como no disponible."
+      );
+    }
+  } finally {
+    setDesactivando(false);
+  }
+}
 
   if (cargando) {
     return (
