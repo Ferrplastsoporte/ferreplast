@@ -15,11 +15,21 @@
 
 ## 🧩 Repositorios del Sistema
 
-| Módulo                         | Descripción                                                                                          | Repositorio |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------- | ----------- |
-| 🖥️ **main**               | Rama donde estará cargada las versiones estable y avances significativos respecto a la plataforma | Pendiente   |
-| 🖥️ **testing**               | Rama enfocada a pruebas durante el desarrollo | Pendiente   |
-| 📄 **Documentación Técnica**   | Diagramas, modelos de datos, manuales y documentación del proyecto.                                  | Pendiente   |
+| Módulo | Descripción | Repositorio |
+| --- | --- | --- |
+| 🖥️ **main** | Rama destinada a contener las versiones estables y los avances significativos de la plataforma. | [Rama Principal](https://github.com/Ferrplastsoporte/ferreplast) |
+| 📄 **Fase 1** | Repositorio destinado al versionamiento y respaldo de la documentación correspondiente a la Fase 1 del proyecto. | Pendiente |
+| 📄 **Fase 2** | Repositorio destinado al versionamiento y respaldo de la documentación correspondiente a la Fase 2 del proyecto. | Pendiente |
+| 📄 **Fase 3** | Repositorio destinado al versionamiento y respaldo de la documentación correspondiente a la Fase 3 del proyecto. | Pendiente |
+
+## 🧩 Documentación del Proyecto
+
+| Módulo | Descripción | Repositorio |
+| --- | --- | --- |
+| 📄 **Carpeta general del proyecto** | Contiene la documentación general del proyecto, organizada según sus respectivas fases. | [Documentación Capstone](https://drive.google.com/drive/folders/1uwANgD2PB4QwJZBEHxVRPXpa-yiI-YbK?usp=drive_link) |
+| 📄 **Fase 1** | Contiene toda la documentación correspondiente a la Fase 1, incluyendo evidencias individuales y grupales. | [Documentación Fase 1](https://drive.google.com/drive/folders/1NFA5hPqexY1wG5VUt6zQm5bm-Y9p-SR1?usp=drive_link) |
+| 📄 **Fase 2** | Contiene toda la documentación correspondiente a la Fase 2. | [Documentación Fase 2](https://drive.google.com/drive/folders/1C7AgeWcf3K9BcHJfObm1-fQ_N4fvrI_G?usp=drive_link) |
+| 📄 **Fase 3** | Contiene toda la documentación correspondiente a la Fase 3. | [Documentación Fase 3](https://drive.google.com/drive/folders/1PYHB0k7YvnUWF8u4aZPkn7no_mG1m20M?usp=drive_link) |
 
 ---
 
@@ -55,7 +65,7 @@
 
 ---
 
-## 📦 Categorías de Productos
+## 📦 Familia de Productos
 
 * Resinas Epóxicas
 * Resinas Poliéster
@@ -67,12 +77,6 @@
 * Herramientas
 * Impermeabilización
 * Especialidades Epóxicas
-
----
-
-## 📄 Licencia
-
-Proyecto desarrollado con fines académicos y de aprendizaje. La utilización de la información y código debe respetar las políticas establecidas por los integrantes del proyecto.
 
 ---
 
@@ -138,64 +142,3 @@ http://localhost:5173
 | npm run preview | Previsualiza la versión compilada |
 
 ---
-
-
-
-🔐 Configuración de Variables de Entorno (Actualización - 08/06/2026)
-Para garantizar la seguridad de las credenciales y la escalabilidad del proyecto, se implementó el uso de variables de entorno con Vite.
-
-📁 Estructura actual
-text
-ferreplast/
-├── .env                 ← Contiene las credenciales REALES (NO se sube a GitHub)
-├── .env.example         ← Plantilla con variables vacías (SÍ se sube a GitHub)
-├── src/
-│   ├── lib/
-│   │   └── supabase.ts  ← Conexión usando import.meta.env
-│   └── vite-env.d.ts    ← Tipos TypeScript para variables de entorno
-🔧 Pasos para configurar el entorno local
-Clonar el repositorio
-
-bash
-git clone <url-del-repo>
-cd ferreplast
-Instalar dependencias
-
-bash
-npm install
-Crear archivo .env (copiar desde .env.example)
-
-bash
-# En Linux/Mac/Git Bash
-cp .env.example .env
-
-# En Windows (PowerShell)
-Copy-Item .env.example .env
-Completar las credenciales en .env
-
-env
-VITE_SUPABASE_URL=https://tudominio.supabase.co
-VITE_SUPABASE_ANON_KEY=tu_clave_anonima_aqui
-⚠️ Importante: Solicitar las credenciales al administrador del proyecto. No compartir este archivo ni subirlo a GitHub.
-
-Verificar que .gitignore incluye (ya está configurado):
-
-gitignore
-.env
-.env.local
-.env.production
-Iniciar el servidor de desarrollo
-
-bash
-npm install react-router-dom @supabase/supabase-js
-npm run dev
-✅ Verificación de que todo funciona
-En la consola del navegador (F12), ejecutar:
-
-javascript
-console.log(import.meta.env.VITE_SUPABASE_URL)
-Debería mostrar la URL de Supabase configurada.
-
-📌 Nota importante
-No existe comando para "activar" el entorno virtual en React/Vite. Las variables de entorno se cargan automáticamente al ejecutar npm run dev siempre que el archivo .env exista en la raíz del proyecto.
-
