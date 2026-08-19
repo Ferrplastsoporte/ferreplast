@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import useCartView from "../../hooks/useCartView";
 import { supabase } from "../../lib/supabase";
 import "../css/Carrito.css";
@@ -15,7 +16,10 @@ function obtenerUrlImagen(rutaImagen) {
     return "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
   }
 
-  if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
+  if (
+    rutaImagen.startsWith("http://") ||
+    rutaImagen.startsWith("https://")
+  ) {
     return rutaImagen;
   }
 
@@ -27,18 +31,122 @@ function obtenerUrlImagen(rutaImagen) {
 }
 
 function Carrito() {
+  const navigate = useNavigate();
+
   const {
     productos,
     cargando,
     actualizando,
     error,
+
+    usuario,
+    tipoDespacho,
+
     subtotal,
     envio,
     total,
+
     cambiarCantidad,
     eliminarProducto,
     vaciarCarritoCompleto,
   } = useCartView();
+
+  /*
+   * El botón Pagar todavía no realiza el pago.
+   *
+   * Por ahora:
+   *
+   * - Sin sesión:
+   *      redirige al login.
+   *
+   * - Con sesión:
+   *      permite continuar al futuro flujo
+   *      de validación de stock / despacho / pago.
+   */
+  function continuarCompra() {
+    if (!usuario) {
+      navigate("/login", {
+        state: {
+          from: "/carrito",
+        },
+      });
+
+      return;
+    }
+
+    /*
+     * Próximo paso:
+     *
+     * 1. Revalidar productos y stock.
+     * 2. Confirmar despacho.
+     * 3. Mostrar resumen final.
+     * 4. Iniciar módulo de pago.
+     *
+     * NO se crea pedido todavía.
+     */
+    console.log(
+      "Usuario autenticado. Puede continuar al proceso de compra.",
+    );
+  }
+
+  /*
+   * Texto mostrado en la fila de envío.
+   */
+  function obtenerTextoEnvio() {
+    /*
+     * Sin sesión todavía no sabemos
+     * cuál es la comuna del cliente.
+     */
+    if (!usuario) {
+      return "Se calculará al continuar";
+    }
+
+    /*
+     * FALSE = despacho directo Ferreplast.
+     *
+     * Actualmente corresponde a:
+     * Puerto Montt (id_comuna = 313).
+     */
+    if (tipoDespacho === false) {
+      return formatearPrecio(envio);
+    }
+
+    /*
+     * TRUE = despacho mediante transportista.
+     *
+     * El costo no se suma al carrito porque será
+     * gestionado posteriormente según el destino.
+     */
+    if (tipoDespacho === true) {
+      return "A cargo de transportista";
+    }
+
+    /*
+     * Caso excepcional:
+     * usuario autenticado pero sin información
+     * suficiente para determinar despacho.
+     */
+    return "Por determinar";
+  }
+
+  /*
+   * Información complementaria del despacho.
+   */
+  function obtenerMensajeDespacho() {
+    if (!usuario) {
+      return "Inicia sesión para determinar la modalidad de despacho.";
+    }
+
+    if (tipoDespacho === false) {
+      return "Entrega directa Ferreplast en Puerto Montt.";
+    }
+
+    if (tipoDespacho === true) {
+      return "El despacho será realizado por un transportista externo. El costo de transporte no está incluido en este total.";
+    }
+
+    return "No fue posible determinar la modalidad de despacho.";
+  }
 
   if (cargando) {
     return (
@@ -52,11 +160,15 @@ function Carrito() {
     <main className="cart-page">
       <header className="cart-page__header">
         <div>
-          <span className="cart-page__eyebrow">Tu compra</span>
+          <span className="cart-page__eyebrow">
+            Tu compra
+          </span>
 
           <h1>Carrito de compras</h1>
 
-          <p>Revisa los productos agregados antes de continuar.</p>
+          <p>
+            Revisa los productos agregados antes de continuar.
+          </p>
         </div>
 
         {productos.length > 0 && (
@@ -71,52 +183,83 @@ function Carrito() {
         )}
       </header>
 
-      {error && <p className="cart-page__error">{error}</p>}
+      {error && (
+        <p className="cart-page__error">
+          {error}
+        </p>
+      )}
 
       {productos.length === 0 ? (
         <section className="cart-empty">
-          <span className="cart-empty__icon">🛒</span>
+          <span className="cart-empty__icon">
+            🛒
+          </span>
 
           <h2>Tu carrito está vacío</h2>
 
-          <p>Agrega productos desde el catálogo para comenzar tu compra.</p>
+          <p>
+            Agrega productos desde el catálogo para comenzar tu compra.
+          </p>
         </section>
       ) : (
         <div className="cart-layout">
           <section className="cart-products">
             {productos.map((producto) => {
-              const precioActual = Number(producto.precio_act);
+              const precioActual = Number(
+                producto.precio_act,
+              );
 
-              const precioNormal = Number(producto.precio_prod);
+              const precioNormal = Number(
+                producto.precio_prod,
+              );
 
               const precio =
-                precioActual > 0 ? precioActual : precioNormal || 0;
+                precioActual > 0
+                  ? precioActual
+                  : precioNormal || 0;
 
-              const subtotalProducto = precio * Number(producto.cantidad);
+              const subtotalProducto =
+                precio *
+                Number(producto.cantidad);
 
               return (
-                <article key={producto.id_prod} className="cart-item">
+                <article
+                  key={producto.id_prod}
+                  className="cart-item"
+                >
                   <img
-                    src={obtenerUrlImagen(producto.imagen_url)}
+                    src={obtenerUrlImagen(
+                      producto.imagen_url,
+                    )}
                     alt={producto.nom_prod}
                     className="cart-item__image"
                     onError={(event) => {
-                      event.currentTarget.onerror = null;
+                      event.currentTarget.onerror =
+                        null;
+
                       event.currentTarget.src =
                         "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
                     }}
                   />
+
                   <div className="cart-item__information">
-                    <h2>{producto.nom_prod}</h2>
+                    <h2>
+                      {producto.nom_prod}
+                    </h2>
 
                     <span className="cart-item__unit-price">
-                      {formatearPrecio(precio)} c/u
+                      {formatearPrecio(precio)}{" "}
+                      c/u
                     </span>
 
                     <button
                       type="button"
                       className="cart-item__remove"
-                      onClick={() => eliminarProducto(producto.id_prod)}
+                      onClick={() =>
+                        eliminarProducto(
+                          producto.id_prod,
+                        )
+                      }
                       disabled={actualizando}
                     >
                       Quitar producto
@@ -136,12 +279,17 @@ function Carrito() {
                             producto.cantidad - 1,
                           )
                         }
-                        disabled={actualizando || producto.cantidad <= 1}
+                        disabled={
+                          actualizando ||
+                          producto.cantidad <= 1
+                        }
                       >
                         −
                       </button>
 
-                      <strong>{producto.cantidad}</strong>
+                      <strong>
+                        {producto.cantidad}
+                      </strong>
 
                       <button
                         type="button"
@@ -154,7 +302,8 @@ function Carrito() {
                         }
                         disabled={
                           actualizando ||
-                          producto.cantidad >= producto.stock_prod
+                          producto.cantidad >=
+                            producto.stock_prod
                         }
                       >
                         +
@@ -163,7 +312,9 @@ function Carrito() {
                   </div>
 
                   <strong className="cart-item__subtotal">
-                    {formatearPrecio(subtotalProducto)}
+                    {formatearPrecio(
+                      subtotalProducto,
+                    )}
                   </strong>
                 </article>
               );
@@ -175,32 +326,45 @@ function Carrito() {
 
             <div className="cart-summary__row">
               <span>Subtotal</span>
-              <strong>{formatearPrecio(subtotal)}</strong>
+
+              <strong>
+                {formatearPrecio(subtotal)}
+              </strong>
             </div>
 
             <div className="cart-summary__row">
               <span>Envío</span>
-              <strong>{formatearPrecio(envio)}</strong>
+
+              <strong>
+                {obtenerTextoEnvio()}
+              </strong>
             </div>
 
             <div className="cart-summary__divider" />
 
             <div className="cart-summary__total">
               <span>Total</span>
-              <strong>{formatearPrecio(total)}</strong>
+
+              <strong>
+                {formatearPrecio(total)}
+              </strong>
             </div>
 
             <button
               type="button"
               className="cart-summary__pay-button"
-              disabled
-              title="El pago estará disponible próximamente"
+              onClick={continuarCompra}
+              disabled={
+                productos.length === 0 ||
+                cargando ||
+                actualizando
+              }
             >
-              Pagar
+              Continuar compra
             </button>
 
             <p className="cart-summary__notice">
-              El pago en línea se habilitará próximamente.
+              {obtenerMensajeDespacho()}
             </p>
           </aside>
         </div>
