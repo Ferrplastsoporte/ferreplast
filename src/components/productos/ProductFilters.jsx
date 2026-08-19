@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 function ProductFilters({
   familias,
@@ -8,13 +8,12 @@ function ProductFilters({
   unidadesMedida,
   pesos,
   filtros,
+  cargandoOpciones = false,
   onCambiarFiltro,
   onLimpiarFiltros,
 }) {
   const [precioMinimo, setPrecioMinimo] = useState(filtros.precioMinimo);
-
   const [precioMaximo, setPrecioMaximo] = useState(filtros.precioMaximo);
-
   const [errorPrecio, setErrorPrecio] = useState("");
 
   useEffect(() => {
@@ -22,23 +21,6 @@ function ProductFilters({
     setPrecioMaximo(filtros.precioMaximo);
     setErrorPrecio("");
   }, [filtros.precioMinimo, filtros.precioMaximo]);
-
-  const subcategoriasFiltradas = useMemo(() => {
-    if (!filtros.familia) {
-      return [];
-    }
-
-    return subcategorias.filter(
-      (subcategoria) =>
-        String(subcategoria.id_familia) === String(filtros.familia),
-    );
-  }, [subcategorias, filtros.familia]);
-
-  const familiaSeleccionada = Boolean(filtros.familia);
-
-  const subcategoriaSeleccionada = Boolean(filtros.subcategoria);
-
-  const unidadSeleccionada = Boolean(filtros.unidadMedida);
 
   function obtenerNumero(valor) {
     return String(valor).replace(/\D/g, "");
@@ -105,17 +87,13 @@ function ProductFilters({
     }
   }
 
-  function cambiarFamilia(valor) {
+  function cambiarFiltro(nombre, valor) {
     setErrorPrecio("");
 
-    onCambiarFiltro("familia", valor);
+    onCambiarFiltro(nombre, valor);
   }
 
-  function cambiarSubcategoria(valor) {
-    setErrorPrecio("");
-
-    onCambiarFiltro("subcategoria", valor);
-  }
+  const hayUnidadSeleccionada = Boolean(filtros.unidadMedida);
 
   return (
     <aside className="product-filters" aria-label="Filtros del catálogo">
@@ -123,8 +101,8 @@ function ProductFilters({
         <h2>Filtrar productos</h2>
 
         <p>
-          Selecciona una familia y una subcategoría para habilitar los filtros
-          de características.
+          Selecciona cualquier filtro para comenzar. Las demás opciones se
+          actualizarán según los productos disponibles.
         </p>
       </div>
 
@@ -134,9 +112,16 @@ function ProductFilters({
 
           <select
             value={filtros.familia}
-            onChange={(evento) => cambiarFamilia(evento.target.value)}
+            onChange={(evento) => cambiarFiltro("familia", evento.target.value)}
+            disabled={cargandoOpciones || familias.length === 0}
           >
-            <option value="">Todas las familias</option>
+            <option value="">
+              {cargandoOpciones
+                ? "Cargando familias..."
+                : familias.length === 0
+                  ? "Sin familias disponibles"
+                  : "Todas las familias"}
+            </option>
 
             {familias.map((familia) => (
               <option key={familia.id_familia} value={familia.id_familia}>
@@ -145,22 +130,25 @@ function ProductFilters({
             ))}
           </select>
         </label>
-
         <label className="product-filters__field">
           <span>Subcategoría</span>
 
           <select
             value={filtros.subcategoria}
-            onChange={(evento) => cambiarSubcategoria(evento.target.value)}
-            disabled={!familiaSeleccionada}
+            onChange={(evento) =>
+              cambiarFiltro("subcategoria", evento.target.value)
+            }
+            disabled={cargandoOpciones || subcategorias.length === 0}
           >
             <option value="">
-              {familiaSeleccionada
-                ? "Todas las subcategorías"
-                : "Selecciona una familia"}
+              {cargandoOpciones
+                ? "Cargando subcategorías..."
+                : subcategorias.length === 0
+                  ? "Sin subcategorías disponibles"
+                  : "Todas las subcategorías"}
             </option>
 
-            {subcategoriasFiltradas.map((subcategoria) => (
+            {subcategorias.map((subcategoria) => (
               <option
                 key={subcategoria.id_subcategoria}
                 value={subcategoria.id_subcategoria}
@@ -170,18 +158,17 @@ function ProductFilters({
             ))}
           </select>
         </label>
-
         <label className="product-filters__field">
           <span>Marca</span>
 
           <select
             value={filtros.marca}
-            onChange={(evento) => onCambiarFiltro("marca", evento.target.value)}
-            disabled={!subcategoriaSeleccionada || marcas.length === 0}
+            onChange={(evento) => cambiarFiltro("marca", evento.target.value)}
+            disabled={cargandoOpciones || marcas.length === 0}
           >
             <option value="">
-              {!subcategoriaSeleccionada
-                ? "Selecciona una subcategoría"
+              {cargandoOpciones
+                ? "Cargando marcas..."
                 : marcas.length === 0
                   ? "Sin marcas disponibles"
                   : "Todas las marcas"}
@@ -194,18 +181,17 @@ function ProductFilters({
             ))}
           </select>
         </label>
-
         <label className="product-filters__field">
           <span>Color</span>
 
           <select
             value={filtros.color}
-            onChange={(evento) => onCambiarFiltro("color", evento.target.value)}
-            disabled={!subcategoriaSeleccionada || colores.length === 0}
+            onChange={(evento) => cambiarFiltro("color", evento.target.value)}
+            disabled={cargandoOpciones || colores.length === 0}
           >
             <option value="">
-              {!subcategoriaSeleccionada
-                ? "Selecciona una subcategoría"
+              {cargandoOpciones
+                ? "Cargando colores..."
                 : colores.length === 0
                   ? "Sin colores disponibles"
                   : "Todos los colores"}
@@ -218,20 +204,19 @@ function ProductFilters({
             ))}
           </select>
         </label>
-
         <label className="product-filters__field">
           <span>Unidad de medida</span>
 
           <select
             value={filtros.unidadMedida}
             onChange={(evento) =>
-              onCambiarFiltro("unidadMedida", evento.target.value)
+              cambiarFiltro("unidadMedida", evento.target.value)
             }
-            disabled={!subcategoriaSeleccionada || unidadesMedida.length === 0}
+            disabled={cargandoOpciones || unidadesMedida.length === 0}
           >
             <option value="">
-              {!subcategoriaSeleccionada
-                ? "Selecciona una subcategoría"
+              {cargandoOpciones
+                ? "Cargando unidades..."
                 : unidadesMedida.length === 0
                   ? "Sin unidades disponibles"
                   : "Todas las unidades"}
@@ -244,23 +229,20 @@ function ProductFilters({
             ))}
           </select>
         </label>
-
         <label className="product-filters__field">
           <span>Peso</span>
 
           <select
             value={filtros.peso}
-            onChange={(evento) => onCambiarFiltro("peso", evento.target.value)}
+            onChange={(evento) => cambiarFiltro("peso", evento.target.value)}
             disabled={
-              !subcategoriaSeleccionada ||
-              !unidadSeleccionada ||
-              pesos.length === 0
+              cargandoOpciones || !hayUnidadSeleccionada || pesos.length === 0
             }
           >
             <option value="">
-              {!subcategoriaSeleccionada
-                ? "Selecciona una subcategoría"
-                : !unidadSeleccionada
+              {cargandoOpciones
+                ? "Cargando pesos..."
+                : !hayUnidadSeleccionada
                   ? "Selecciona una unidad"
                   : pesos.length === 0
                     ? "Sin pesos disponibles"
@@ -277,7 +259,6 @@ function ProductFilters({
             ))}
           </select>
         </label>
-
         <div className="product-filters__price-group">
           <label className="product-filters__field">
             <span>Precio mínimo</span>
@@ -321,14 +302,12 @@ function ProductFilters({
             {errorPrecio}
           </p>
         )}
-
         <label className="product-filters__field">
           <span>Ordenar por</span>
 
           <select
             value={filtros.orden}
-            onChange={(evento) => onCambiarFiltro("orden", evento.target.value)}
-            disabled={!subcategoriaSeleccionada}
+            onChange={(evento) => cambiarFiltro("orden", evento.target.value)}
           >
             <option value="recientes">Más recientes</option>
 

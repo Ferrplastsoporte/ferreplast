@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import ProductFilters from "../../components/productos/ProductFilters";
@@ -6,6 +6,7 @@ import ProductList from "../../components/productos/ProductList";
 import "../css/Catalogo.css";
 
 const PRODUCTOS_POR_PAGINA = 20;
+const TAMANO_LOTE_FILTROS = 1000;
 
 const FILTROS_INICIALES = {
   busqueda: "",
@@ -22,41 +23,26 @@ const FILTROS_INICIALES = {
 
 function Catalogo() {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const busquedaUrl = searchParams.get("buscar") || "";
-
-  /*
-   * El Navbar todavía utiliza:
-   *
-   * /catalogo?categoria=id
-   *
-   * Se mantiene ese parámetro en la URL para no
-   * modificar todavía el Navbar, pero internamente
-   * representa una familia.
-   */
   const familiaUrl = searchParams.get("categoria") || "";
+  const marcaUrl = searchParams.get("marca") || "";
 
   const [productos, setProductos] = useState([]);
 
-  const [familias, setFamilias] = useState([]);
-  const [subcategorias, setSubcategorias] = useState([]);
-
-  const [marcas, setMarcas] = useState([]);
-  const [colores, setColores] = useState([]);
-  const [unidadesMedida, setUnidadesMedida] = useState([]);
-  const [pesos, setPesos] = useState([]);
+  const [productosParaFiltros, setProductosParaFiltros] = useState([]);
 
   const [cargando, setCargando] = useState(true);
+  const [cargandoFiltros, setCargandoFiltros] = useState(true);
   const [errorCarga, setErrorCarga] = useState("");
 
   const [paginaActual, setPaginaActual] = useState(1);
-
   const [totalProductos, setTotalProductos] = useState(0);
 
   const [filtros, setFiltros] = useState({
     ...FILTROS_INICIALES,
     busqueda: busquedaUrl,
     familia: familiaUrl,
+    marca: marcaUrl,
   });
 
   const totalPaginas = Math.max(
@@ -64,70 +50,21 @@ function Catalogo() {
     Math.ceil(totalProductos / PRODUCTOS_POR_PAGINA),
   );
 
-  /*
-   * Al abrir el catálogo solo se cargan las familias
-   * y las subcategorías.
-   */
   useEffect(() => {
-    cargarOpcionesIniciales();
+    cargarBaseFiltros();
   }, []);
 
-  /*
-   * Sincroniza la búsqueda y la familia recibidas
-   * desde la URL.
-   */
   useEffect(() => {
-    setFiltros((filtrosActuales) => {
-      const cambioFamilia = filtrosActuales.familia !== familiaUrl;
-
-      if (!cambioFamilia) {
-        return {
-          ...filtrosActuales,
-          busqueda: busquedaUrl,
-        };
-      }
-
-      return {
-        ...filtrosActuales,
-        busqueda: busquedaUrl,
-        familia: familiaUrl,
-        subcategoria: "",
-        marca: "",
-        color: "",
-        unidadMedida: "",
-        peso: "",
-      };
-    });
-
-    setMarcas([]);
-    setColores([]);
-    setUnidadesMedida([]);
-    setPesos([]);
+    setFiltros((actuales) => ({
+      ...actuales,
+      busqueda: busquedaUrl,
+      familia: familiaUrl,
+      marca: marcaUrl,
+    }));
 
     setPaginaActual(1);
-  }, [busquedaUrl, familiaUrl]);
+  }, [busquedaUrl, familiaUrl, marcaUrl]);
 
-  /*
-   * Las características del producto solamente se
-   * cargan cuando el cliente selecciona una
-   * subcategoría.
-   */
-  useEffect(() => {
-    if (!filtros.subcategoria) {
-      setMarcas([]);
-      setColores([]);
-      setUnidadesMedida([]);
-      setPesos([]);
-      return;
-    }
-
-    cargarCaracteristicasSubcategoria(filtros.subcategoria);
-  }, [filtros.subcategoria]);
-
-  /*
-   * Recarga los productos cuando cambia un filtro
-   * o la página actual.
-   */
   useEffect(() => {
     cargarProductos();
   }, [
@@ -144,170 +81,381 @@ function Catalogo() {
     paginaActual,
   ]);
 
-  async function cargarOpcionesIniciales() {
-    const [respuestaFamilias, respuestaSubcategorias] = await Promise.all([
-      supabase
-        .from("familia")
-        .select(
-          `
-          id_familia,
-          nom_familia
-        `,
-        )
-        .order("nom_familia", {
-          ascending: true,
-        }),
+  async function cargarBaseFiltros() {
+    setCargandoFiltros(true);
 
-      supabase
-        .from("subcategoria")
-        .select(
-          `
-          id_subcategoria,
-          nom_subcategoria,
-          id_familia
-        `,
-        )
-        .order("nom_subcategoria", {
-          ascending: true,
-        }),
-    ]);
+    try {
+      let desde = 0;
+      let continuar = true;
 
-    if (respuestaFamilias.error) {
-      console.error("Error al cargar familias:", respuestaFamilias.error);
+      const productosAcumulados = [];
 
-      setFamilias([]);
-    } else {
-      setFamilias(respuestaFamilias.data || []);
-    }
+      while (continuar) {
+        const hasta = desde + TAMANO_LOTE_FILTROS - 1;
 
-    if (respuestaSubcategorias.error) {
-      console.error(
-        "Error al cargar subcategorías:",
-        respuestaSubcategorias.error,
-      );
+        const { data, error } = await supabase
+          .from("producto")
+          .select(
+            `
+            id_prod,
+            nom_prod,
+            precio_act,
+            color_prod,
+            peso_prod,
+            id_und_medida,
+            id_subcategoria,
+            id_marca,
 
-      setSubcategorias([]);
-    } else {
-      setSubcategorias(respuestaSubcategorias.data || []);
+            unidad_medida (
+              id_und_medida,
+              nom_und_medida
+            ),
+
+            marca_producto (
+              id_marca,
+              nom_marca
+            ),
+
+            subcategoria (
+              id_subcategoria,
+              nom_subcategoria,
+              id_familia,
+
+              familia (
+                id_familia,
+                nom_familia
+              )
+            )
+          `,
+          )
+          .eq("est_prod", 2)
+          .range(desde, hasta);
+
+        if (error) {
+          throw error;
+        }
+
+        const lote = data || [];
+
+        productosAcumulados.push(...lote);
+
+        continuar = lote.length === TAMANO_LOTE_FILTROS;
+        desde += TAMANO_LOTE_FILTROS;
+      }
+
+      setProductosParaFiltros(productosAcumulados);
+    } catch (error) {
+      console.error("Error al cargar la información para los filtros:", error);
+
+      setProductosParaFiltros([]);
+    } finally {
+      setCargandoFiltros(false);
     }
   }
 
-  async function cargarCaracteristicasSubcategoria(idSubcategoria) {
-    setMarcas([]);
-    setColores([]);
-    setUnidadesMedida([]);
-    setPesos([]);
+  function productoCumpleFiltros(producto, ignorar = "") {
+    const textoBusqueda = filtros.busqueda.trim().toLowerCase();
 
-    const { data, error } = await supabase
-      .from("producto")
-      .select(
-        `
-        id_marca,
-        color_prod,
-        peso_prod,
-        id_und_medida,
+    if (
+      ignorar !== "busqueda" &&
+      textoBusqueda &&
+      !producto.nom_prod?.toLowerCase().includes(textoBusqueda)
+    ) {
+      return false;
+    }
 
-        marca_producto (
-          id_marca,
-          nom_marca
-        ),
+    if (
+      ignorar !== "familia" &&
+      filtros.familia &&
+      String(producto.subcategoria?.id_familia) !== String(filtros.familia)
+    ) {
+      return false;
+    }
 
-        unidad_medida (
-          id_und_medida,
-          nom_und_medida
-        )
-      `,
-      )
-      .eq("id_subcategoria", Number(idSubcategoria))
-      .eq("est_prod", 2);
+    if (
+      ignorar !== "subcategoria" &&
+      filtros.subcategoria &&
+      String(producto.id_subcategoria) !== String(filtros.subcategoria)
+    ) {
+      return false;
+    }
 
-    if (error) {
-      console.error(
-        "Error al cargar las características de la subcategoría:",
-        error,
-      );
+    if (
+      ignorar !== "marca" &&
+      filtros.marca &&
+      String(producto.id_marca) !== String(filtros.marca)
+    ) {
+      return false;
+    }
 
+    if (
+      ignorar !== "color" &&
+      filtros.color &&
+      producto.color_prod !== filtros.color
+    ) {
+      return false;
+    }
+
+    if (
+      ignorar !== "unidadMedida" &&
+      filtros.unidadMedida &&
+      String(producto.id_und_medida) !== String(filtros.unidadMedida)
+    ) {
+      return false;
+    }
+
+    if (
+      ignorar !== "peso" &&
+      filtros.peso !== "" &&
+      Number(producto.peso_prod) !== Number(filtros.peso)
+    ) {
+      return false;
+    }
+
+    if (
+      ignorar !== "precioMinimo" &&
+      filtros.precioMinimo !== "" &&
+      Number(producto.precio_act) < Number(filtros.precioMinimo)
+    ) {
+      return false;
+    }
+
+    if (
+      ignorar !== "precioMaximo" &&
+      filtros.precioMaximo !== "" &&
+      Number(producto.precio_act) > Number(filtros.precioMaximo)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  const familias = useMemo(() => {
+    const mapa = new Map();
+
+    productosParaFiltros
+      .filter((producto) => productoCumpleFiltros(producto, "familia"))
+      .forEach((producto) => {
+        const familia = producto.subcategoria?.familia;
+
+        if (
+          familia?.id_familia !== null &&
+          familia?.id_familia !== undefined &&
+          familia?.nom_familia
+        ) {
+          mapa.set(String(familia.id_familia), {
+            id_familia: familia.id_familia,
+            nom_familia: familia.nom_familia,
+          });
+        }
+      });
+
+    return [...mapa.values()].sort((a, b) =>
+      a.nom_familia.localeCompare(b.nom_familia, "es"),
+    );
+  }, [productosParaFiltros, filtros]);
+
+  const subcategorias = useMemo(() => {
+    const mapa = new Map();
+
+    productosParaFiltros
+      .filter((producto) => productoCumpleFiltros(producto, "subcategoria"))
+      .forEach((producto) => {
+        const subcategoria = producto.subcategoria;
+
+        if (
+          subcategoria?.id_subcategoria !== null &&
+          subcategoria?.id_subcategoria !== undefined &&
+          subcategoria?.nom_subcategoria
+        ) {
+          mapa.set(String(subcategoria.id_subcategoria), {
+            id_subcategoria: subcategoria.id_subcategoria,
+            nom_subcategoria: subcategoria.nom_subcategoria,
+            id_familia: subcategoria.id_familia,
+          });
+        }
+      });
+
+    return [...mapa.values()].sort((a, b) =>
+      a.nom_subcategoria.localeCompare(b.nom_subcategoria, "es"),
+    );
+  }, [productosParaFiltros, filtros]);
+
+  const marcas = useMemo(() => {
+    const mapa = new Map();
+
+    productosParaFiltros
+      .filter((producto) => productoCumpleFiltros(producto, "marca"))
+      .forEach((producto) => {
+        const marca = producto.marca_producto;
+
+        if (
+          marca?.id_marca !== null &&
+          marca?.id_marca !== undefined &&
+          marca?.nom_marca
+        ) {
+          mapa.set(String(marca.id_marca), {
+            id_marca: marca.id_marca,
+            nom_marca: marca.nom_marca,
+          });
+        }
+      });
+
+    return [...mapa.values()].sort((a, b) =>
+      a.nom_marca.localeCompare(b.nom_marca, "es"),
+    );
+  }, [productosParaFiltros, filtros]);
+
+  const colores = useMemo(() => {
+    const valores = productosParaFiltros
+      .filter((producto) => productoCumpleFiltros(producto, "color"))
+      .map((producto) => producto.color_prod?.trim())
+      .filter(Boolean);
+
+    return [...new Set(valores)].sort((a, b) => a.localeCompare(b, "es"));
+  }, [productosParaFiltros, filtros]);
+
+  const unidadesMedida = useMemo(() => {
+    const mapa = new Map();
+
+    productosParaFiltros
+      .filter((producto) => productoCumpleFiltros(producto, "unidadMedida"))
+      .forEach((producto) => {
+        const unidad = producto.unidad_medida;
+
+        if (
+          unidad?.id_und_medida !== null &&
+          unidad?.id_und_medida !== undefined &&
+          unidad?.nom_und_medida
+        ) {
+          mapa.set(String(unidad.id_und_medida), {
+            id_und_medida: unidad.id_und_medida,
+            nom_und_medida: unidad.nom_und_medida,
+          });
+        }
+      });
+
+    return [...mapa.values()].sort((a, b) =>
+      a.nom_und_medida.localeCompare(b.nom_und_medida, "es"),
+    );
+  }, [productosParaFiltros, filtros]);
+
+  const pesos = useMemo(() => {
+    const mapa = new Map();
+
+    productosParaFiltros
+      .filter((producto) => productoCumpleFiltros(producto, "peso"))
+      .filter((producto) => {
+        if (!filtros.unidadMedida) {
+          return true;
+        }
+
+        return String(producto.id_und_medida) === String(filtros.unidadMedida);
+      })
+      .forEach((producto) => {
+        if (
+          producto.peso_prod === null ||
+          producto.peso_prod === undefined ||
+          producto.id_und_medida === null ||
+          producto.id_und_medida === undefined
+        ) {
+          return;
+        }
+
+        const valor = Number(producto.peso_prod);
+
+        const clave = `${producto.id_und_medida}-${valor}`;
+
+        mapa.set(clave, {
+          valor,
+          id_und_medida: producto.id_und_medida,
+        });
+      });
+
+    return [...mapa.values()].sort((a, b) => a.valor - b.valor);
+  }, [productosParaFiltros, filtros]);
+
+  useEffect(() => {
+    if (cargandoFiltros) {
       return;
     }
 
-    const productosSubcategoria = data || [];
+    setFiltros((actuales) => {
+      const nuevos = {
+        ...actuales,
+      };
 
-    const marcasUnicas = productosSubcategoria
-      .filter(
-        (producto) =>
-          producto.marca_producto?.id_marca !== null &&
-          producto.marca_producto?.id_marca !== undefined &&
-          producto.marca_producto?.nom_marca,
-      )
-      .map((producto) => ({
-        id_marca: producto.marca_producto.id_marca,
+      let huboCambio = false;
 
-        nom_marca: producto.marca_producto.nom_marca,
-      }))
-      .filter(
-        (marca, indice, arreglo) =>
-          arreglo.findIndex(
-            (elemento) => elemento.id_marca === marca.id_marca,
-          ) === indice,
-      )
-      .sort((a, b) => a.nom_marca.localeCompare(b.nom_marca, "es"));
+      if (
+        actuales.familia &&
+        !familias.some(
+          (familia) => String(familia.id_familia) === String(actuales.familia),
+        )
+      ) {
+        nuevos.familia = "";
+        huboCambio = true;
+      }
 
-    const coloresUnicos = [
-      ...new Set(
-        productosSubcategoria
-          .map((producto) => producto.color_prod?.trim())
-          .filter(Boolean),
-      ),
-    ].sort((a, b) => a.localeCompare(b, "es"));
+      if (
+        actuales.subcategoria &&
+        !subcategorias.some(
+          (subcategoria) =>
+            String(subcategoria.id_subcategoria) ===
+            String(actuales.subcategoria),
+        )
+      ) {
+        nuevos.subcategoria = "";
+        huboCambio = true;
+      }
 
-    const unidadesUnicas = productosSubcategoria
-      .filter(
-        (producto) =>
-          producto.unidad_medida?.id_und_medida !== null &&
-          producto.unidad_medida?.id_und_medida !== undefined &&
-          producto.unidad_medida?.nom_und_medida,
-      )
-      .map((producto) => ({
-        id_und_medida: producto.unidad_medida.id_und_medida,
+      if (
+        actuales.marca &&
+        !marcas.some(
+          (marca) => String(marca.id_marca) === String(actuales.marca),
+        )
+      ) {
+        nuevos.marca = "";
+        huboCambio = true;
+      }
 
-        nom_und_medida: producto.unidad_medida.nom_und_medida,
-      }))
-      .filter(
-        (unidad, indice, arreglo) =>
-          arreglo.findIndex(
-            (elemento) => elemento.id_und_medida === unidad.id_und_medida,
-          ) === indice,
-      )
-      .sort((a, b) => a.nom_und_medida.localeCompare(b.nom_und_medida, "es"));
+      if (actuales.color && !colores.includes(actuales.color)) {
+        nuevos.color = "";
+        huboCambio = true;
+      }
 
-    const pesosUnicos = productosSubcategoria
-      .filter(
-        (producto) =>
-          producto.peso_prod !== null &&
-          producto.peso_prod !== undefined &&
-          producto.id_und_medida !== null &&
-          producto.id_und_medida !== undefined,
-      )
-      .map((producto) => ({
-        valor: Number(producto.peso_prod),
+      if (
+        actuales.unidadMedida &&
+        !unidadesMedida.some(
+          (unidad) =>
+            String(unidad.id_und_medida) === String(actuales.unidadMedida),
+        )
+      ) {
+        nuevos.unidadMedida = "";
+        nuevos.peso = "";
+        huboCambio = true;
+      }
 
-        id_und_medida: producto.id_und_medida,
-      }))
-      .filter(
-        (peso, indice, arreglo) =>
-          arreglo.findIndex(
-            (elemento) =>
-              elemento.valor === peso.valor &&
-              elemento.id_und_medida === peso.id_und_medida,
-          ) === indice,
-      )
-      .sort((a, b) => a.valor - b.valor);
+      if (
+        actuales.peso !== "" &&
+        !pesos.some((peso) => Number(peso.valor) === Number(actuales.peso))
+      ) {
+        nuevos.peso = "";
+        huboCambio = true;
+      }
 
-    setMarcas(marcasUnicas);
-    setColores(coloresUnicos);
-    setUnidadesMedida(unidadesUnicas);
-    setPesos(pesosUnicos);
-  }
+      return huboCambio ? nuevos : actuales;
+    });
+  }, [
+    cargandoFiltros,
+    familias,
+    subcategorias,
+    marcas,
+    colores,
+    unidadesMedida,
+    pesos,
+  ]);
 
   function obtenerUrlImagen(rutaImagen) {
     if (!rutaImagen) {
@@ -330,7 +478,6 @@ function Catalogo() {
     setErrorCarga("");
 
     const desde = (paginaActual - 1) * PRODUCTOS_POR_PAGINA;
-
     const hasta = desde + PRODUCTOS_POR_PAGINA - 1;
 
     let consulta = supabase
@@ -381,7 +528,9 @@ function Catalogo() {
             )
           )
         `,
-        { count: "exact" },
+        {
+          count: "exact",
+        },
       )
       .eq("est_prod", 2);
 
@@ -426,28 +575,40 @@ function Catalogo() {
 
     switch (filtros.orden) {
       case "precio-menor":
-        consulta = consulta.order("precio_act", { ascending: true });
+        consulta = consulta.order("precio_act", {
+          ascending: true,
+        });
         break;
 
       case "precio-mayor":
-        consulta = consulta.order("precio_act", { ascending: false });
+        consulta = consulta.order("precio_act", {
+          ascending: false,
+        });
         break;
 
       case "nombre-az":
-        consulta = consulta.order("nom_prod", { ascending: true });
+        consulta = consulta.order("nom_prod", {
+          ascending: true,
+        });
         break;
 
       case "nombre-za":
-        consulta = consulta.order("nom_prod", { ascending: false });
+        consulta = consulta.order("nom_prod", {
+          ascending: false,
+        });
         break;
 
       case "antiguos":
-        consulta = consulta.order("created_prod", { ascending: true });
+        consulta = consulta.order("created_prod", {
+          ascending: true,
+        });
         break;
 
       case "recientes":
       default:
-        consulta = consulta.order("created_prod", { ascending: false });
+        consulta = consulta.order("created_prod", {
+          ascending: false,
+        });
         break;
     }
 
@@ -475,73 +636,42 @@ function Catalogo() {
 
     setProductos(productosAdaptados);
     setTotalProductos(count || 0);
+
     setCargando(false);
   }
 
-  function cambiarFiltro(nombre, valor) {
-    setPaginaActual(1);
+  function actualizarParametroUrl(nombre, valor) {
+    const nuevosParametros = new URLSearchParams(searchParams);
 
-    /*
-     * Al cambiar de familia, se limpian todos los
-     * filtros que dependen de ella.
-     */
     if (nombre === "familia") {
-      const nuevosParametros = new URLSearchParams(searchParams);
-
       if (valor) {
         nuevosParametros.set("categoria", valor);
       } else {
         nuevosParametros.delete("categoria");
       }
-
-      setSearchParams(nuevosParametros);
-
-      setFiltros((filtrosActuales) => ({
-        ...filtrosActuales,
-        familia: valor,
-        subcategoria: "",
-        marca: "",
-        color: "",
-        unidadMedida: "",
-        peso: "",
-      }));
-
-      setMarcas([]);
-      setColores([]);
-      setUnidadesMedida([]);
-      setPesos([]);
-
-      return;
     }
 
-    /*
-     * Al cambiar la subcategoría se limpian las
-     * características anteriores.
-     */
-    if (nombre === "subcategoria") {
-      setFiltros((filtrosActuales) => ({
-        ...filtrosActuales,
-        subcategoria: valor,
-        marca: "",
-        color: "",
-        unidadMedida: "",
-        peso: "",
-      }));
-
-      setMarcas([]);
-      setColores([]);
-      setUnidadesMedida([]);
-      setPesos([]);
-
-      return;
+    if (nombre === "marca") {
+      if (valor) {
+        nuevosParametros.set("marca", valor);
+      } else {
+        nuevosParametros.delete("marca");
+      }
     }
 
-    /*
-     * El peso depende de la unidad de medida.
-     */
+    setSearchParams(nuevosParametros);
+  }
+
+  function cambiarFiltro(nombre, valor) {
+    setPaginaActual(1);
+
+    if (nombre === "familia" || nombre === "marca") {
+      actualizarParametroUrl(nombre, valor);
+    }
+
     if (nombre === "unidadMedida") {
-      setFiltros((filtrosActuales) => ({
-        ...filtrosActuales,
+      setFiltros((actuales) => ({
+        ...actuales,
         unidadMedida: valor,
         peso: "",
       }));
@@ -549,8 +679,8 @@ function Catalogo() {
       return;
     }
 
-    setFiltros((filtrosActuales) => ({
-      ...filtrosActuales,
+    setFiltros((actuales) => ({
+      ...actuales,
       [nombre]: valor,
     }));
   }
@@ -561,11 +691,6 @@ function Catalogo() {
     setFiltros({
       ...FILTROS_INICIALES,
     });
-
-    setMarcas([]);
-    setColores([]);
-    setUnidadesMedida([]);
-    setPesos([]);
 
     setPaginaActual(1);
   }
@@ -586,16 +711,6 @@ function Catalogo() {
       behavior: "smooth",
     });
   }
-
-  /*
-   * El filtro de peso solamente muestra valores
-   * correspondientes a la unidad seleccionada.
-   */
-  const pesosFiltrados = filtros.unidadMedida
-    ? pesos.filter(
-        (peso) => String(peso.id_und_medida) === String(filtros.unidadMedida),
-      )
-    : [];
 
   return (
     <main className="catalogo">
@@ -620,11 +735,13 @@ function Catalogo() {
           marcas={marcas}
           colores={colores}
           unidadesMedida={unidadesMedida}
-          pesos={pesosFiltrados}
+          pesos={pesos}
           filtros={filtros}
+          cargandoOpciones={cargandoFiltros}
           onCambiarFiltro={cambiarFiltro}
           onLimpiarFiltros={limpiarFiltros}
         />
+
         <section className="catalogo__resultados">
           {!cargando && !errorCarga && (
             <p className="catalogo__cantidad">
@@ -652,10 +769,7 @@ function Catalogo() {
             <div className="catalogo__vacio">
               <h2>No se encontraron productos</h2>
 
-              <p>
-                Prueba cambiando la familia, subcategoría, marca, color, unidad
-                de medida, peso, precio o búsqueda.
-              </p>
+              <p>Prueba modificando alguno de los filtros seleccionados.</p>
 
               <button type="button" onClick={limpiarFiltros}>
                 Limpiar filtros
