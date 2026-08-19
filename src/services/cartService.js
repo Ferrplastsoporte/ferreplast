@@ -1,10 +1,8 @@
 import { supabase } from "../lib/supabase";
 
 const CART_STORAGE_KEY = "ferreplast_cart";
+let sincronizacionEnCurso = null;
 
-/*
- * Obtiene el carrito guardado para usuarios invitados.
- */
 export function obtenerCarritoLocal() {
   try {
     const carritoGuardado = localStorage.getItem(CART_STORAGE_KEY);
@@ -17,16 +15,10 @@ export function obtenerCarritoLocal() {
   }
 }
 
-/*
- * Guarda el carrito completo en localStorage.
- */
 function guardarCarritoLocal(carrito) {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(carrito));
 }
 
-/*
- * Elimina solamente el carrito local.
- */
 function limpiarCarritoLocal() {
   localStorage.removeItem(CART_STORAGE_KEY);
 }
@@ -65,6 +57,19 @@ function validarCantidadConStock(
   return cantidadFinal;
 }
 
+export async function obtenerUsuarioActual() {
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
+
+  if (error) {
+    throw error;
+  }
+
+  return session?.user ?? null;
+}
+
 export function agregarProductoLocal(producto, cantidad = 1) {
   const carritoActual = obtenerCarritoLocal();
 
@@ -87,7 +92,16 @@ export function agregarProductoLocal(producto, cantidad = 1) {
       Number(item.id_prod) === Number(producto.id_prod)
         ? {
             ...item,
+            nom_prod: producto.nom_prod,
+
+            precio_prod: producto.precio_prod,
+
+            precio_act: producto.precio_act,
+
+            imagen_url: producto.imagen_url,
+
             stock_prod: producto.stock_prod,
+
             cantidad: cantidadFinal,
           }
         : item,
@@ -118,25 +132,37 @@ export function agregarProductoLocal(producto, cantidad = 1) {
   return carritoActualizado;
 }
 
-export async function obtenerUsuarioActual() {
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
+async function obtenerProductoActual(idProducto) {
+  const { data, error } = await supabase
+    .from("producto")
+    .select(
+      `
+      id_prod,
+      stock_prod,
+      est_prod
+    `,
+    )
+    .eq("id_prod", idProducto)
+    .single();
 
   if (error) {
     throw error;
   }
 
-  return session?.user ?? null;
+  if (Number(data.est_prod) !== 2) {
+    throw new Error("El producto ya no se encuentra disponible.");
+  }
+
+  return data;
 }
 
 export async function agregarProductoSupabase(
   idUsuario,
   idProducto,
   cantidad = 1,
-  stockDisponible,
 ) {
+  const productoActual = await obtenerProductoActual(idProducto);
+
   const { data: itemExistente, error: errorConsulta } = await supabase
     .from("carrito")
     .select("id_cart, cant_cart")
@@ -153,7 +179,7 @@ export async function agregarProductoSupabase(
   const cantidadFinal = validarCantidadConStock(
     cantidadActual,
     cantidad,
-    stockDisponible,
+    productoActual.stock_prod,
   );
 
   if (itemExistente) {
@@ -196,12 +222,7 @@ export async function agregarProductoAlCarrito(producto, cantidad = 1) {
   const usuario = await obtenerUsuarioActual();
 
   if (usuario) {
-    await agregarProductoSupabase(
-      usuario.id,
-      producto.id_prod,
-      cantidad,
-      producto.stock_prod,
-    );
+    await agregarProductoSupabase(usuario.id, producto.id_prod, cantidad);
 
     return {
       tipo: "supabase",
@@ -215,6 +236,60 @@ export async function agregarProductoAlCarrito(producto, cantidad = 1) {
     tipo: "local",
     mensaje: "Producto agregado al carrito.",
   };
+}
+
+export async function sincronizarCarritoLocalConUsuario() {
+  if (sincronizacionEnCurso) {
+    return sincronizacionEnCurso;
+  }
+
+  const carritoLocal = obtenerCarritoLocal();
+
+  if (!Array.isArray(carritoLocal) || carritoLocal.length === 0) {
+    return null;
+  }
+
+  const carritoParaSincronizar = carritoLocal
+    .map((item) => ({
+      id_prod: Number(item.id_prod),
+
+      cantidad: Number(item.cantidad),
+    }))
+    .filter(
+      (item) =>
+        Number.isInteger(item.id_prod) &&
+        item.id_prod > 0 &&
+        Number.isInteger(item.cantidad) &&
+        item.cantidad > 0,
+    );
+
+  if (carritoParaSincronizar.length === 0) {
+    limpiarCarritoLocal();
+    return null;
+  }
+
+  sincronizacionEnCurso = (async () => {
+    try {
+      const { data, error } = await supabase.rpc(
+        "sincronizar_carrito_usuario",
+        {
+          p_carrito: carritoParaSincronizar,
+        },
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      limpiarCarritoLocal();
+
+      return data;
+    } finally {
+      sincronizacionEnCurso = null;
+    }
+  })();
+
+  return sincronizacionEnCurso;
 }
 
 async function obtenerCarritoSupabase(idUsuario) {
@@ -245,14 +320,6 @@ async function obtenerCarritoSupabase(idUsuario) {
     throw error;
   }
 
-  /*
-   * Como medida adicional de seguridad,
-   * solamente devolvemos productos activos.
-   *
-   * El trigger de limpieza debería retirar
-   * productos no disponibles, pero esta
-   * validación evita mostrarlos igualmente.
-   */
   return (data ?? [])
     .filter((item) => item.producto && Number(item.producto.est_prod) === 2)
     .map((item) => ({
@@ -274,217 +341,6 @@ async function obtenerCarritoSupabase(idUsuario) {
     }));
 }
 
-/*
- * ==========================================================
- * MIGRACIÓN DEL CARRITO LOCAL
- * ==========================================================
- *
- * Se ejecuta cuando:
- *
- * - existe una sesión;
- * - existen productos en localStorage.
- *
- * Nunca copia directamente los datos guardados
- * localmente.
- *
- * Primero vuelve a consultar producto para validar:
- *
- * - que exista;
- * - que est_prod = 2;
- * - que tenga stock disponible;
- * - que la cantidad no supere el stock actual.
- *
- * También considera productos que ya estaban
- * en el carrito de la cuenta.
- */
-
-export async function sincronizarCarritoLocalConUsuario(idUsuario) {
-  const carritoLocal = obtenerCarritoLocal();
-
-  if (!Array.isArray(carritoLocal) || carritoLocal.length === 0) {
-    return {
-      sincronizado: false,
-      ajustados: 0,
-      omitidos: 0,
-    };
-  }
-
-  const idsProductos = [
-    ...new Set(
-      carritoLocal
-        .map((item) => Number(item.id_prod))
-        .filter((id) => Number.isInteger(id) && id > 0),
-    ),
-  ];
-
-  if (idsProductos.length === 0) {
-    limpiarCarritoLocal();
-
-    return {
-      sincronizado: false,
-      ajustados: 0,
-      omitidos: carritoLocal.length,
-    };
-  }
-
-  const { data: productosActuales, error: errorProductos } = await supabase
-    .from("producto")
-    .select(
-      `
-      id_prod,
-      stock_prod,
-      est_prod
-      `,
-    )
-    .in("id_prod", idsProductos);
-
-  if (errorProductos) {
-    throw errorProductos;
-  }
-
-  const mapaProductos = new Map(
-    (productosActuales ?? []).map((producto) => [
-      Number(producto.id_prod),
-      producto,
-    ]),
-  );
-
-  const { data: carritoUsuario, error: errorCarrito } = await supabase
-    .from("carrito")
-    .select(
-      `
-      id_cart,
-      id_prod,
-      cant_cart
-      `,
-    )
-    .eq("id_user", idUsuario);
-
-  if (errorCarrito) {
-    throw errorCarrito;
-  }
-
-  const mapaCarritoUsuario = new Map(
-    (carritoUsuario ?? []).map((item) => [Number(item.id_prod), item]),
-  );
-
-  let ajustados = 0;
-  let omitidos = 0;
-
-  for (const itemLocal of carritoLocal) {
-    const idProducto = Number(itemLocal.id_prod);
-
-    const productoActual = mapaProductos.get(idProducto);
-
-    if (!productoActual) {
-      omitidos += 1;
-      continue;
-    }
-
-    if (Number(productoActual.est_prod) !== 2) {
-      omitidos += 1;
-      continue;
-    }
-
-    const stockActual = Number(productoActual.stock_prod);
-
-    if (!Number.isFinite(stockActual) || stockActual <= 0) {
-      omitidos += 1;
-      continue;
-    }
-
-    let cantidadLocal = Number(itemLocal.cantidad);
-
-    if (!Number.isInteger(cantidadLocal) || cantidadLocal < 1) {
-      omitidos += 1;
-      continue;
-    }
-
-    const itemCuenta = mapaCarritoUsuario.get(idProducto);
-
-    const cantidadCuenta = Number(itemCuenta?.cant_cart) || 0;
-
-    let cantidadFinal = cantidadCuenta + cantidadLocal;
-
-    if (cantidadFinal > stockActual) {
-      cantidadFinal = stockActual;
-
-      ajustados += 1;
-    }
-
-    if (cantidadCuenta >= stockActual) {
-      ajustados += 1;
-      continue;
-    }
-
-    if (itemCuenta) {
-      const { error: errorActualizacion } = await supabase
-        .from("carrito")
-        .update({
-          cant_cart: cantidadFinal,
-        })
-        .eq("id_cart", itemCuenta.id_cart);
-
-      if (errorActualizacion) {
-        throw errorActualizacion;
-      }
-
-      mapaCarritoUsuario.set(idProducto, {
-        ...itemCuenta,
-        cant_cart: cantidadFinal,
-      });
-
-      continue;
-    }
-
-    const { data: nuevoItem, error: errorInsercion } = await supabase
-      .from("carrito")
-      .insert({
-        id_user: idUsuario,
-
-        id_prod: idProducto,
-
-        cant_cart: Math.min(cantidadLocal, stockActual),
-      })
-      .select(
-        `
-        id_cart,
-        id_prod,
-        cant_cart
-        `,
-      )
-      .single();
-
-    if (errorInsercion) {
-      throw errorInsercion;
-    }
-
-    mapaCarritoUsuario.set(idProducto, nuevoItem);
-
-    if (cantidadLocal > stockActual) {
-      ajustados += 1;
-    }
-  }
-
-  /*
-   * MUY IMPORTANTE:
-   *
-   * localStorage se elimina solamente cuando
-   * todo el proceso terminó sin lanzar errores.
-   *
-   * Si Supabase falla a mitad de la migración,
-   * el carrito local se conserva para poder
-   * volver a intentarlo.
-   */
-  limpiarCarritoLocal();
-
-  return {
-    sincronizado: true,
-    ajustados,
-    omitidos,
-  };
-}
-
 export async function obtenerProductosCarrito() {
   const usuario = await obtenerUsuarioActual();
 
@@ -492,7 +348,7 @@ export async function obtenerProductosCarrito() {
     return obtenerCarritoLocal();
   }
 
-  await sincronizarCarritoLocalConUsuario(usuario.id);
+  await sincronizarCarritoLocalConUsuario();
 
   return obtenerCarritoSupabase(usuario.id);
 }
@@ -506,6 +362,9 @@ export async function actualizarCantidadCarrito(idProducto, nuevaCantidad) {
 
   const usuario = await obtenerUsuarioActual();
 
+  /*
+   * Carrito local.
+   */
   if (!usuario) {
     const carritoActual = obtenerCarritoLocal();
 
@@ -541,30 +400,9 @@ export async function actualizarCantidadCarrito(idProducto, nuevaCantidad) {
     return carritoActualizado;
   }
 
-  const { data: producto, error: errorProducto } = await supabase
-    .from("producto")
-    .select(
-      `
-      stock_prod,
-      est_prod
-      `,
-    )
-    .eq("id_prod", idProducto)
-    .single();
+  const productoActual = await obtenerProductoActual(idProducto);
 
-  if (errorProducto) {
-    throw errorProducto;
-  }
-
-  if (Number(producto.est_prod) !== 2) {
-    throw new Error("El producto ya no se encuentra disponible.");
-  }
-
-  const stock = Number(producto.stock_prod);
-
-  if (!Number.isFinite(stock) || stock < 0) {
-    throw new Error("No fue posible comprobar el stock del producto.");
-  }
+  const stock = Number(productoActual.stock_prod);
 
   if (cantidad > stock) {
     throw new Error(`Solo hay ${stock} unidad(es) disponibles.`);
