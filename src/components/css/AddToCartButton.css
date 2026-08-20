@@ -1,0 +1,195 @@
+/* =========================================================
+   BOTÓN AGREGAR AL CARRITO - FERREPLAST
+   ========================================================= */
+
+.add-to-cart {
+  width: 100%;
+}
+
+
+/* =========================================================
+   BOTÓN
+   ========================================================= */
+
+.add-to-cart > button {
+  width: 100%;
+  min-height: 46px;
+
+  padding: 12px 18px;
+
+  border: 1px solid rgba(75, 155, 255, 0.35);
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #1682f5 0%,
+    #0868d2 100%
+  );
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 18px rgba(8, 100, 210, 0.22);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+/* =========================================================
+   HOVER
+   ========================================================= */
+
+.add-to-cart > button:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  background: linear-gradient(
+    135deg,
+    #2690ff 0%,
+    #0873e5 100%
+  );
+
+  border-color: rgba(100, 175, 255, 0.65);
+
+  box-shadow:
+    0 11px 25px rgba(8, 100, 210, 0.32);
+}
+
+
+/* =========================================================
+   CLICK
+   ========================================================= */
+
+.add-to-cart > button:active:not(:disabled) {
+  transform: translateY(0);
+
+  box-shadow:
+    0 5px 12px rgba(8, 100, 210, 0.20);
+}
+
+
+/* =========================================================
+   DESHABILITADO / SIN STOCK
+   ========================================================= */
+
+.add-to-cart > button:disabled {
+  background: rgba(255, 255, 255, 0.08);
+
+  border-color: rgba(255, 255, 255, 0.10);
+
+  color: rgba(255, 255, 255, 0.38);
+
+  box-shadow: none;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   PRODUCTO AGREGADO
+   ========================================================= */
+
+.add-to-cart__button--success {
+  background: linear-gradient(
+    135deg,
+    #18a86b 0%,
+    #087c4d 100%
+  ) !important;
+
+  border-color: rgba(65, 220, 150, 0.45) !important;
+
+  color: #ffffff !important;
+
+  box-shadow:
+    0 8px 20px rgba(24, 168, 107, 0.22);
+}
+
+
+/* =========================================================
+   MODAL DE CANTIDAD
+   ========================================================= */
+
+.add-to-cart__modal {
+  position: relative;
+
+  z-index: 1200;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.add-to-cart__error {
+  margin: 8px 0 0;
+
+  padding: 8px 12px;
+
+  border: 1px solid rgba(255, 70, 85, 0.25);
+  border-radius: 8px;
+
+  background: rgba(255, 55, 70, 0.08);
+
+  color: #ff6975;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  line-height: 1.4;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .add-to-cart > button {
+    min-height: 45px;
+
+    padding: 11px 15px;
+
+    font-size: 13px;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .add-to-cart > button {
+    min-height: 46px;
+
+    padding: 12px 15px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+  }
+
+}
+
+
+@media (max-width: 380px) {
+
+  .add-to-cart > button {
+    min-height: 44px;
+
+    padding: 11px 12px;
+
+    font-size: 13px;
+  }
+
+}
