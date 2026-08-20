@@ -1,3 +1,11 @@
+.productos-toolbar {
+  margin-bottom: 18px;
+}
+
+.productos-toolbar .btn-add {
+  width: 100%;
+}
+
 /* ============================
    TABLA DE PRODUCTOS
 ============================ */
@@ -15,10 +23,10 @@
 }
 
 .productos-page .product-table {
-  width: 100%;
-  min-width: 1180px;
+  width: max-content;
+  min-width: 100%;
 
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
 }
 
@@ -28,18 +36,13 @@
 
 .productos-page .product-table th,
 .productos-page .product-table td {
-  padding: 18px 20px;
-
-  border-bottom: 1px solid #e2e8f0;
-
-  text-align: left;
-  vertical-align: middle;
+  padding: 15px 10px;
 }
 
 .productos-page .product-table th {
   color: #475569;
 
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0.035em;
   text-transform: uppercase;
@@ -49,7 +52,7 @@
 
 .productos-page .product-table td {
   color: #1e293b;
-  font-size: 0.93rem;
+  font-size: 0.9rem;
 }
 
 .productos-page .product-table tbody tr {
@@ -64,41 +67,51 @@
   border-bottom: none;
 }
 
-/* Anchos por columna */
+/* ============================
+   ANCHOS DE COLUMNAS
+============================ */
 
+/* Imagen */
 .productos-page .product-table th:nth-child(1),
 .productos-page .product-table td:nth-child(1) {
-  width: 110px;
+  width: 90px;
 }
 
+/* Producto */
 .productos-page .product-table th:nth-child(2),
 .productos-page .product-table td:nth-child(2) {
-  width: 360px;
+  width: 280px;
+  max-width: 280px;
 }
 
+/* Marca */
 .productos-page .product-table th:nth-child(3),
 .productos-page .product-table td:nth-child(3) {
-  width: 160px;
+  width: 120px;
 }
 
+/* Stock */
 .productos-page .product-table th:nth-child(4),
 .productos-page .product-table td:nth-child(4) {
-  width: 140px;
+  width: 120px;
 }
 
+/* Precio */
 .productos-page .product-table th:nth-child(5),
 .productos-page .product-table td:nth-child(5) {
-  width: 170px;
+  width: 120px;
 }
 
+/* Estado */
 .productos-page .product-table th:nth-child(6),
 .productos-page .product-table td:nth-child(6) {
-  width: 150px;
+  width: 135px;
 }
 
+/* Acciones */
 .productos-page .product-table th:nth-child(7),
 .productos-page .product-table td:nth-child(7) {
-  width: 120px;
+  width: 100px;
   text-align: center;
 }
 
@@ -108,8 +121,8 @@
 
 .product-table__image,
 .product-table__image-placeholder {
-  width: 78px;
-  height: 62px;
+  width: 68px;
+  height: 58px;
 
   box-sizing: border-box;
 
@@ -121,7 +134,7 @@
 
 .product-table__image {
   display: block;
-  padding: 6px;
+  padding: 5px;
 
   object-fit: contain;
   object-position: center;
@@ -132,10 +145,10 @@
   align-items: center;
   justify-content: center;
 
-  padding: 6px;
+  padding: 5px;
 
   color: #94a3b8;
-  font-size: 0.72rem;
+  font-size: 0.69rem;
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
@@ -148,7 +161,7 @@
 .product-table__product {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   min-width: 0;
 }
@@ -158,8 +171,8 @@
 
   color: #172033;
 
-  font-size: 0.96rem;
-  line-height: 1.35;
+  font-size: 0.94rem;
+  line-height: 1.3;
 
   overflow-wrap: anywhere;
 }
@@ -168,8 +181,8 @@
   display: block;
 
   color: #64748b;
-  font-size: 0.8rem;
-  line-height: 1.35;
+  font-size: 0.78rem;
+  line-height: 1.3;
 
   overflow-wrap: anywhere;
 }
@@ -182,14 +195,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 3px;
 }
 
 .product-table__prices strong {
   display: block;
 
   color: #172033;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.2;
 
   white-space: nowrap;
@@ -199,7 +212,7 @@
   display: block;
 
   color: #94a3b8;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   line-height: 1.2;
 
   text-decoration: line-through;
@@ -215,16 +228,16 @@
   align-items: center;
   justify-content: center;
 
-  min-width: 92px;
-  min-height: 34px;
-  padding: 0 12px;
+  min-width: 82px;
+  min-height: 32px;
+  padding: 0 10px;
 
   border-radius: 999px;
 
   background: #eef2f7;
   color: #334155;
 
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
@@ -248,13 +261,13 @@
   align-items: center;
   justify-content: center;
 
-  min-width: 110px;
-  min-height: 34px;
-  padding: 0 12px;
+  min-width: 105px;
+  min-height: 32px;
+  padding: 0 11px;
 
   border-radius: 999px;
 
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 900;
   line-height: 1.2;
   text-align: center;
@@ -293,9 +306,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 
-  min-width: 96px;
+  min-width: 86px;
 }
 
 .productos-page .btn-edit,
@@ -306,16 +319,16 @@
   align-items: center;
   justify-content: center;
 
-  flex: 0 0 40px;
+  flex: 0 0 38px;
 
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   padding: 0;
 
   border-radius: 9px;
 
   font: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1;
 
   cursor: pointer;
@@ -357,7 +370,7 @@
 }
 
 /* ==========================================================
-   FORMULARIO DE PRODUCTOS — VERSIÓN COMPACTA
+   FORMULARIO DE PRODUCTOS
 ========================================================== */
 
 .producto-bodega-form {
@@ -401,7 +414,9 @@
   line-height: 1.45;
 }
 
-/* Distribución de campos */
+/* ============================
+   DISTRIBUCIÓN DEL FORMULARIO
+============================ */
 
 .producto-bodega-form__grid {
   display: grid;
@@ -427,7 +442,9 @@
   font-weight: 800;
 }
 
-/* Inputs, selects y textarea */
+/* ============================
+   INPUTS / SELECT / TEXTAREA
+============================ */
 
 .producto-bodega-form__field input,
 .producto-bodega-form__field select,
@@ -472,6 +489,7 @@
 .producto-bodega-form__field select:focus,
 .producto-bodega-form__field textarea:focus {
   outline: none;
+
   border-color: #0647b9;
 
   box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.14);
@@ -482,6 +500,7 @@
 .producto-bodega-form__field textarea:disabled {
   background: #f1f5f9;
   color: #94a3b8;
+
   cursor: not-allowed;
 }
 
@@ -493,7 +512,9 @@
   line-height: 1.3;
 }
 
-/* Inputs de archivo */
+/* ============================
+   ARCHIVOS
+============================ */
 
 .producto-bodega-form__field input[type="file"] {
   min-height: 40px;
@@ -503,7 +524,9 @@
   cursor: pointer;
 }
 
-/* Documentos nuevos seleccionados */
+/* ============================
+   DOCUMENTOS NUEVOS
+============================ */
 
 .producto-bodega-form__new-documents {
   margin-top: 18px;
@@ -557,6 +580,7 @@
 
 .producto-bodega-form__document-name span {
   display: block;
+
   margin-top: 3px;
 
   color: #64748b;
@@ -566,6 +590,7 @@
 .producto-bodega-form__document-row select {
   width: 100%;
   min-height: 36px;
+
   padding: 0 10px;
 
   border: 1px solid #cbd5e1;
@@ -595,7 +620,9 @@
   cursor: pointer;
 }
 
-/* Imagen y documentos asociados */
+/* ============================
+   RECURSOS
+============================ */
 
 .producto-bodega-form__resources {
   display: grid;
@@ -626,6 +653,7 @@
 .producto-bodega-form__placeholder {
   width: 100%;
   height: 150px;
+
   box-sizing: border-box;
 
   border: 1px solid #dbe3ec;
@@ -706,7 +734,9 @@
   font-size: 0.7rem;
 }
 
-/* Acciones */
+/* ============================
+   ACCIONES DEL FORMULARIO
+============================ */
 
 .producto-bodega-form__actions {
   display: flex;
@@ -740,7 +770,6 @@
 
 .producto-bodega-form__save {
   border: none;
-
   background: #0647b9;
   color: #ffffff;
 }
@@ -752,7 +781,6 @@
 
 .producto-bodega-form__cancel {
   border: 1px solid #cbd5e1;
-
   background: #ffffff;
   color: #475569;
 }
@@ -776,22 +804,31 @@
 .productos-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(3px);
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 2rem;
+
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+
   z-index: 9999;
 }
 
 .productos-modal {
   width: 100%;
   max-width: 500px;
-  background: #fff;
-  border-radius: 18px;
+
   padding: 2rem;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+
   animation: modalFade 0.18s ease;
 }
 
@@ -800,6 +837,7 @@
     opacity: 0;
     transform: translateY(-12px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -808,13 +846,16 @@
 
 .productos-modal h2 {
   margin: 0 0 1rem;
+
   color: #1e293b;
+
   font-size: 1.7rem;
   font-weight: 700;
 }
 
 .productos-modal p {
   margin: 0;
+
   color: #475569;
   line-height: 1.6;
 }
@@ -825,28 +866,37 @@
 
 .productos-modal__note {
   margin-top: 1rem !important;
+
   padding: 0.9rem 1rem;
+
   border-radius: 10px;
-  background: #f8fafc;
   border-left: 4px solid #1d4ed8;
+
+  background: #f8fafc;
+
   font-size: 0.93rem;
 }
 
 .productos-modal__actions {
-  margin-top: 2rem;
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+
+  margin-top: 2rem;
 }
 
 .productos-modal__confirm,
 .productos-modal__cancel {
+  padding: 0.8rem 1.6rem;
+
   border: none;
-  cursor: pointer;
+  border-radius: 10px;
+
   font-size: 0.95rem;
   font-weight: 600;
-  padding: 0.8rem 1.6rem;
-  border-radius: 10px;
+
+  cursor: pointer;
+
   transition: 0.2s;
 }
 
@@ -879,15 +929,15 @@
 
 @media (max-width: 1200px) {
   .productos-page .product-table {
-    min-width: 1080px;
+    min-width: 940px;
   }
 }
 
-/* ============================
-   RESPONSIVE DEL FORMULARIO
-============================ */
-
 @media (max-width: 900px) {
+  .productos-page .product-table {
+    min-width: 900px;
+  }
+
   .producto-bodega-form__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -940,4 +990,3 @@
     width: 100%;
   }
 }
-

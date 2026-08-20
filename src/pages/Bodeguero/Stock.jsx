@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
-
 import BodegueroHeader from "./components/BodegueroHeader";
 
 import "./css/bodeguero.css";
@@ -17,34 +16,18 @@ function formatearPrecio(valor) {
 }
 
 function BodegueroStock() {
-  const [productos, setProductos] =
-    useState([]);
+  const [productos, setProductos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [actualizando, setActualizando] = useState(false);
 
-  const [cargando, setCargando] =
-    useState(true);
+  const [mensajeError, setMensajeError] = useState("");
+  const [mensajeExito, setMensajeExito] = useState("");
 
-  const [actualizando, setActualizando] =
-    useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [soloStockBajo, setSoloStockBajo] = useState(false);
 
-  const [mensajeError, setMensajeError] =
-    useState("");
-
-  const [mensajeExito, setMensajeExito] =
-    useState("");
-
-  const [busqueda, setBusqueda] =
-    useState("");
-
-  const [soloStockBajo, setSoloStockBajo] =
-    useState(false);
-
-  const [
-    productoPorAjustar,
-    setProductoPorAjustar,
-  ] = useState(null);
-
-  const [nuevoStock, setNuevoStock] =
-    useState("");
+  const [productoPorAjustar, setProductoPorAjustar] = useState(null);
+  const [nuevoStock, setNuevoStock] = useState("");
 
   useEffect(() => {
     cargarProductos();
@@ -56,7 +39,8 @@ function BodegueroStock() {
 
     const { data, error } = await supabase
       .from("producto")
-      .select(`
+      .select(
+        `
         id_prod,
         nom_prod,
         precio_prod,
@@ -74,27 +58,21 @@ function BodegueroStock() {
           id_und_medida,
           nom_und_medida
         )
-      `)
+      `,
+      )
       .order("stock_prod", {
         ascending: true,
       });
 
     if (error) {
-      console.error(
-        "Error al cargar el stock:",
-        error,
-      );
-
-      setMensajeError(
-        "No fue posible cargar el inventario.",
-      );
+      console.error("Error al cargar el stock:", error);
 
       setProductos([]);
-      setCargando(false);
-      return;
+      setMensajeError("No fue posible cargar el inventario.");
+    } else {
+      setProductos(data ?? []);
     }
 
-    setProductos(data ?? []);
     setCargando(false);
   }
 
@@ -103,92 +81,57 @@ function BodegueroStock() {
       productos.filter(
         (producto) =>
           Number(producto.est_prod) === 2 &&
-          Number(producto.stock_prod) <
-            LIMITE_STOCK_BAJO,
+          Number(producto.stock_prod) < LIMITE_STOCK_BAJO,
       ),
     [productos],
   );
 
   const productosFiltrados = useMemo(() => {
-    const texto =
-      busqueda.trim().toLocaleLowerCase(
-        "es-CL",
-      );
+    const texto = busqueda.trim().toLocaleLowerCase("es-CL");
 
     return productos.filter((producto) => {
       const coincideBusqueda =
-        !texto ||
-        producto.nom_prod
-          ?.toLocaleLowerCase("es-CL")
-          .includes(texto);
+        !texto || producto.nom_prod?.toLocaleLowerCase("es-CL").includes(texto);
 
       const coincideStock =
         !soloStockBajo ||
         (Number(producto.est_prod) === 2 &&
-          Number(producto.stock_prod) <
-            LIMITE_STOCK_BAJO);
+          Number(producto.stock_prod) < LIMITE_STOCK_BAJO);
 
-      return (
-        coincideBusqueda &&
-        coincideStock
-      );
+      return coincideBusqueda && coincideStock;
     });
-  }, [
-    productos,
-    busqueda,
-    soloStockBajo,
-  ]);
+  }, [productos, busqueda, soloStockBajo]);
 
   function abrirAjusteStock(producto) {
     setProductoPorAjustar(producto);
-
-    setNuevoStock(
-      String(
-        Number(producto.stock_prod) || 0,
-      ),
-    );
+    setNuevoStock(String(Number(producto.stock_prod) || 0));
 
     setMensajeError("");
     setMensajeExito("");
   }
 
   function cerrarAjusteStock() {
-    if (actualizando) {
-      return;
-    }
+    if (actualizando) return;
 
     setProductoPorAjustar(null);
     setNuevoStock("");
   }
 
   function cambiarNuevoStock(valor) {
-    setNuevoStock(
-      String(valor).replace(/\D/g, ""),
-    );
+    setNuevoStock(String(valor).replace(/\D/g, ""));
   }
 
-  async function guardarAjusteStock(
-    evento,
-  ) {
+  async function guardarAjusteStock(evento) {
     evento.preventDefault();
 
-    if (
-      !productoPorAjustar ||
-      actualizando
-    ) {
-      return;
-    }
+    if (!productoPorAjustar || actualizando) return;
 
     const stock = Number(nuevoStock);
 
-    if (
-      !Number.isInteger(stock) ||
-      stock < 0
-    ) {
+    if (!Number.isInteger(stock) || stock < 0) {
       setMensajeError(
         "El stock debe ser un número entero igual o mayor que cero.",
       );
-
       return;
     }
 
@@ -196,48 +139,39 @@ function BodegueroStock() {
     setMensajeError("");
     setMensajeExito("");
 
-    const { error } = await supabase
-      .from("producto")
-      .update({
-        stock_prod: stock,
-      })
-      .eq(
-        "id_prod",
-        productoPorAjustar.id_prod,
-      );
+    try {
+      const { error } = await supabase.rpc("ajustar_stock_producto", {
+        p_id_producto: productoPorAjustar.id_prod,
+        p_nuevo_stock: stock,
+      });
 
-    if (error) {
-      console.error(
-        "Error al ajustar el stock:",
-        error,
+      if (error) throw error;
+
+      const nombreProducto = productoPorAjustar.nom_prod;
+
+      setProductoPorAjustar(null);
+      setNuevoStock("");
+
+      await cargarProductos();
+
+      setMensajeExito(
+        `El stock de "${nombreProducto}" fue actualizado correctamente.`,
       );
+    } catch (error) {
+      console.error("Error al ajustar el stock:", error);
 
       setMensajeError(
-        "No fue posible actualizar el stock del producto.",
+        error?.message || "No fue posible actualizar el stock del producto.",
       );
-
+    } finally {
       setActualizando(false);
-      return;
     }
-
-    setMensajeExito(
-      `El stock de "${productoPorAjustar.nom_prod}" fue actualizado correctamente.`,
-    );
-
-    setProductoPorAjustar(null);
-    setNuevoStock("");
-
-    await cargarProductos();
-
-    setActualizando(false);
   }
 
   if (cargando) {
     return (
       <section className="bodeguero-page">
-        <p className="bodeguero-loading">
-          Cargando inventario...
-        </p>
+        <p className="bodeguero-loading">Cargando inventario...</p>
       </section>
     );
   }
@@ -270,36 +204,24 @@ function BodegueroStock() {
       <div className="stock-summary">
         <div>
           <span>Productos registrados</span>
-
-          <strong>
-            {productos.length}
-          </strong>
+          <strong>{productos.length}</strong>
         </div>
 
         <div>
           <span>Productos con stock bajo</span>
-
-          <strong>
-            {productosStockBajo.length}
-          </strong>
+          <strong>{productosStockBajo.length}</strong>
         </div>
       </div>
 
       <div className="stock-toolbar">
         <div className="stock-toolbar__search">
-          <label htmlFor="buscarStock">
-            Buscar producto
-          </label>
+          <label htmlFor="buscarStock">Buscar producto</label>
 
           <input
             id="buscarStock"
             type="search"
             value={busqueda}
-            onChange={(evento) =>
-              setBusqueda(
-                evento.target.value,
-              )
-            }
+            onChange={(evento) => setBusqueda(evento.target.value)}
             placeholder="Buscar por nombre..."
           />
         </div>
@@ -308,13 +230,8 @@ function BodegueroStock() {
           <input
             type="checkbox"
             checked={soloStockBajo}
-            onChange={(evento) =>
-              setSoloStockBajo(
-                evento.target.checked,
-              )
-            }
+            onChange={(evento) => setSoloStockBajo(evento.target.checked)}
           />
-
           Mostrar solo stock bajo
         </label>
       </div>
@@ -333,104 +250,63 @@ function BodegueroStock() {
           </thead>
 
           <tbody>
-            {productosFiltrados.length ===
-            0 ? (
+            {productosFiltrados.length === 0 ? (
               <tr>
                 <td colSpan="6">
-                  No hay productos que coincidan
-                  con los filtros.
+                  No hay productos que coincidan con los filtros.
                 </td>
               </tr>
             ) : (
-              productosFiltrados.map(
-                (producto) => {
-                  const precioNormal = Number(
-                    producto.precio_prod,
-                  );
+              productosFiltrados.map((producto) => {
+                const precioNormal = Number(producto.precio_prod);
+                const precioActual = Number(producto.precio_act);
 
-                  const precioActual = Number(
-                    producto.precio_act,
-                  );
+                const precioVigente =
+                  precioActual > 0 ? precioActual : precioNormal;
 
-                  const precioVigente =
-                    precioActual > 0
-                      ? precioActual
-                      : precioNormal;
+                const stock = Number(producto.stock_prod);
 
-                  const stock = Number(
-                    producto.stock_prod,
-                  );
+                const stockBajo =
+                  Number(producto.est_prod) === 2 && stock < LIMITE_STOCK_BAJO;
 
-                  const stockBajo =
-                    Number(
-                      producto.est_prod,
-                    ) === 2 &&
-                    stock <
-                      LIMITE_STOCK_BAJO;
+                return (
+                  <tr key={producto.id_prod}>
+                    <td>
+                      <strong>{producto.nom_prod}</strong>
+                    </td>
 
-                  return (
-                    <tr
-                      key={
-                        producto.id_prod
-                      }
-                    >
-                      <td>
-                        <strong>
-                          {
-                            producto.nom_prod
-                          }
-                        </strong>
-                      </td>
+                    <td>
+                      {producto.estado_producto?.nom_est_prod || "Sin estado"}
+                    </td>
 
-                      <td>
-                        {producto
-                          .estado_producto
-                          ?.nom_est_prod ||
-                          "Sin estado"}
-                      </td>
+                    <td>{formatearPrecio(precioVigente)}</td>
 
-                      <td>
-                        {formatearPrecio(
-                          precioVigente,
-                        )}
-                      </td>
+                    <td>
+                      <span
+                        className={
+                          stockBajo ? "stock-badge stock-bajo" : "stock-badge"
+                        }
+                      >
+                        {stock}
+                      </span>
+                    </td>
 
-                      <td>
-                        <span
-                          className={
-                            stockBajo
-                              ? "stock-badge stock-bajo"
-                              : "stock-badge"
-                          }
-                        >
-                          {stock}
-                        </span>
-                      </td>
+                    <td>
+                      {producto.unidad_medida?.nom_und_medida || "Sin unidad"}
+                    </td>
 
-                      <td>
-                        {producto
-                          .unidad_medida
-                          ?.nom_und_medida ||
-                          "Sin unidad"}
-                      </td>
-
-                      <td>
-                        <button
-                          type="button"
-                          className="stock-table__adjust"
-                          onClick={() =>
-                            abrirAjusteStock(
-                              producto,
-                            )
-                          }
-                        >
-                          Ajustar stock
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                },
-              )
+                    <td>
+                      <button
+                        type="button"
+                        className="stock-table__adjust"
+                        onClick={() => abrirAjusteStock(producto)}
+                      >
+                        Ajustar stock
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -440,54 +316,35 @@ function BodegueroStock() {
         <div
           className="productos-modal-backdrop"
           role="presentation"
-          onMouseDown={
-            cerrarAjusteStock
-          }
+          onMouseDown={cerrarAjusteStock}
         >
           <form
             className="productos-modal"
-            onSubmit={
-              guardarAjusteStock
-            }
-            onMouseDown={(evento) =>
-              evento.stopPropagation()
-            }
+            onSubmit={guardarAjusteStock}
+            onMouseDown={(evento) => evento.stopPropagation()}
           >
             <h2>Ajustar stock</h2>
 
             <p>
-              Producto:{" "}
-              <strong>
-                {
-                  productoPorAjustar.nom_prod
-                }
-              </strong>
+              Producto: <strong>{productoPorAjustar.nom_prod}</strong>
             </p>
 
             <div className="stock-modal__field">
-              <label htmlFor="nuevoStock">
-                Nuevo stock
-              </label>
+              <label htmlFor="nuevoStock">Nuevo stock</label>
 
               <input
                 id="nuevoStock"
                 type="text"
                 inputMode="numeric"
                 value={nuevoStock}
-                onChange={(evento) =>
-                  cambiarNuevoStock(
-                    evento.target.value,
-                  )
-                }
+                onChange={(evento) => cambiarNuevoStock(evento.target.value)}
                 disabled={actualizando}
                 autoFocus
               />
             </div>
 
             <p className="productos-modal__note">
-              Este cambio actualizará las
-              existencias disponibles del
-              producto.
+              Este cambio actualizará las existencias disponibles del producto.
             </p>
 
             <div className="productos-modal__actions">
@@ -496,17 +353,13 @@ function BodegueroStock() {
                 className="stock-modal__confirm"
                 disabled={actualizando}
               >
-                {actualizando
-                  ? "Actualizando..."
-                  : "Guardar stock"}
+                {actualizando ? "Actualizando..." : "Guardar stock"}
               </button>
 
               <button
                 type="button"
                 className="productos-modal__cancel"
-                onClick={
-                  cerrarAjusteStock
-                }
+                onClick={cerrarAjusteStock}
                 disabled={actualizando}
               >
                 Cancelar

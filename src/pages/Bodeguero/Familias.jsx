@@ -1,22 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+
+import {
+  LONGITUD_MINIMA_FAMILIA,
+  LONGITUD_MAXIMA_FAMILIA,
+  limpiarNombreFamilia,
+  validarNombreFamilia,
+} from "../../utils/familias";
+
 import "./css/bodeguero.css";
 import "./css/familias.css";
-
-const LONGITUD_MINIMA = 2;
-const LONGITUD_MAXIMA = 80;
-
-function limpiarNombre(valor = "") {
-  return String(valor)
-    .replace(/[^\p{L}\p{N}\s-]/gu, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function normalizarComparacion(valor = "") {
-  return String(valor).trim().toLocaleLowerCase("es-CL");
-}
 
 function Familias() {
   const [familias, setFamilias] = useState([]);
@@ -24,7 +18,6 @@ function Familias() {
 
   const [cargando, setCargando] = useState(true);
   const [guardandoFamilia, setGuardandoFamilia] = useState(false);
-
   const [guardandoSubcategoria, setGuardandoSubcategoria] = useState(false);
 
   const [mostrarFormularioFamilia, setMostrarFormularioFamilia] =
@@ -34,17 +27,13 @@ function Familias() {
     useState(false);
 
   const [familiaEditando, setFamiliaEditando] = useState(null);
-
   const [subcategoriaEditando, setSubcategoriaEditando] = useState(null);
 
   const [nombreFamilia, setNombreFamilia] = useState("");
-
   const [nombreSubcategoria, setNombreSubcategoria] = useState("");
-
   const [familiaSeleccionada, setFamiliaSeleccionada] = useState("");
 
   const [mensajeError, setMensajeError] = useState("");
-
   const [mensajeExito, setMensajeExito] = useState("");
 
   useEffect(() => {
@@ -58,15 +47,8 @@ function Familias() {
     const [resultadoFamilias, resultadoSubcategorias] = await Promise.all([
       supabase
         .from("familia")
-        .select(
-          `
-          id_familia,
-          nom_familia
-        `,
-        )
-        .order("nom_familia", {
-          ascending: true,
-        }),
+        .select("id_familia, nom_familia")
+        .order("nom_familia", { ascending: true }),
 
       supabase
         .from("subcategoria")
@@ -81,16 +63,12 @@ function Familias() {
           )
         `,
         )
-        .order("nom_subcategoria", {
-          ascending: true,
-        }),
+        .order("nom_subcategoria", { ascending: true }),
     ]);
 
     if (resultadoFamilias.error) {
-      console.error("Error al cargar las familias:", resultadoFamilias.error);
-
+      console.error("Error al cargar familias:", resultadoFamilias.error);
       setFamilias([]);
-
       setMensajeError("No fue posible cargar las familias.");
     } else {
       setFamilias(resultadoFamilias.data ?? []);
@@ -98,12 +76,11 @@ function Familias() {
 
     if (resultadoSubcategorias.error) {
       console.error(
-        "Error al cargar las subcategorías:",
+        "Error al cargar subcategorías:",
         resultadoSubcategorias.error,
       );
 
       setSubcategorias([]);
-
       setMensajeError("No fue posible cargar las subcategorías.");
     } else {
       setSubcategorias(resultadoSubcategorias.data ?? []);
@@ -144,17 +121,7 @@ function Familias() {
 
     setFamiliaEditando(familia);
     setNombreFamilia(familia.nom_familia ?? "");
-
     setMostrarFormularioFamilia(true);
-  }
-
-  function cerrarFormularioFamilia() {
-    if (guardandoFamilia) {
-      return;
-    }
-
-    reiniciarFormularioFamilia();
-    setMensajeError("");
   }
 
   function abrirNuevaSubcategoria() {
@@ -170,98 +137,37 @@ function Familias() {
     limpiarMensajes();
 
     setSubcategoriaEditando(subcategoria);
-
     setNombreSubcategoria(subcategoria.nom_subcategoria ?? "");
-
     setFamiliaSeleccionada(String(subcategoria.id_familia ?? ""));
 
     setMostrarFormularioSubcategoria(true);
   }
 
+  function cerrarFormularioFamilia() {
+    if (guardandoFamilia) return;
+
+    reiniciarFormularioFamilia();
+    setMensajeError("");
+  }
+
   function cerrarFormularioSubcategoria() {
-    if (guardandoSubcategoria) {
-      return;
-    }
+    if (guardandoSubcategoria) return;
 
     reiniciarFormularioSubcategoria();
     setMensajeError("");
   }
 
-  function validarNombre(nombre, tipo) {
-    const nombreLimpio = limpiarNombre(nombre).trim();
-
-    if (!nombreLimpio) {
-      setMensajeError(`Debes ingresar el nombre de la ${tipo}.`);
-
-      return null;
-    }
-
-    if (nombreLimpio.length < LONGITUD_MINIMA) {
-      setMensajeError(
-        `El nombre debe tener al menos ${LONGITUD_MINIMA} caracteres.`,
-      );
-
-      return null;
-    }
-
-    if (nombreLimpio.length > LONGITUD_MAXIMA) {
-      setMensajeError(
-        `El nombre no puede superar los ${LONGITUD_MAXIMA} caracteres.`,
-      );
-
-      return null;
-    }
-
-    if (!/[\p{L}\p{N}]/u.test(nombreLimpio)) {
-      setMensajeError(
-        "El nombre debe contener al menos una letra o un número.",
-      );
-
-      return null;
-    }
-
-    return nombreLimpio;
-  }
-
-  function existeFamiliaDuplicada(nombreValidado) {
-    const nombreNormalizado = normalizarComparacion(nombreValidado);
-
-    return familias.some(
-      (familia) =>
-        familia.id_familia !== familiaEditando?.id_familia &&
-        normalizarComparacion(familia.nom_familia) === nombreNormalizado,
-    );
-  }
-
-  function existeSubcategoriaDuplicada(nombreValidado, idFamilia) {
-    const nombreNormalizado = normalizarComparacion(nombreValidado);
-
-    return subcategorias.some(
-      (subcategoria) =>
-        subcategoria.id_subcategoria !==
-          subcategoriaEditando?.id_subcategoria &&
-        Number(subcategoria.id_familia) === Number(idFamilia) &&
-        normalizarComparacion(subcategoria.nom_subcategoria) ===
-          nombreNormalizado,
-    );
-  }
-
   async function guardarFamilia(evento) {
     evento.preventDefault();
+    if (guardandoFamilia) return;
 
-    if (guardandoFamilia) {
-      return;
-    }
+    const resultado = validarNombreFamilia(
+      nombreFamilia,
+      "nombre de la familia",
+    );
 
-    const nombreValidado = validarNombre(nombreFamilia, "familia");
-
-    if (!nombreValidado) {
-      return;
-    }
-
-    if (existeFamiliaDuplicada(nombreValidado)) {
-      setMensajeError("Ya existe una familia con ese nombre.");
-
+    if (!resultado.valido) {
+      setMensajeError(resultado.error);
       return;
     }
 
@@ -269,43 +175,27 @@ function Familias() {
     limpiarMensajes();
 
     try {
-      if (familiaEditando) {
-        const { error } = await supabase
-          .from("familia")
-          .update({
-            nom_familia: nombreValidado,
-          })
-          .eq("id_familia", familiaEditando.id_familia);
+      const { error } = await supabase.rpc("guardar_familia", {
+        p_nombre: resultado.valor,
+        p_id_familia: familiaEditando?.id_familia ?? null,
+      });
 
-        if (error) {
-          throw error;
-        }
+      if (error) throw error;
 
-        setMensajeExito("La familia fue actualizada correctamente.");
-      } else {
-        const { error } = await supabase.from("familia").insert({
-          nom_familia: nombreValidado,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setMensajeExito("La familia fue creada correctamente.");
-      }
+      const editando = Boolean(familiaEditando);
 
       reiniciarFormularioFamilia();
       await cargarDatos();
-    } catch (error) {
-      console.error("Error al guardar la familia:", error);
 
-      if (error?.code === "23505") {
-        setMensajeError("Ya existe una familia con ese nombre.");
-      } else if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError("No tienes permisos para guardar esta familia.");
-      } else {
-        setMensajeError(error?.message || "No fue posible guardar la familia.");
-      }
+      setMensajeExito(
+        editando
+          ? "La familia fue actualizada correctamente."
+          : "La familia fue creada correctamente.",
+      );
+    } catch (error) {
+      console.error("Error al guardar familia:", error);
+
+      setMensajeError(error?.message || "No fue posible guardar la familia.");
     } finally {
       setGuardandoFamilia(false);
     }
@@ -313,14 +203,15 @@ function Familias() {
 
   async function guardarSubcategoria(evento) {
     evento.preventDefault();
+    if (guardandoSubcategoria) return;
 
-    if (guardandoSubcategoria) {
-      return;
-    }
+    const resultado = validarNombreFamilia(
+      nombreSubcategoria,
+      "nombre de la subcategoría",
+    );
 
-    const nombreValidado = validarNombre(nombreSubcategoria, "subcategoría");
-
-    if (!nombreValidado) {
+    if (!resultado.valido) {
+      setMensajeError(resultado.error);
       return;
     }
 
@@ -328,77 +219,37 @@ function Familias() {
 
     if (!Number.isInteger(idFamilia) || idFamilia <= 0) {
       setMensajeError("Debes seleccionar una familia.");
-
-      return;
-    }
-
-    const familiaExiste = familias.some(
-      (familia) => Number(familia.id_familia) === idFamilia,
-    );
-
-    if (!familiaExiste) {
-      setMensajeError("La familia seleccionada no es válida.");
-
-      return;
-    }
-
-    if (existeSubcategoriaDuplicada(nombreValidado, idFamilia)) {
-      setMensajeError(
-        "Ya existe una subcategoría con ese nombre dentro de la familia seleccionada.",
-      );
-
       return;
     }
 
     setGuardandoSubcategoria(true);
     limpiarMensajes();
 
-    const datosSubcategoria = {
-      nom_subcategoria: nombreValidado,
-
-      id_familia: idFamilia,
-    };
-
     try {
-      if (subcategoriaEditando) {
-        const { error } = await supabase
-          .from("subcategoria")
-          .update(datosSubcategoria)
-          .eq("id_subcategoria", subcategoriaEditando.id_subcategoria);
+      const { error } = await supabase.rpc("guardar_subcategoria", {
+        p_nombre: resultado.valor,
+        p_id_familia: idFamilia,
+        p_id_subcategoria: subcategoriaEditando?.id_subcategoria ?? null,
+      });
 
-        if (error) {
-          throw error;
-        }
+      if (error) throw error;
 
-        setMensajeExito("La subcategoría fue actualizada correctamente.");
-      } else {
-        const { error } = await supabase
-          .from("subcategoria")
-          .insert(datosSubcategoria);
-
-        if (error) {
-          throw error;
-        }
-
-        setMensajeExito("La subcategoría fue creada correctamente.");
-      }
+      const editando = Boolean(subcategoriaEditando);
 
       reiniciarFormularioSubcategoria();
       await cargarDatos();
-    } catch (error) {
-      console.error("Error al guardar la subcategoría:", error);
 
-      if (error?.code === "23505") {
-        setMensajeError(
-          "Ya existe una subcategoría con ese nombre dentro de la familia seleccionada.",
-        );
-      } else if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError("No tienes permisos para guardar esta subcategoría.");
-      } else {
-        setMensajeError(
-          error?.message || "No fue posible guardar la subcategoría.",
-        );
-      }
+      setMensajeExito(
+        editando
+          ? "La subcategoría fue actualizada correctamente."
+          : "La subcategoría fue creada correctamente.",
+      );
+    } catch (error) {
+      console.error("Error al guardar subcategoría:", error);
+
+      setMensajeError(
+        error?.message || "No fue posible guardar la subcategoría.",
+      );
     } finally {
       setGuardandoSubcategoria(false);
     }
@@ -459,7 +310,6 @@ function Familias() {
           <div className="familias-form__header">
             <div>
               <h2>{familiaEditando ? "Editar familia" : "Crear familia"}</h2>
-
               <p>Define el nivel principal de clasificación del catálogo.</p>
             </div>
           </div>
@@ -472,20 +322,17 @@ function Familias() {
               type="text"
               value={nombreFamilia}
               onChange={(evento) =>
-                setNombreFamilia(limpiarNombre(evento.target.value))
+                setNombreFamilia(limpiarNombreFamilia(evento.target.value))
               }
               placeholder="Ej: Resinas"
-              minLength={LONGITUD_MINIMA}
-              maxLength={LONGITUD_MAXIMA}
+              minLength={LONGITUD_MINIMA_FAMILIA}
+              maxLength={LONGITUD_MAXIMA_FAMILIA}
               disabled={guardandoFamilia}
               autoComplete="off"
               autoFocus
             />
 
-            <small>
-              Se permiten letras, números, espacios, guiones, puntos, apóstrofes
-              y el signo &amp;.
-            </small>
+            <small>Se permiten letras, números, espacios y guiones.</small>
           </div>
 
           <div className="familias-form__actions">
@@ -563,11 +410,13 @@ function Familias() {
                 type="text"
                 value={nombreSubcategoria}
                 onChange={(evento) =>
-                  setNombreSubcategoria(limpiarNombre(evento.target.value))
+                  setNombreSubcategoria(
+                    limpiarNombreFamilia(evento.target.value),
+                  )
                 }
                 placeholder="Ej: Kits epóxicos"
-                minLength={LONGITUD_MINIMA}
-                maxLength={LONGITUD_MAXIMA}
+                minLength={LONGITUD_MINIMA_FAMILIA}
+                maxLength={LONGITUD_MAXIMA_FAMILIA}
                 disabled={guardandoSubcategoria}
                 autoComplete="off"
                 autoFocus

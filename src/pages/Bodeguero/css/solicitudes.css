@@ -70,6 +70,7 @@
 .solicitudes-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
     font-size: 0.95rem;
 }
 
@@ -79,7 +80,7 @@
 }
 
 .solicitudes-table th {
-    padding: 1rem 1.25rem;
+    padding: 1rem;
     text-align: left;
     font-size: 0.8rem;
     font-weight: 700;
@@ -89,7 +90,7 @@
 }
 
 .solicitudes-table td {
-    padding: 1rem 1.25rem;
+    padding: 1.15rem 1rem;
     vertical-align: middle;
     border-bottom: 1px solid #f1f5f9;
     transition: background 0.2s ease;
@@ -107,8 +108,38 @@
     border-bottom: none;
 }
 
+/* Proporciones aproximadas de columnas */
+
+.solicitudes-table th:nth-child(1) {
+    width: 9%;
+}
+
+.solicitudes-table th:nth-child(2) {
+    width: 11%;
+}
+
+.solicitudes-table th:nth-child(3) {
+    width: 22%;
+}
+
+.solicitudes-table th:nth-child(4) {
+    width: 12%;
+}
+
+.solicitudes-table th:nth-child(5) {
+    width: 13%;
+}
+
+.solicitudes-table th:nth-child(6) {
+    width: 11%;
+}
+
+.solicitudes-table th:nth-child(7) {
+    width: 22%;
+}
+
 /* =======================================================
-   BADGE DE TIPO (Producto / Marca)
+   BADGE DE TIPO
 ======================================================= */
 
 .tipo-badge {
@@ -170,10 +201,13 @@
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
+    min-width: 180px;
+    max-width: 260px;
 }
 
 .solicitudes-table__product strong {
-    font-size: 1.05rem;
+    font-size: 1rem;
+    line-height: 1.25;
     color: #0f172a;
     font-weight: 700;
 }
@@ -181,54 +215,11 @@
 .solicitudes-table__product span {
     color: #64748b;
     font-size: 0.9rem;
+    line-height: 1.35;
 }
 
 /* =======================================================
-   PRECIOS
-======================================================= */
-
-.solicitudes-table__prices {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.solicitudes-table__old-price {
-    color: #94a3b8;
-    text-decoration: line-through;
-    font-size: 0.85rem;
-}
-
-.solicitudes-table__prices strong {
-    color: #0b4fb3;
-    font-size: 1.2rem;
-    font-weight: 700;
-}
-
-/* =======================================================
-   STOCK BADGE
-======================================================= */
-
-.stock-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.35rem 0.9rem;
-    border-radius: 9999px;
-    background: #f1f5f9;
-    color: #334155;
-    font-weight: 600;
-    font-size: 0.85rem;
-    white-space: nowrap;
-}
-
-.stock-badge.bajo {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-/* =======================================================
-   ESTADO (Pendiente / Deshabilitado)
+   ESTADO
 ======================================================= */
 
 .estado-pendiente {
@@ -258,39 +249,103 @@
 }
 
 /* =======================================================
+   FECHA
+======================================================= */
+
+.solicitudes-table td:nth-child(6) {
+    white-space: normal;
+    line-height: 1.35;
+}
+
+.solicitudes-table td:nth-child(6) small {
+    color: #334155;
+    font-size: 0.84rem;
+}
+
+/* =======================================================
    CAMBIOS / ACCIONES REALIZADAS
 ======================================================= */
 
 .solicitudes-change {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
-    max-width: 280px;
+    gap: 0.65rem;
+
+    min-width: 300px;
+    max-width: 420px;
+
+    padding: 0.9rem 1rem;
+
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 }
 
-.solicitudes-change strong {
+.solicitudes-change>strong {
     color: #0f172a;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.solicitudes-change>small {
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 500;
+
+    padding-top: 0.45rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* =======================================================
+   DETALLE DE CAMPOS MODIFICADOS
+======================================================= */
+
+.solicitudes-change__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.solicitudes-change__details span {
+    display: block;
+
+    padding: 0.5rem 0.65rem;
+
+    background: #ffffff;
+    border: 1px solid #dbe3ee;
+    border-radius: 8px;
+
+    color: #475569;
+    font-size: 0.84rem;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+.solicitudes-change__details span strong {
+    color: #334155;
+    font-size: inherit;
     font-weight: 700;
 }
 
-.solicitudes-change span {
-    color: #475569;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.solicitudes-change small {
-    color: #94a3b8;
-    font-size: 0.75rem;
-}
+/* =======================================================
+   PRODUCTO / MARCA SIN CAMBIOS DETALLADOS
+======================================================= */
 
 .solicitudes-change--empty {
     color: #64748b;
+    background: #f8fafc;
 }
 
 .solicitudes-change--empty strong {
     color: #64748b;
+}
+
+.solicitudes-change--empty span {
+    color: #64748b;
+    font-size: 0.82rem;
+    line-height: 1.4;
 }
 
 /* =======================================================
@@ -312,9 +367,11 @@
     color: #b91c1c;
     border-radius: 12px;
     padding: 1rem 1.5rem;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     flex-wrap: wrap;
     gap: 1rem;
 }
@@ -323,10 +380,13 @@
     padding: 0.4rem 1.2rem;
     background: #b91c1c;
     color: #fff;
+
     border: none;
     border-radius: 8px;
+
     font-weight: 600;
     cursor: pointer;
+
     transition: background 0.2s ease;
 }
 
@@ -343,9 +403,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     text-align: center;
+
     padding: 4rem 2rem;
+
     background: #fafbfc;
+
     border-radius: 18px;
     border: 2px dashed #e5e7eb;
 }
@@ -359,17 +423,23 @@
 .bodega-empty-state p {
     color: #64748b;
     font-size: 1.1rem;
+
     max-width: 500px;
+
     margin-bottom: 1.5rem;
 }
 
 .bodega-empty-state a {
     padding: 0.6rem 1.8rem;
+
     background: #1a56db;
     color: #fff;
+
     border-radius: 10px;
+
     font-weight: 600;
     text-decoration: none;
+
     transition: background 0.2s ease;
 }
 
@@ -381,13 +451,24 @@
    RESPONSIVE
 ======================================================= */
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .solicitudes-table-wrapper {
         overflow-x: auto;
     }
 
     .solicitudes-table {
-        min-width: 1100px;
+        min-width: 1250px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .solicitudes-table {
+        min-width: 1180px;
+    }
+
+    .solicitudes-change {
+        min-width: 280px;
+        max-width: 360px;
     }
 }
 
@@ -399,6 +480,10 @@
     .solicitudes-filtro {
         padding: 0.4rem 1rem;
         font-size: 0.8rem;
+    }
+
+    .solicitudes-table {
+        min-width: 1100px;
     }
 
     .solicitudes-table__image,
@@ -414,12 +499,23 @@
         font-size: 0.85rem;
     }
 
+    .solicitudes-table__product {
+        min-width: 160px;
+        max-width: 220px;
+    }
+
     .solicitudes-table__product strong {
         font-size: 0.95rem;
     }
 
     .solicitudes-change {
-        max-width: 200px;
+        min-width: 230px;
+        max-width: 300px;
+        padding: 0.75rem;
+    }
+
+    .solicitudes-change__details span {
+        font-size: 0.78rem;
     }
 
     .bodega-empty-state h2 {
@@ -455,20 +551,31 @@
         font-size: 0.8rem;
     }
 
+    .solicitudes-table__product {
+        min-width: 140px;
+        max-width: 190px;
+    }
+
     .solicitudes-table__product strong {
         font-size: 0.85rem;
     }
 
     .solicitudes-change {
-        max-width: 150px;
+        min-width: 220px;
+        max-width: 260px;
     }
 
-    .solicitudes-change strong {
+    .solicitudes-change>strong {
         font-size: 0.8rem;
     }
 
-    .solicitudes-change span {
+    .solicitudes-change__details span {
         font-size: 0.75rem;
+        padding: 0.35rem 0.45rem;
+    }
+
+    .solicitudes-change>small {
+        font-size: 0.72rem;
     }
 
     .bodega-empty-state {

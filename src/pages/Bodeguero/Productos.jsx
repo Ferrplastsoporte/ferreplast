@@ -5,11 +5,16 @@ import BodegueroHeader from "./components/BodegueroHeader";
 import ProductoFormBodeguero from "./components/ProductoFormBodeguero";
 import ProductTable from "../../components/productos/ProductTable";
 
+import {
+  obtenerUrlImagenProducto,
+  subirImagenProducto,
+  eliminarImagenProducto,
+  subirDocumentoProducto,
+  eliminarDocumentoProducto,
+} from "../../services/productoStorageService";
+
 import "./css/bodeguero.css";
 import "./css/productos-bodeguero.css";
-
-const BUCKET_IMAGENES = "imagenes_productos";
-const BUCKET_DOCUMENTOS = "producto-documentos";
 
 const TIPOS_DOCUMENTO_VALIDOS = [
   "ficha_tecnica",
@@ -31,7 +36,6 @@ function BodegueroProductos() {
   const [guardando, setGuardando] = useState(false);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-
   const [productoEditando, setProductoEditando] = useState(null);
 
   const [documentosActuales, setDocumentosActuales] = useState([]);
@@ -39,11 +43,9 @@ function BodegueroProductos() {
   const [versionImagenes, setVersionImagenes] = useState(Date.now());
 
   const [mensajeError, setMensajeError] = useState("");
-
   const [mensajeExito, setMensajeExito] = useState("");
 
   const [productoPorDesactivar, setProductoPorDesactivar] = useState(null);
-
   const [desactivando, setDesactivando] = useState(false);
 
   useEffect(() => {
@@ -76,12 +78,7 @@ function BodegueroProductos() {
     ] = await Promise.all([
       supabase
         .from("familia")
-        .select(
-          `
-          id_familia,
-          nom_familia
-        `,
-        )
+        .select("id_familia, nom_familia")
         .order("nom_familia", {
           ascending: true,
         }),
@@ -132,16 +129,11 @@ function BodegueroProductos() {
       resultadoMarcas.error ||
       resultadoUnidades.error;
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     setFamilias(resultadoFamilias.data ?? []);
-
     setSubcategorias(resultadoSubcategorias.data ?? []);
-
     setMarcas(resultadoMarcas.data ?? []);
-
     setUnidades(resultadoUnidades.data ?? []);
   }
 
@@ -207,11 +199,9 @@ function BodegueroProductos() {
         ascending: false,
       });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
-    const productosNormalizados = (data ?? []).map((producto) => ({
+    const normalizados = (data ?? []).map((producto) => ({
       ...producto,
 
       producto_documento: Array.isArray(producto.producto_documento)
@@ -221,122 +211,17 @@ function BodegueroProductos() {
           : [],
     }));
 
-    setProductos(productosNormalizados);
+    setProductos(normalizados);
   }
 
-  function obtenerUrlImagen(rutaImagen) {
-    if (!rutaImagen) {
-      return "";
-    }
+  function separarArchivos(datosFormulario) {
+    const { imagen, documentosPdf, ...datosProducto } = datosFormulario;
 
-    const separador = rutaImagen.includes("?") ? "&" : "?";
-
-    if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
-      return `${rutaImagen}${separador}v=${versionImagenes}`;
-    }
-
-    const { data } = supabase.storage
-      .from(BUCKET_IMAGENES)
-      .getPublicUrl(rutaImagen);
-
-    return `${data.publicUrl}?v=${versionImagenes}`;
-  }
-
-  function obtenerExtensionImagen(archivo) {
-    const extensionOriginal = archivo.name.split(".").pop()?.toLowerCase();
-
-    if (["jpg", "jpeg", "png", "webp"].includes(extensionOriginal)) {
-      return extensionOriginal === "jpeg" ? "jpg" : extensionOriginal;
-    }
-
-    switch (archivo.type) {
-      case "image/png":
-        return "png";
-
-      case "image/webp":
-        return "webp";
-
-      default:
-        return "jpg";
-    }
-  }
-
-  function limpiarNombreArchivo(nombre = "") {
-    return String(nombre)
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-zA-Z0-9._-]/g, "_")
-      .replace(/_+/g, "_");
-  }
-
-  function crearIdentificadorArchivo() {
-    if (
-      typeof crypto !== "undefined" &&
-      typeof crypto.randomUUID === "function"
-    ) {
-      return crypto.randomUUID();
-    }
-
-    return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  }
-
-  async function subirImagenProducto(idProducto, archivo, rutaAnterior = null) {
-    const extension = obtenerExtensionImagen(archivo);
-
-    const rutaNueva = `producto/${idProducto}/imagen.${extension}`;
-
-    if (
-      rutaAnterior &&
-      rutaAnterior !== rutaNueva &&
-      !rutaAnterior.startsWith("http")
-    ) {
-      const { error: errorEliminar } = await supabase.storage
-        .from(BUCKET_IMAGENES)
-        .remove([rutaAnterior]);
-
-      if (errorEliminar) {
-        console.warn(
-          "No fue posible eliminar la imagen anterior:",
-          errorEliminar,
-        );
-      }
-    }
-
-    const { error } = await supabase.storage
-      .from(BUCKET_IMAGENES)
-      .upload(rutaNueva, archivo, {
-        upsert: true,
-        cacheControl: "0",
-        contentType: archivo.type,
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    return rutaNueva;
-  }
-
-  async function subirDocumentoProducto(idProducto, archivo) {
-    const nombreSeguro = limpiarNombreArchivo(archivo.name);
-
-    const identificador = crearIdentificadorArchivo();
-
-    const rutaDocumento = `producto/${idProducto}/${identificador}_${nombreSeguro}`;
-
-    const { error } = await supabase.storage
-      .from(BUCKET_DOCUMENTOS)
-      .upload(rutaDocumento, archivo, {
-        upsert: false,
-        cacheControl: "3600",
-        contentType: "application/pdf",
-      });
-
-    if (error) {
-      throw error;
-    }
-
-    return rutaDocumento;
+    return {
+      datosProducto,
+      imagen,
+      documentosPdf: Array.isArray(documentosPdf) ? documentosPdf : [],
+    };
   }
 
   function validarDocumento(documento) {
@@ -359,6 +244,71 @@ function BodegueroProductos() {
     }
   }
 
+  async function guardarDatosProducto(datosProducto, idProducto = null) {
+    const { data, error } = await supabase.rpc("guardar_producto", {
+      p_id_prod: idProducto,
+
+      p_nom_prod: datosProducto.nom_prod,
+
+      p_desc_prod: datosProducto.desc_prod,
+
+      p_detalle_prod: datosProducto.detalle_prod,
+
+      p_precio_prod: datosProducto.precio_prod,
+
+      p_precio_act: datosProducto.precio_act,
+
+      p_stock_prod: datosProducto.stock_prod ?? null,
+
+      p_id_subcategoria: datosProducto.id_subcategoria,
+
+      p_id_und_medida: datosProducto.id_und_medida,
+
+      p_id_marca: datosProducto.id_marca,
+
+      p_color_prod: datosProducto.color_prod,
+
+      p_peso_prod: datosProducto.peso_prod,
+    });
+
+    if (error) throw error;
+
+    if (!data) {
+      throw new Error("No fue posible obtener el identificador del producto.");
+    }
+
+    return data;
+  }
+
+  async function guardarImagenProducto(
+    idProducto,
+    archivo,
+    rutaAnterior = null,
+  ) {
+    const rutaNueva = await subirImagenProducto(idProducto, archivo);
+
+    try {
+      const { error } = await supabase.rpc("actualizar_imagen_producto", {
+        p_id_prod: idProducto,
+        p_imagen_url: rutaNueva,
+      });
+
+      if (error) throw error;
+
+      if (rutaAnterior && rutaAnterior !== rutaNueva) {
+        await eliminarImagenProducto(rutaAnterior);
+      }
+
+      return rutaNueva;
+    } catch (error) {
+      if (!rutaAnterior || rutaAnterior !== rutaNueva) {
+        await eliminarImagenProducto(rutaNueva);
+      }
+
+      throw error;
+    }
+  }
+
   async function guardarDocumentosProducto(idProducto, documentos = []) {
     for (const documento of documentos) {
       validarDocumento(documento);
@@ -368,41 +318,24 @@ function BodegueroProductos() {
       let rutaDocumento = null;
 
       try {
+
         rutaDocumento = await subirDocumentoProducto(idProducto, archivo);
 
-        const { error } = await supabase.from("producto_documento").insert({
-          id_prod: idProducto,
+        const { error } = await supabase.rpc("guardar_documento_producto", {
+          p_id_prod: idProducto,
 
-          nombre_documento: archivo.name,
+          p_nombre_documento: archivo.name,
 
-          tipo_documento: documento.tipoDocumento,
+          p_tipo_documento: documento.tipoDocumento,
 
-          archivo_path: rutaDocumento,
-
-          est_documento: true,
+          p_archivo_path: rutaDocumento,
         });
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
       } catch (error) {
-        /*
-         * Si Storage recibió el PDF pero
-         * falló el registro en la tabla,
-         * se intenta eliminar el archivo
-         * huérfano.
-         */
-        if (rutaDocumento) {
-          const { error: errorLimpieza } = await supabase.storage
-            .from(BUCKET_DOCUMENTOS)
-            .remove([rutaDocumento]);
 
-          if (errorLimpieza) {
-            console.warn(
-              "No fue posible limpiar el documento luego del error:",
-              errorLimpieza,
-            );
-          }
+        if (rutaDocumento) {
+          await eliminarDocumentoProducto(rutaDocumento);
         }
 
         throw error;
@@ -410,21 +343,8 @@ function BodegueroProductos() {
     }
   }
 
-  function separarArchivos(datosFormulario) {
-    const { imagen, documentosPdf, ...datosProducto } = datosFormulario;
-
-    return {
-      datosProducto,
-      imagen,
-
-      documentosPdf: Array.isArray(documentosPdf) ? documentosPdf : [],
-    };
-  }
-
   async function crearProducto(datosFormulario) {
-    if (guardando) {
-      return;
-    }
+    if (guardando) return;
 
     setGuardando(true);
     setMensajeError("");
@@ -434,50 +354,15 @@ function BodegueroProductos() {
       separarArchivos(datosFormulario);
 
     try {
-      /*
-       * created_prod, ultima_act_prod y
-       * est_prod utilizan los valores
-       * predeterminados de la BD.
-       */
-      const { data: productoCreado, error } = await supabase
-        .from("producto")
-        .insert(datosProducto)
-        .select(
-          `
-          id_prod,
-          imagen_url
-        `,
-        )
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      if (!productoCreado) {
-        throw new Error("No fue posible obtener el producto creado.");
-      }
+ 
+      const idProducto = await guardarDatosProducto(datosProducto);
 
       if (imagen) {
-        const rutaImagen = await subirImagenProducto(
-          productoCreado.id_prod,
-          imagen,
-        );
-
-        const { error: errorImagen } = await supabase
-          .from("producto")
-          .update({
-            imagen_url: rutaImagen,
-          })
-          .eq("id_prod", productoCreado.id_prod);
-
-        if (errorImagen) {
-          throw errorImagen;
-        }
+        await guardarImagenProducto(idProducto, imagen);
       }
 
       if (documentosPdf.length > 0) {
-        await guardarDocumentosProducto(productoCreado.id_prod, documentosPdf);
+        await guardarDocumentosProducto(idProducto, documentosPdf);
       }
 
       cerrarFormulario();
@@ -490,40 +375,13 @@ function BodegueroProductos() {
     } catch (error) {
       console.error("Error al crear el producto:", error);
 
-      if (error?.code === "23505") {
-        setMensajeError("Ya existe un producto con los datos ingresados.");
-      } else if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError(
-          "No tienes permisos para crear el producto o cargar sus archivos.",
-        );
-      } else {
-        setMensajeError(error?.message || "No fue posible crear el producto.");
-      }
+      setMensajeError(error?.message || "No fue posible crear el producto.");
 
       throw error;
     } finally {
       setGuardando(false);
     }
   }
-
-  async function registrarCambioProducto(idProducto, tipoAccion, campos = {}) {
-  const { error } = await supabase
-    .from("producto_cambio")
-    .insert({
-      id_prod: idProducto,
-      id_user: (await supabase.auth.getUser()).data.user?.id,
-      tipo_accion: tipoAccion,
-      campos_modificados: campos,
-      estado_anterior: null,
-      estado_nuevo: null,
-      revisado: false,
-    });
-
-  if (error) {
-    console.error("Error al registrar el cambio:", error);
-    throw error;
-  }
-}
 
   async function actualizarProducto(datosFormulario) {
     if (guardando || !productoEditando) {
@@ -538,53 +396,21 @@ function BodegueroProductos() {
       separarArchivos(datosFormulario);
 
     try {
-      /*
-       * Cada modificación realizada por
-       * bodega devuelve el producto al
-       * estado 1 = Pendiente.
-       */
-      const { error } = await supabase
-        .from("producto")
-        .update({
-          ...datosProducto,
-          est_prod: 1,
-        })
-        .eq("id_prod", productoEditando.id_prod);
-
-      if (error) {
-        throw error;
-      }
+      const idProducto = await guardarDatosProducto(
+        datosProducto,
+        productoEditando.id_prod,
+      );
 
       if (imagen) {
-        const rutaImagen = await subirImagenProducto(
-          productoEditando.id_prod,
+        await guardarImagenProducto(
+          idProducto,
           imagen,
           productoEditando.imagen_url,
         );
-
-        const { error: errorImagen } = await supabase
-          .from("producto")
-          .update({
-            imagen_url: rutaImagen,
-            est_prod: 1,
-          })
-          .eq("id_prod", productoEditando.id_prod);
-
-        if (errorImagen) {
-          throw errorImagen;
-        }
       }
 
-      /*
-       * Los PDF nuevos se agregan como
-       * registros independientes. No se
-       * reemplazan los documentos actuales.
-       */
       if (documentosPdf.length > 0) {
-        await guardarDocumentosProducto(
-          productoEditando.id_prod,
-          documentosPdf,
-        );
+        await guardarDocumentosProducto(idProducto, documentosPdf);
       }
 
       cerrarFormulario();
@@ -599,15 +425,9 @@ function BodegueroProductos() {
     } catch (error) {
       console.error("Error al actualizar el producto:", error);
 
-      if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError(
-          "No tienes permisos para actualizar el producto o cargar sus documentos.",
-        );
-      } else {
-        setMensajeError(
-          error?.message || "No fue posible actualizar el producto.",
-        );
-      }
+      setMensajeError(
+        error?.message || "No fue posible actualizar el producto.",
+      );
 
       throw error;
     } finally {
@@ -637,7 +457,6 @@ function BodegueroProductos() {
     );
 
     setProductoEditando(producto);
-
     setDocumentosActuales(documentosActivos);
 
     setMensajeError("");
@@ -654,90 +473,49 @@ function BodegueroProductos() {
 
   function solicitarDesactivacion(producto) {
     setProductoPorDesactivar(producto);
+
     setMensajeError("");
     setMensajeExito("");
   }
 
   function cancelarDesactivacion() {
-    if (desactivando) {
-      return;
-    }
+    if (desactivando) return;
 
     setProductoPorDesactivar(null);
   }
 
   async function confirmarDesactivacion() {
-  if (!productoPorDesactivar || desactivando) {
-    return;
-  }
-
-  // 🔹 VALIDAR ID ANTES DE CONTINUAR
-  const id = productoPorDesactivar.id_prod;
-  if (!id) {
-    setMensajeError("No se pudo identificar el producto.");
-    return;
-  }
-
-  setDesactivando(true);
-  setMensajeError("");
-  setMensajeExito("");
-
-  try {
-    // 1. Actualizar el producto (est_prod = 3)
-    const { error } = await supabase
-      .from("producto")
-      .update({
-        est_prod: 3,
-      })
-      .eq("id_prod", id);
-
-    if (error) {
-      throw error;
+    if (!productoPorDesactivar || desactivando) {
+      return;
     }
 
-    // 2. Registrar el cambio en producto_cambio (NUEVO)
+    setDesactivando(true);
+    setMensajeError("");
+    setMensajeExito("");
+
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const { error: cambioError } = await supabase
-        .from("producto_cambio")
-        .insert({
-          id_prod: id,
-          id_user: userData.user?.id,
-          tipo_accion: "producto_no_disponible",
-          campos_modificados: { est_prod: 3 },
-          estado_anterior: productoPorDesactivar.est_prod,
-          estado_nuevo: 3,
-          revisado: false,
-        });
+      const { error } = await supabase.rpc("desactivar_producto", {
+        p_id_prod: productoPorDesactivar.id_prod,
+      });
 
-      if (cambioError) {
-        console.error("Error al registrar el cambio:", cambioError);
-        // No interrumpimos el flujo, solo mostramos advertencia
-      }
-    } catch (cambioError) {
-      console.error("Error inesperado al registrar el cambio:", cambioError);
-    }
+      if (error) throw error;
 
-    setProductoPorDesactivar(null);
+      setProductoPorDesactivar(null);
 
-    await cargarProductos();
+      await cargarProductos();
 
-    setMensajeExito("El producto fue marcado como no disponible.");
-  } catch (error) {
-    console.error("Error al deshabilitar el producto:", error);
+      setMensajeExito("El producto fue marcado como no disponible.");
+    } catch (error) {
+      console.error("Error al deshabilitar el producto:", error);
 
-    if (error?.message?.toLowerCase().includes("row-level security")) {
-      setMensajeError("No tienes permisos para deshabilitar productos.");
-    } else {
       setMensajeError(
         error?.message ||
-          "No fue posible marcar el producto como no disponible."
+          "No fue posible marcar el producto como no disponible.",
       );
+    } finally {
+      setDesactivando(false);
     }
-  } finally {
-    setDesactivando(false);
   }
-}
 
   if (cargando) {
     return (
@@ -800,13 +578,16 @@ function BodegueroProductos() {
           unidades={unidades}
           imagenActualUrl={
             productoEditando?.imagen_url
-              ? obtenerUrlImagen(productoEditando.imagen_url)
+              ? obtenerUrlImagenProducto(
+                  productoEditando.imagen_url,
+                  versionImagenes,
+                )
               : ""
           }
           documentoActual={documentosActuales}
           onGuardar={productoEditando ? actualizarProducto : crearProducto}
           onCancelar={cerrarFormulario}
-          esEdicion={!!productoEditando} 
+          esEdicion={Boolean(productoEditando)}
         />
       )}
 

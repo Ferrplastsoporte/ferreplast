@@ -1,23 +1,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+
+import {
+  LONGITUD_MINIMA_MARCA,
+  LONGITUD_MAXIMA_MARCA,
+  limpiarNombreMarca,
+  validarNombreMarca,
+  validarLogoMarca,
+} from "../../utils/marcas";
+
+import {
+  obtenerUrlLogoMarca,
+  subirLogoMarca,
+} from "../../services/marcaService";
+
 import "./css/bodeguero.css";
 import "./css/marcas.css";
-
-const BUCKET_IMAGENES = "imagenes_productos";
-
-const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
-
-const TAMANO_MAXIMO_LOGO = 2 * 1024 * 1024;
-
-const LONGITUD_MINIMA_NOMBRE = 2;
-const LONGITUD_MAXIMA_NOMBRE = 80;
-
-function limpiarNombreMarca(valor = "") {
-  return String(valor)
-    .replace(/[^\p{L}\p{N}\s&.'’\-]/gu, "")
-    .replace(/\s{2,}/g, " ");
-}
 
 function Marcas() {
   const [marcas, setMarcas] = useState([]);
@@ -25,19 +24,15 @@ function Marcas() {
   const [guardando, setGuardando] = useState(false);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-
   const [marcaEditando, setMarcaEditando] = useState(null);
 
   const [nombre, setNombre] = useState("");
-
   const [marcaDestacar, setMarcaDestacar] = useState("");
 
   const [archivoLogo, setArchivoLogo] = useState(null);
-
   const [vistaPrevia, setVistaPrevia] = useState("");
 
   const [mensajeError, setMensajeError] = useState("");
-
   const [mensajeExito, setMensajeExito] = useState("");
 
   const [versionImagenes, setVersionImagenes] = useState(Date.now());
@@ -48,29 +43,11 @@ function Marcas() {
 
   useEffect(() => {
     return () => {
-      if (vistaPrevia && vistaPrevia.startsWith("blob:")) {
+      if (vistaPrevia?.startsWith("blob:")) {
         URL.revokeObjectURL(vistaPrevia);
       }
     };
   }, [vistaPrevia]);
-
-  function obtenerUrlPublica(rutaLogo) {
-    if (!rutaLogo) {
-      return "";
-    }
-
-    const separador = rutaLogo.includes("?") ? "&" : "?";
-
-    if (rutaLogo.startsWith("http://") || rutaLogo.startsWith("https://")) {
-      return `${rutaLogo}${separador}v=${versionImagenes}`;
-    }
-
-    const { data } = supabase.storage
-      .from(BUCKET_IMAGENES)
-      .getPublicUrl(rutaLogo);
-
-    return `${data.publicUrl}?v=${versionImagenes}`;
-  }
 
   async function cargarMarcas() {
     setCargando(true);
@@ -87,16 +64,12 @@ function Marcas() {
         est_marca
       `,
       )
-      .order("nom_marca", {
-        ascending: true,
-      });
+      .order("nom_marca", { ascending: true });
 
     if (error) {
-      console.error("Error al cargar las marcas:", error);
-
-      setMensajeError("No fue posible cargar las marcas.");
-
+      console.error("Error al cargar marcas:", error);
       setMarcas([]);
+      setMensajeError("No fue posible cargar las marcas.");
     } else {
       setMarcas(data ?? []);
     }
@@ -105,7 +78,7 @@ function Marcas() {
   }
 
   function limpiarVistaPrevia() {
-    if (vistaPrevia && vistaPrevia.startsWith("blob:")) {
+    if (vistaPrevia?.startsWith("blob:")) {
       URL.revokeObjectURL(vistaPrevia);
     }
 
@@ -114,7 +87,6 @@ function Marcas() {
 
   function reiniciarFormulario() {
     limpiarVistaPrevia();
-
     setMarcaEditando(null);
     setNombre("");
     setMarcaDestacar("");
@@ -124,7 +96,6 @@ function Marcas() {
 
   function abrirFormularioNuevaMarca() {
     reiniciarFormulario();
-
     setMensajeError("");
     setMensajeExito("");
     setMostrarFormulario(true);
@@ -135,12 +106,10 @@ function Marcas() {
 
     setMarcaEditando(marca);
     setNombre(marca.nom_marca ?? "");
-
-    setMarcaDestacar(marca.marca_destacar === true ? "true" : "false");
-
+    setMarcaDestacar(marca.marca_destacar ? "true" : "false");
     setArchivoLogo(null);
 
-    setVistaPrevia(obtenerUrlPublica(marca.logo_url));
+    setVistaPrevia(obtenerUrlLogoMarca(marca.logo_url, versionImagenes));
 
     setMensajeError("");
     setMensajeExito("");
@@ -148,9 +117,7 @@ function Marcas() {
   }
 
   function cerrarFormulario() {
-    if (guardando) {
-      return;
-    }
+    if (guardando) return;
 
     reiniciarFormulario();
     setMensajeError("");
@@ -165,237 +132,42 @@ function Marcas() {
       setArchivoLogo(null);
 
       setVistaPrevia(
-        marcaEditando ? obtenerUrlPublica(marcaEditando.logo_url) : "",
+        marcaEditando
+          ? obtenerUrlLogoMarca(marcaEditando.logo_url, versionImagenes)
+          : "",
       );
 
       return;
     }
 
-    if (!TIPOS_IMAGEN_PERMITIDOS.includes(archivo.type)) {
+    const validacion = validarLogoMarca(archivo);
+
+    if (!validacion.valido) {
       evento.target.value = "";
-
       setArchivoLogo(null);
-
-      setMensajeError("El logo debe estar en formato JPG, PNG o WEBP.");
-
-      return;
-    }
-
-    if (archivo.size > TAMANO_MAXIMO_LOGO) {
-      evento.target.value = "";
-
-      setArchivoLogo(null);
-
-      setMensajeError("El logo no puede superar los 2 MB.");
-
+      setMensajeError(validacion.error);
       return;
     }
 
     limpiarVistaPrevia();
 
-    const nuevaVistaPrevia = URL.createObjectURL(archivo);
-
     setArchivoLogo(archivo);
-    setVistaPrevia(nuevaVistaPrevia);
-  }
-
-  function validarFormulario() {
-    const nombreLimpio = limpiarNombreMarca(nombre).trim();
-
-    if (!nombreLimpio) {
-      setMensajeError("Debes ingresar el nombre de la marca.");
-
-      return null;
-    }
-
-    if (nombreLimpio.length < LONGITUD_MINIMA_NOMBRE) {
-      setMensajeError(
-        `El nombre debe tener al menos ${LONGITUD_MINIMA_NOMBRE} caracteres.`,
-      );
-
-      return null;
-    }
-
-    if (nombreLimpio.length > LONGITUD_MAXIMA_NOMBRE) {
-      setMensajeError(
-        `El nombre no puede superar los ${LONGITUD_MAXIMA_NOMBRE} caracteres.`,
-      );
-
-      return null;
-    }
-
-    if (!/[\p{L}\p{N}]/u.test(nombreLimpio)) {
-      setMensajeError(
-        "El nombre debe contener al menos una letra o un número.",
-      );
-
-      return null;
-    }
-
-    if (marcaDestacar !== "true" && marcaDestacar !== "false") {
-      setMensajeError("Debes indicar si la marca será destacada o normal.");
-
-      return null;
-    }
-
-    return {
-      nombre: nombreLimpio,
-      debeDestacarse: marcaDestacar === "true",
-    };
-  }
-
-  function obtenerExtensionLogo(archivo) {
-    const extensionOriginal = archivo.name.split(".").pop()?.toLowerCase();
-
-    if (["jpg", "jpeg", "png", "webp"].includes(extensionOriginal)) {
-      return extensionOriginal === "jpeg" ? "jpg" : extensionOriginal;
-    }
-
-    switch (archivo.type) {
-      case "image/png":
-        return "png";
-
-      case "image/webp":
-        return "webp";
-
-      default:
-        return "jpg";
-    }
-  }
-
-  async function subirLogo(idMarca, archivo, rutaAnterior = null) {
-    const extension = obtenerExtensionLogo(archivo);
-
-    const rutaNueva = `marca/${idMarca}/logo.${extension}`;
-
-    if (rutaAnterior && rutaAnterior !== rutaNueva) {
-      const { error: errorEliminar } = await supabase.storage
-        .from(BUCKET_IMAGENES)
-        .remove([rutaAnterior]);
-
-      if (errorEliminar) {
-        console.warn(
-          "No fue posible eliminar el logo anterior:",
-          errorEliminar,
-        );
-      }
-    }
-
-    const { error: errorSubida } = await supabase.storage
-      .from(BUCKET_IMAGENES)
-      .upload(rutaNueva, archivo, {
-        cacheControl: "0",
-        upsert: true,
-        contentType: archivo.type,
-      });
-
-    if (errorSubida) {
-      throw errorSubida;
-    }
-
-    return rutaNueva;
-  }
-
-  async function actualizarRutaLogo(idMarca, rutaLogo) {
-    const { error } = await supabase
-      .from("marca_producto")
-      .update({
-        logo_url: rutaLogo,
-
-        /*
-         * El nuevo logo debe ser aprobado
-         * nuevamente por administración.
-         */
-        est_marca: false,
-      })
-      .eq("id_marca", idMarca);
-
-    if (error) {
-      throw error;
-    }
-  }
-
-  async function crearMarca(nombreValidado, debeDestacarse) {
-    /*
-     * est_marca no se envía.
-     * La base de datos aplicará FALSE
-     * como valor predeterminado.
-     */
-    const { data: marcaCreada, error } = await supabase
-      .from("marca_producto")
-      .insert({
-        nom_marca: nombreValidado,
-
-        marca_destacar: debeDestacarse,
-      })
-      .select(
-        `
-        id_marca,
-        nom_marca,
-        logo_url,
-        marca_destacar,
-        est_marca
-      `,
-      )
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    if (!marcaCreada) {
-      throw new Error("No fue posible obtener la marca creada.");
-    }
-
-    if (archivoLogo) {
-      const rutaLogo = await subirLogo(marcaCreada.id_marca, archivoLogo);
-
-      await actualizarRutaLogo(marcaCreada.id_marca, rutaLogo);
-    }
-  }
-
-  async function actualizarMarca(nombreValidado, debeDestacarse) {
-    const { error } = await supabase
-      .from("marca_producto")
-      .update({
-        nom_marca: nombreValidado,
-
-        marca_destacar: debeDestacarse,
-
-        /*
-         * Toda modificación realizada
-         * por bodega vuelve la marca
-         * al estado pendiente.
-         */
-        est_marca: false,
-      })
-      .eq("id_marca", marcaEditando.id_marca);
-
-    if (error) {
-      throw error;
-    }
-
-    if (archivoLogo) {
-      const rutaLogo = await subirLogo(
-        marcaEditando.id_marca,
-        archivoLogo,
-        marcaEditando.logo_url,
-      );
-
-      await actualizarRutaLogo(marcaEditando.id_marca, rutaLogo);
-    }
+    setVistaPrevia(URL.createObjectURL(archivo));
   }
 
   async function guardarMarca(evento) {
     evento.preventDefault();
+    if (guardando) return;
 
-    if (guardando) {
+    const validacionNombre = validarNombreMarca(nombre);
+
+    if (!validacionNombre.valido) {
+      setMensajeError(validacionNombre.error);
       return;
     }
 
-    const datosValidados = validarFormulario();
-
-    if (!datosValidados) {
+    if (marcaDestacar !== "true" && marcaDestacar !== "false") {
+      setMensajeError("Debes indicar si la marca será destacada o normal.");
       return;
     }
 
@@ -404,34 +176,57 @@ function Marcas() {
     setMensajeExito("");
 
     try {
-      if (marcaEditando) {
-        await actualizarMarca(
-          datosValidados.nombre,
-          datosValidados.debeDestacarse,
+      /*
+       * Primero creamos/actualizamos los datos generales
+       * de la marca.
+       */
+      const { data: idMarca, error } = await supabase.rpc("guardar_marca", {
+        p_nombre: validacionNombre.valor,
+        p_destacar: marcaDestacar === "true",
+        p_id_marca: marcaEditando?.id_marca ?? null,
+        p_logo_url: null,
+      });
+
+      if (error) throw error;
+
+      /*
+       * Si existe un nuevo logo:
+       * 1. se sube/reemplaza en Storage;
+       * 2. se guarda la nueva ruta mediante la misma RPC.
+       */
+      if (archivoLogo) {
+        const rutaLogo = await subirLogoMarca(
+          idMarca,
+          archivoLogo,
+          marcaEditando?.logo_url ?? null,
         );
 
-        setMensajeExito(
-          "La marca fue actualizada y quedó pendiente de una nueva aprobación.",
-        );
-      } else {
-        await crearMarca(datosValidados.nombre, datosValidados.debeDestacarse);
+        const { error: errorLogo } = await supabase.rpc("guardar_marca", {
+          p_nombre: validacionNombre.valor,
+          p_destacar: marcaDestacar === "true",
+          p_id_marca: idMarca,
+          p_logo_url: rutaLogo,
+        });
 
-        setMensajeExito("La marca fue creada y quedó pendiente de aprobación.");
+        if (errorLogo) throw errorLogo;
       }
+
+      const editando = Boolean(marcaEditando);
 
       reiniciarFormulario();
       setVersionImagenes(Date.now());
-      await cargarMarcas();
-    } catch (error) {
-      console.error("Error al guardar la marca:", error);
 
-      if (error?.code === "23505") {
-        setMensajeError("Ya existe una marca con ese nombre.");
-      } else if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError("No tienes permisos para guardar esta marca.");
-      } else {
-        setMensajeError(error?.message || "No fue posible guardar la marca.");
-      }
+      await cargarMarcas();
+
+      setMensajeExito(
+        editando
+          ? "La marca fue actualizada y quedó pendiente de una nueva aprobación."
+          : "La marca fue creada y quedó pendiente de aprobación.",
+      );
+    } catch (error) {
+      console.error("Error al guardar marca:", error);
+
+      setMensajeError(error?.message || "No fue posible guardar la marca.");
     } finally {
       setGuardando(false);
     }
@@ -485,8 +280,8 @@ function Marcas() {
                     setNombre(limpiarNombreMarca(evento.target.value))
                   }
                   placeholder="Ej: Würth"
-                  minLength={LONGITUD_MINIMA_NOMBRE}
-                  maxLength={LONGITUD_MAXIMA_NOMBRE}
+                  minLength={LONGITUD_MINIMA_MARCA}
+                  maxLength={LONGITUD_MAXIMA_MARCA}
                   disabled={guardando}
                   autoComplete="off"
                   autoFocus
@@ -598,7 +393,10 @@ function Marcas() {
                 </tr>
               ) : (
                 marcas.map((marca) => {
-                  const logoPublico = obtenerUrlPublica(marca.logo_url);
+                  const logoPublico = obtenerUrlLogoMarca(
+                    marca.logo_url,
+                    versionImagenes,
+                  );
 
                   return (
                     <tr key={marca.id_marca}>

@@ -1,35 +1,25 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+
+import {
+  LONGITUD_MINIMA_UNIDAD,
+  LONGITUD_MAXIMA_UNIDAD,
+  limpiarNombreUnidad,
+  validarNombreUnidad,
+} from "../../utils/unidadMedida";
+
 import "./css/bodeguero.css";
 import "./css/unidades.css";
-
-const LONGITUD_MINIMA = 1;
-const LONGITUD_MAXIMA = 40;
-
-function limpiarNombreUnidad(valor = "") {
-  return String(valor)
-    .replace(/[^\p{L}\p{N}\s²³/%.'’\-]/gu, "")
-    .replace(/\s{2,}/g, " ");
-}
-
-function normalizarComparacion(valor = "") {
-  return String(valor).trim().toLocaleLowerCase("es-CL");
-}
 
 function Unidades() {
   const [unidades, setUnidades] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
-
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-
   const [unidadEditando, setUnidadEditando] = useState(null);
-
   const [nombre, setNombre] = useState("");
-
   const [mensajeError, setMensajeError] = useState("");
-
   const [mensajeExito, setMensajeExito] = useState("");
 
   useEffect(() => {
@@ -42,21 +32,12 @@ function Unidades() {
 
     const { data, error } = await supabase
       .from("unidad_medida")
-      .select(
-        `
-        id_und_medida,
-        nom_und_medida
-      `,
-      )
-      .order("nom_und_medida", {
-        ascending: true,
-      });
+      .select("id_und_medida, nom_und_medida")
+      .order("nom_und_medida", { ascending: true });
 
     if (error) {
-      console.error("Error al cargar las unidades:", error);
-
+      console.error("Error al cargar unidades:", error);
       setUnidades([]);
-
       setMensajeError("No fue posible cargar las unidades de medida.");
     } else {
       setUnidades(data ?? []);
@@ -87,74 +68,23 @@ function Unidades() {
   }
 
   function cerrarFormulario() {
-    if (guardando) {
-      return;
-    }
-
+    if (guardando) return;
     limpiarFormulario();
     setMensajeError("");
   }
 
-  function validarNombre() {
-    const nombreLimpio = limpiarNombreUnidad(nombre).trim();
-
-    if (!nombreLimpio) {
-      setMensajeError("Debes ingresar el nombre de la unidad de medida.");
-
-      return null;
-    }
-
-    if (nombreLimpio.length < LONGITUD_MINIMA) {
-      setMensajeError(
-        `El nombre debe tener al menos ${LONGITUD_MINIMA} carácter.`,
-      );
-
-      return null;
-    }
-
-    if (nombreLimpio.length > LONGITUD_MAXIMA) {
-      setMensajeError(
-        `El nombre no puede superar los ${LONGITUD_MAXIMA} caracteres.`,
-      );
-
-      return null;
-    }
-
-    if (!/[\p{L}\p{N}]/u.test(nombreLimpio)) {
-      setMensajeError(
-        "La unidad debe contener al menos una letra o un número.",
-      );
-
-      return null;
-    }
-
-    const nombreNormalizado = normalizarComparacion(nombreLimpio);
-
-    const unidadDuplicada = unidades.some(
-      (unidad) =>
-        unidad.id_und_medida !== unidadEditando?.id_und_medida &&
-        normalizarComparacion(unidad.nom_und_medida) === nombreNormalizado,
-    );
-
-    if (unidadDuplicada) {
-      setMensajeError("Ya existe una unidad de medida con ese nombre.");
-
-      return null;
-    }
-
-    return nombreLimpio;
-  }
-
   async function guardarUnidad(evento) {
     evento.preventDefault();
+    if (guardando) return;
 
-    if (guardando) {
-      return;
-    }
+    const resultado = validarNombreUnidad(
+      nombre,
+      unidades,
+      unidadEditando?.id_und_medida ?? null,
+    );
 
-    const nombreValidado = validarNombre();
-
-    if (!nombreValidado) {
+    if (!resultado.valido) {
+      setMensajeError(resultado.error);
       return;
     }
 
@@ -163,47 +93,29 @@ function Unidades() {
     setMensajeExito("");
 
     try {
-      if (unidadEditando) {
-        const { error } = await supabase
-          .from("unidad_medida")
-          .update({
-            nom_und_medida: nombreValidado,
-          })
-          .eq("id_und_medida", unidadEditando.id_und_medida);
+      const { error } = await supabase.rpc("guardar_unidad_medida", {
+        p_nombre: resultado.valor,
+        p_id_unidad: unidadEditando?.id_und_medida ?? null,
+      });
 
-        if (error) {
-          throw error;
-        }
+      if (error) throw error;
 
-        setMensajeExito("La unidad de medida fue actualizada correctamente.");
-      } else {
-        const { error } = await supabase.from("unidad_medida").insert({
-          nom_und_medida: nombreValidado,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setMensajeExito("La unidad de medida fue creada correctamente.");
-      }
+      const editando = Boolean(unidadEditando);
 
       limpiarFormulario();
       await cargarUnidades();
-    } catch (error) {
-      console.error("Error al guardar la unidad:", error);
 
-      if (error?.code === "23505") {
-        setMensajeError("Ya existe una unidad de medida con ese nombre.");
-      } else if (error?.message?.toLowerCase().includes("row-level security")) {
-        setMensajeError(
-          "No tienes permisos para guardar esta unidad de medida.",
-        );
-      } else {
-        setMensajeError(
-          error?.message || "No fue posible guardar la unidad de medida.",
-        );
-      }
+      setMensajeExito(
+        editando
+          ? "La unidad de medida fue actualizada correctamente."
+          : "La unidad de medida fue creada correctamente.",
+      );
+    } catch (error) {
+      console.error("Error al guardar unidad:", error);
+
+      setMensajeError(
+        error?.message || "No fue posible guardar la unidad de medida.",
+      );
     } finally {
       setGuardando(false);
     }
@@ -264,16 +176,15 @@ function Unidades() {
                 setNombre(limpiarNombreUnidad(evento.target.value))
               }
               placeholder="Ej: Kg"
-              minLength={LONGITUD_MINIMA}
-              maxLength={LONGITUD_MAXIMA}
+              minLength={LONGITUD_MINIMA_UNIDAD}
+              maxLength={LONGITUD_MAXIMA_UNIDAD}
               autoComplete="off"
               disabled={guardando}
               autoFocus
             />
 
             <small>
-              Se permiten letras, números, espacios, %, /, puntos, guiones y
-              símbolos ² o ³.
+              Se permiten letras, números, espacios y símbolos ² o ³.
             </small>
           </div>
 

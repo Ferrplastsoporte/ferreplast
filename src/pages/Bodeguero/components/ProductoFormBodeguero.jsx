@@ -1,64 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../css/Productos-bodeguero.css";
 
-const TAMANO_MAXIMO_IMAGEN = 10 * 1024 * 1024;
-const TAMANO_MAXIMO_PDF = 20 * 1024 * 1024;
-
-const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
-
-const TIPOS_DOCUMENTO = [
-  {
-    value: "ficha_tecnica",
-    label: "Ficha técnica",
-  },
-  {
-    value: "hoja_seguridad",
-    label: "Hoja de seguridad",
-  },
-  {
-    value: "certificado",
-    label: "Certificado",
-  },
-  {
-    value: "manual",
-    label: "Manual",
-  },
-  {
-    value: "otro",
-    label: "Otro",
-  },
-];
-
-const ESTADO_INICIAL = {
-  nombre: "",
-  descripcion: "",
-  detalle: "",
-  precioNormal: "",
-  precioOferta: "",
-  stock: "1",
-  familiaId: "",
-  subcategoriaId: "",
-  marcaId: "",
-  unidadId: "",
-  color: "",
-  peso: "1",
-};
-
-function limpiarTexto(valor = "") {
-  return String(valor)
-    .replace(/[<>[\]{}]/g, "")
-    .replace(/\s{2,}/g, " ");
-}
-
-function limpiarEnteroPositivo(valor = "") {
-  return String(valor).replace(/\D/g, "");
-}
-
-function obtenerNombreTipoDocumento(tipo = "") {
-  return (
-    TIPOS_DOCUMENTO.find((opcion) => opcion.value === tipo)?.label || "Otro"
-  );
-}
+import {
+  ESTADO_INICIAL_PRODUCTO,
+  TIPOS_DOCUMENTO,
+  limpiarTextoProducto,
+  limpiarEnteroProducto,
+  obtenerNombreTipoDocumento,
+  crearIdTemporalDocumento,
+  validarImagenProducto,
+  validarDocumentosProducto,
+  validarFormularioProducto,
+  construirDatosProducto,
+} from "../../../utils/productos";
 
 function ProductoFormBodeguero({
   productoInicial = null,
@@ -74,24 +28,13 @@ function ProductoFormBodeguero({
 }) {
   const inputDocumentosRef = useRef(null);
 
-  const [formulario, setFormulario] = useState(ESTADO_INICIAL);
+  const [formulario, setFormulario] = useState(ESTADO_INICIAL_PRODUCTO);
 
   const [imagen, setImagen] = useState(null);
-
-  /*
-   * Estructura:
-   * {
-   *   idTemporal,
-   *   archivo,
-   *   tipoDocumento
-   * }
-   */
   const [documentosPdf, setDocumentosPdf] = useState([]);
-
   const [vistaPreviaImagen, setVistaPreviaImagen] = useState("");
 
   const [mensajeError, setMensajeError] = useState("");
-
   const [guardando, setGuardando] = useState(false);
 
   const editando = Boolean(productoInicial);
@@ -129,7 +72,8 @@ function ProductoFormBodeguero({
 
   function cargarProductoInicial() {
     if (!productoInicial) {
-      setFormulario(ESTADO_INICIAL);
+      setFormulario(ESTADO_INICIAL_PRODUCTO);
+
       setImagen(null);
       setDocumentosPdf([]);
       setVistaPreviaImagen("");
@@ -196,9 +140,7 @@ function ProductoFormBodeguero({
 
     setImagen(null);
     setDocumentosPdf([]);
-
     setVistaPreviaImagen(imagenActualUrl || "");
-
     setMensajeError("");
   }
 
@@ -210,7 +152,7 @@ function ProductoFormBodeguero({
   }
 
   function actualizarEntero(campo, valor) {
-    actualizarCampo(campo, limpiarEnteroPositivo(valor));
+    actualizarCampo(campo, limpiarEnteroProducto(valor));
   }
 
   function normalizarEnteroMinimoUno(campo) {
@@ -219,6 +161,7 @@ function ProductoFormBodeguero({
 
       return {
         ...estadoAnterior,
+
         [campo]:
           Number.isInteger(valorActual) && valorActual >= 1
             ? String(valorActual)
@@ -250,21 +193,12 @@ function ProductoFormBodeguero({
       return;
     }
 
-    if (!TIPOS_IMAGEN_PERMITIDOS.includes(archivo.type)) {
+    const validacion = validarImagenProducto(archivo);
+
+    if (!validacion.valido) {
       evento.target.value = "";
       setImagen(null);
-
-      setMensajeError("La imagen debe estar en formato JPG, PNG o WEBP.");
-
-      return;
-    }
-
-    if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
-      evento.target.value = "";
-      setImagen(null);
-
-      setMensajeError("La imagen no puede superar los 10 MB.");
-
+      setMensajeError(validacion.error);
       return;
     }
 
@@ -277,16 +211,6 @@ function ProductoFormBodeguero({
     setVistaPreviaImagen(URL.createObjectURL(archivo));
   }
 
-  function crearIdTemporal(archivo) {
-    return [
-      archivo.name,
-      archivo.size,
-      archivo.lastModified,
-      Date.now(),
-      Math.random(),
-    ].join("-");
-  }
-
   function seleccionarDocumentos(evento) {
     const archivos = Array.from(evento.target.files ?? []);
 
@@ -296,57 +220,18 @@ function ProductoFormBodeguero({
       return;
     }
 
-    const archivoInvalido = archivos.find(
-      (archivo) => archivo.type !== "application/pdf",
-    );
+    const validacion = validarDocumentosProducto(archivos, documentosPdf);
 
-    if (archivoInvalido) {
+    if (!validacion.valido) {
       evento.target.value = "";
-
-      setMensajeError(
-        `El archivo "${archivoInvalido.name}" no está en formato PDF.`,
-      );
-
-      return;
-    }
-
-    const archivoDemasiadoGrande = archivos.find(
-      (archivo) => archivo.size > TAMANO_MAXIMO_PDF,
-    );
-
-    if (archivoDemasiadoGrande) {
-      evento.target.value = "";
-
-      setMensajeError(
-        `El documento "${archivoDemasiadoGrande.name}" supera los 20 MB.`,
-      );
-
-      return;
-    }
-
-    const documentoRepetido = archivos.find((archivo) =>
-      documentosPdf.some(
-        (documento) =>
-          documento.archivo.name === archivo.name &&
-          documento.archivo.size === archivo.size,
-      ),
-    );
-
-    if (documentoRepetido) {
-      evento.target.value = "";
-
-      setMensajeError(
-        `El documento "${documentoRepetido.name}" ya fue seleccionado.`,
-      );
-
+      setMensajeError(validacion.error);
       return;
     }
 
     const nuevosDocumentos = archivos.map((archivo) => ({
-      idTemporal: crearIdTemporal(archivo),
+      idTemporal: crearIdTemporalDocumento(archivo),
 
       archivo,
-
       tipoDocumento: "",
     }));
 
@@ -379,136 +264,6 @@ function ProductoFormBodeguero({
     );
   }
 
-  function validarFormulario() {
-    const nombre = formulario.nombre.trim();
-
-    const descripcion = formulario.descripcion.trim();
-
-    const detalle = formulario.detalle.trim();
-
-    const precioNormal = Number(formulario.precioNormal);
-
-    const precioOferta =
-      formulario.precioOferta === ""
-        ? precioNormal
-        : Number(formulario.precioOferta);
-
-    const stock = Number(formulario.stock);
-
-    const peso = Number(formulario.peso);
-
-    if (nombre.length < 3) {
-      return "El nombre debe tener al menos 3 caracteres.";
-    }
-
-    if (nombre.length > 120) {
-      return "El nombre no puede superar los 120 caracteres.";
-    }
-
-    if (descripcion.length < 10) {
-      return "La descripción debe tener al menos 10 caracteres.";
-    }
-
-    if (descripcion.length > 300) {
-      return "La descripción no puede superar los 300 caracteres.";
-    }
-
-    if (detalle.length > 1000) {
-      return "El detalle no puede superar los 1.000 caracteres.";
-    }
-
-    if (!Number.isInteger(precioNormal) || precioNormal < 1) {
-      return "El precio normal debe ser un número entero desde 1 en adelante.";
-    }
-
-    if (!Number.isInteger(precioOferta) || precioOferta < 1) {
-      return "El precio vigente debe ser un número entero desde 1 en adelante.";
-    }
-
-    if (precioOferta > precioNormal) {
-      return "El precio de oferta no puede ser mayor que el precio normal.";
-    }
-
-    if (!formulario.familiaId) {
-      return "Debes seleccionar una familia.";
-    }
-
-    if (!formulario.subcategoriaId) {
-      return "Debes seleccionar una subcategoría.";
-    }
-
-    const subcategoriaValida = subcategoriasFiltradas.some(
-      (subcategoria) =>
-        Number(subcategoria.id_subcategoria) ===
-        Number(formulario.subcategoriaId),
-    );
-
-    if (!subcategoriaValida) {
-      return "La subcategoría seleccionada no pertenece a la familia indicada.";
-    }
-
-    if (!formulario.unidadId) {
-      return "Debes seleccionar una unidad de medida.";
-    }
-
-    if (!Number.isInteger(stock) || stock < 1) {
-      return "El stock debe ser un número entero desde 1 en adelante.";
-    }
-
-    if (!Number.isInteger(peso) || peso < 1) {
-      return "El peso o contenido debe ser un número entero desde 1 en adelante.";
-    }
-
-    const documentoSinTipo = documentosPdf.find(
-      (documento) => !documento.tipoDocumento,
-    );
-
-    if (documentoSinTipo) {
-      return `Debes seleccionar el tipo del documento "${documentoSinTipo.archivo.name}".`;
-    }
-
-    return null;
-  }
-
-  function construirDatosProducto() {
-    const precioNormal = Number(formulario.precioNormal);
-
-    return {
-      nom_prod: formulario.nombre.trim(),
-
-      desc_prod: formulario.descripcion.trim(),
-
-      detalle_prod: formulario.detalle.trim() || null,
-
-      precio_prod: precioNormal,
-
-      /*
-       * Si queda vacío, se almacena el
-       * mismo precio normal.
-       */
-      precio_act:
-        formulario.precioOferta === ""
-          ? precioNormal
-          : Number(formulario.precioOferta),
-
-      stock_prod: Number(formulario.stock),
-
-      id_subcategoria: Number(formulario.subcategoriaId),
-
-      id_und_medida: Number(formulario.unidadId),
-
-      id_marca: formulario.marcaId ? Number(formulario.marcaId) : null,
-
-      color_prod: formulario.color.trim() || null,
-
-      peso_prod: Number(formulario.peso),
-
-      imagen,
-
-      documentosPdf,
-    };
-  }
-
   async function manejarEnvio(evento) {
     evento.preventDefault();
 
@@ -516,7 +271,12 @@ function ProductoFormBodeguero({
       return;
     }
 
-    const errorValidacion = validarFormulario();
+    const errorValidacion = validarFormularioProducto({
+      formulario,
+      subcategoriasFiltradas,
+      documentosPdf,
+      esEdicion,
+    });
 
     if (errorValidacion) {
       setMensajeError(errorValidacion);
@@ -528,7 +288,13 @@ function ProductoFormBodeguero({
     setMensajeError("");
 
     try {
-      await onGuardar(construirDatosProducto());
+      const datosProducto = construirDatosProducto(formulario, {
+        imagen,
+        documentosPdf,
+        esEdicion,
+      });
+
+      await onGuardar(datosProducto);
     } catch (error) {
       console.error("Error al guardar el producto:", error);
 
@@ -566,7 +332,10 @@ function ProductoFormBodeguero({
             type="text"
             value={formulario.nombre}
             onChange={(evento) =>
-              actualizarCampo("nombre", limpiarTexto(evento.target.value))
+              actualizarCampo(
+                "nombre",
+                limpiarTextoProducto(evento.target.value),
+              )
             }
             minLength={3}
             maxLength={120}
@@ -584,7 +353,10 @@ function ProductoFormBodeguero({
             id="descripcionProducto"
             value={formulario.descripcion}
             onChange={(evento) =>
-              actualizarCampo("descripcion", limpiarTexto(evento.target.value))
+              actualizarCampo(
+                "descripcion",
+                limpiarTextoProducto(evento.target.value),
+              )
             }
             minLength={10}
             maxLength={300}
@@ -602,7 +374,10 @@ function ProductoFormBodeguero({
             id="detalleProducto"
             value={formulario.detalle}
             onChange={(evento) =>
-              actualizarCampo("detalle", limpiarTexto(evento.target.value))
+              actualizarCampo(
+                "detalle",
+                limpiarTextoProducto(evento.target.value),
+              )
             }
             maxLength={1000}
             placeholder="Características, recomendaciones de uso o información técnica adicional."
@@ -647,22 +422,24 @@ function ProductoFormBodeguero({
         </div>
 
         {!esEdicion && (
-  <div className="producto-bodega-form__field">
-    <label htmlFor="stockProducto">Stock inicial</label>
-    <input
-      id="stockProducto"
-      type="text"
-      inputMode="numeric"
-      value={formulario.stock}
-      onChange={(evento) =>
-        actualizarEntero("stock", evento.target.value)
-      }
-      onBlur={() => normalizarEnteroMinimoUno("stock")}
-      disabled={guardando}
-    />
-    <small>Solo números enteros desde 1.</small>
-  </div>
-)}
+          <div className="producto-bodega-form__field">
+            <label htmlFor="stockProducto">Stock inicial</label>
+
+            <input
+              id="stockProducto"
+              type="text"
+              inputMode="numeric"
+              value={formulario.stock}
+              onChange={(evento) =>
+                actualizarEntero("stock", evento.target.value)
+              }
+              onBlur={() => normalizarEnteroMinimoUno("stock")}
+              disabled={guardando}
+            />
+
+            <small>Solo números enteros desde 1.</small>
+          </div>
+        )}
 
         <div className="producto-bodega-form__field">
           <label htmlFor="familiaProducto">Familia</label>
@@ -757,7 +534,10 @@ function ProductoFormBodeguero({
             type="text"
             value={formulario.color}
             onChange={(evento) =>
-              actualizarCampo("color", limpiarTexto(evento.target.value))
+              actualizarCampo(
+                "color",
+                limpiarTextoProducto(evento.target.value),
+              )
             }
             maxLength={50}
             placeholder="Ej: Transparente"
