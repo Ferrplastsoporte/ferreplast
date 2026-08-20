@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import useCartView from "../../hooks/useCartView";
 import { supabase } from "../../lib/supabase";
 import "../css/Carrito.css";
+import { useState } from "react";
 
 function formatearPrecio(valor) {
   return new Intl.NumberFormat("es-CL", {
@@ -32,6 +33,8 @@ function obtenerUrlImagen(rutaImagen) {
 
 function Carrito() {
   const navigate = useNavigate();
+  const [iniciandoPago, setIniciandoPago] = useState(false);
+  const [errorPago, setErrorPago] = useState("");
 
   const {
     productos,
@@ -63,31 +66,70 @@ function Carrito() {
    *      permite continuar al futuro flujo
    *      de validación de stock / despacho / pago.
    */
-  function continuarCompra() {
-    if (!usuario) {
-      navigate("/login", {
-        state: {
-          from: "/carrito",
-        },
-      });
+  async function continuarCompra() {
+  if (!usuario) {
+    navigate("/login", {
+      state: {
+        from: "/carrito",
+      },
+    });
 
-      return;
+    return;
+  }
+
+  if (!Number.isInteger(Math.round(total)) || total <= 0) {
+    setErrorPago("El total de la compra no es válido.");
+    return;
+  }
+
+  setIniciandoPago(true);
+  setErrorPago("");
+
+  try {
+    const respuesta = await fetch(
+      "http://localhost:3000/api/webpay/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: Math.round(total),
+          sessionId: usuario.id,
+        }),
+      },
+    );
+
+    const data = await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(
+        data.error || "No fue posible iniciar el pago.",
+      );
     }
 
-    /*
-     * Próximo paso:
-     *
-     * 1. Revalidar productos y stock.
-     * 2. Confirmar despacho.
-     * 3. Mostrar resumen final.
-     * 4. Iniciar módulo de pago.
-     *
-     * NO se crea pedido todavía.
-     */
-    console.log(
-      "Usuario autenticado. Puede continuar al proceso de compra.",
+    const formulario = document.createElement("form");
+    formulario.method = "POST";
+    formulario.action = data.url;
+
+    const token = document.createElement("input");
+    token.type = "hidden";
+    token.name = "token_ws";
+    token.value = data.token;
+
+    formulario.appendChild(token);
+    document.body.appendChild(formulario);
+    formulario.submit();
+  } catch (error) {
+    console.error("Error iniciando Webpay:", error);
+    setErrorPago(
+      error.message || "No fue posible conectar con Webpay.",
     );
+    setIniciandoPago(false);
   }
+}
+
+
 
   /*
    * Texto mostrado en la fila de envío.
@@ -183,11 +225,11 @@ function Carrito() {
         )}
       </header>
 
-      {error && (
+      {errorPago && (
         <p className="cart-page__error">
-          {error}
+         {errorPago}
         </p>
-      )}
+         )}
 
       {productos.length === 0 ? (
         <section className="cart-empty">
@@ -351,16 +393,17 @@ function Carrito() {
             </div>
 
             <button
-              type="button"
-              className="cart-summary__pay-button"
-              onClick={continuarCompra}
-              disabled={
-                productos.length === 0 ||
-                cargando ||
-                actualizando
-              }
+            type="button"
+            className="cart-summary__pay-button"
+            onClick={continuarCompra}
+            disabled={
+              productos.length === 0 ||
+              cargando ||
+              actualizando ||
+              iniciandoPago
+            }
             >
-              Continuar compra
+              {iniciandoPago ? "Redirigiendo a Webpay..." : "Pagar con Webpay"}
             </button>
 
             <p className="cart-summary__notice">
@@ -371,6 +414,6 @@ function Carrito() {
       )}
     </main>
   );
-}
 
+ }
 export default Carrito;
