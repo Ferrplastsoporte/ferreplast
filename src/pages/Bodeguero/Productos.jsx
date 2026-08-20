@@ -409,10 +409,6 @@ function BodegueroProductos() {
         );
       }
 
-      if (documentosPdf.length > 0) {
-        await guardarDocumentosProducto(idProducto, documentosPdf);
-      }
-
       cerrarFormulario();
 
       setVersionImagenes(Date.now());

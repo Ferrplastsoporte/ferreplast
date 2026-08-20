@@ -6,13 +6,17 @@ import "../css/stock.css";
 
 const enlaces = [
   {
-    texto: "Dashboard (REVISAR)",
+    texto: "Dashboard",
     ruta: "/bodeguero",
     exacta: true,
   },
   {
-    texto: "Stock (REVISAR)",
+    texto: "Stock",
     ruta: "/bodeguero/stock",
+  },
+  {
+    texto: "Documentos",
+    ruta: "/bodeguero/documentos",
   },
   {
     texto: "Solicitudes pendientes",

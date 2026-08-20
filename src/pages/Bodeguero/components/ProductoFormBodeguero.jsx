@@ -577,22 +577,6 @@ function ProductoFormBodeguero({
 
           <small>JPG, PNG o WEBP. Máximo 10 MB.</small>
         </div>
-
-        <div className="producto-bodega-form__field">
-          <label htmlFor="documentoProducto">Documentos técnicos</label>
-
-          <input
-            ref={inputDocumentosRef}
-            id="documentoProducto"
-            type="file"
-            accept="application/pdf"
-            multiple
-            onChange={seleccionarDocumentos}
-            disabled={guardando}
-          />
-
-          <small>Puedes agregar varios PDF. Máximo 20 MB por archivo.</small>
-        </div>
       </div>
 
       {documentosPdf.length > 0 && (

@@ -42,6 +42,7 @@ import BodegueroSolicitudes from "./pages/Bodeguero/Solicitudes";
 import BodegueroFamilias from "./pages/Bodeguero/Familias";
 import BodegueroMarcas from "./pages/Bodeguero/Marcas";
 import BodegueroUnidades from "./pages/Bodeguero/Unidades";
+import BodegueroDocumentos from "./pages/Bodeguero/DocumentosProductos";
 
 // Webpay PLus
 import PagoResultado from "./pages/Cliente/PagoResultado";
@@ -103,6 +104,7 @@ function App() {
           <Route path="/bodeguero/familias" element={<BodegueroFamilias />} />
           <Route path="/bodeguero/marcas" element={<BodegueroMarcas />} />
           <Route path="/bodeguero/unidades" element={<BodegueroUnidades />} />
+          <Route path="/bodeguero/documentos" element={<BodegueroDocumentos />} />
         </Route>
       </Routes>
     </BrowserRouter>
