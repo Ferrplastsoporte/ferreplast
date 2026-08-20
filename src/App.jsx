@@ -21,6 +21,9 @@ import Catalogo from "./pages/Cliente/Catalogo";
 import Carrito from "./pages/Cliente/Carrito";
 import DetalleProducto from "./pages/Cliente/DetalleProducto";
 import Cotizacion from "./pages/Cliente/Cotizacion";
+import PedidosCliente from "./pages/Cliente/Pedidos";
+import Cuenta from "./pages/Cliente/Cuenta";
+import Ayuda from "./pages/Cliente/Ayuda";
 
 // Páginas administrador
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -75,7 +78,11 @@ function App() {
           <Route path="/pago/resultado" element={<PagoResultado />} />
           <Route path="/cotizacion" element={<Cotizacion />} />
           <Route path="/producto/:id" element={<DetalleProducto />} />
-          
+          <Route path="/pedidos" element={<PedidosCliente />} />
+          <Route path="/cuenta" element={<Cuenta />} />
+          <Route path="/ayuda" element={<Ayuda />} />
+                    
+
         </Route>
 
         {/* Administrador */}

@@ -1,0 +1,416 @@
+/* =========================================================
+   CUENTA
+   Diseño alineado con el Home de Ferreplast
+   ========================================================= */
+
+.cuenta-page {
+  min-height: 100vh;
+  padding: 120px 6% 110px;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 8% 15%,
+      rgba(42, 126, 255, 0.18),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 92% 85%,
+      rgba(255, 45, 55, 0.12),
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #071a38 0%,
+      #092b5c 48%,
+      #07182f 100%
+    );
+
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+.cuenta-header {
+  width: min(1250px, 100%);
+  margin: 0 auto 65px;
+}
+
+.cuenta-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 18px;
+
+  color: #ff3344;
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.cuenta-eyebrow::before {
+  content: "";
+
+  width: 34px;
+  height: 2px;
+
+  background: #ff3344;
+}
+
+.cuenta-header h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(52px, 6vw, 82px);
+  font-weight: 850;
+  line-height: 0.98;
+  letter-spacing: -3px;
+}
+
+.cuenta-header p {
+  max-width: 750px;
+
+  margin: 22px 0 0;
+
+  color: rgba(255, 255, 255, 0.68);
+
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.cuenta-content {
+  width: min(1250px, 100%);
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 1fr;
+
+  gap: 30px;
+}
+
+
+/* =========================================================
+   TARJETAS
+   ========================================================= */
+
+.cuenta-card {
+  position: relative;
+
+  padding: 38px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 26px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(14px);
+
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.cuenta-card:hover {
+  transform: translateY(-5px);
+
+  border-color: rgba(54, 145, 255, 0.45);
+
+  box-shadow:
+    0 28px 65px rgba(0, 0, 0, 0.3),
+    0 0 35px rgba(35, 125, 255, 0.08);
+}
+
+
+/* =========================================================
+   LÍNEA SUPERIOR
+   ========================================================= */
+
+.cuenta-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 35px;
+  right: 35px;
+
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    #ff3344,
+    #1675ff,
+    transparent
+  );
+
+  border-radius: 0 0 10px 10px;
+}
+
+
+/* =========================================================
+   CABECERA DE TARJETA
+   ========================================================= */
+
+.cuenta-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 25px;
+
+  margin-bottom: 32px;
+}
+
+.cuenta-card__eyebrow {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #ff4050;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+}
+
+.cuenta-card__header h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+
+
+/* =========================================================
+   ICONOS
+   ========================================================= */
+
+.cuenta-card__icon {
+  width: 56px;
+  height: 56px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(80, 155, 255, 0.25);
+  border-radius: 15px;
+
+  background: rgba(20, 102, 205, 0.22);
+
+  font-size: 22px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.cuenta-fields {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.cuenta-field {
+  min-width: 0;
+
+  padding: 20px 21px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+
+  background: rgba(2, 15, 35, 0.28);
+}
+
+.cuenta-field span {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: rgba(255, 255, 255, 0.48);
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.cuenta-field strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 650;
+
+  line-height: 1.45;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
+.cuenta-status {
+  width: min(700px, 100%);
+
+  margin: 50px auto;
+
+  padding: 35px;
+
+  text-align: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.cuenta-status p {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.7);
+
+  font-size: 15px;
+}
+
+.cuenta-status--error {
+  border-color: rgba(255, 55, 70, 0.25);
+
+  background: rgba(255, 40, 55, 0.06);
+}
+
+.cuenta-status--error h2 {
+  margin: 0 0 10px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+}
+
+.cuenta-status--error button {
+  margin-top: 20px;
+
+  padding: 11px 22px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #1268d8;
+  color: #ffffff;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cuenta-status--error button:hover {
+  background: #1979f0;
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .cuenta-page {
+    padding: 100px 30px 80px;
+  }
+
+  .cuenta-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .cuenta-page {
+    padding: 80px 18px 60px;
+  }
+
+  .cuenta-header {
+    margin-bottom: 40px;
+  }
+
+  .cuenta-header h1 {
+    font-size: 46px;
+    letter-spacing: -2px;
+  }
+
+  .cuenta-header p {
+    font-size: 15px;
+  }
+
+  .cuenta-card {
+    padding: 25px;
+    border-radius: 20px;
+  }
+
+  .cuenta-card__header h2 {
+    font-size: 24px;
+  }
+
+  .cuenta-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .cuenta-field strong {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+}
