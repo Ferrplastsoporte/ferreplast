@@ -1,169 +1,136 @@
-import '../css/home.css' 
+import "../css/home.css";
+import { Link } from "react-router-dom";
 
+function Footer() {
+  return (
+    <footer className="footer">
 
-function Footer(){
+      <div className="footer-container">
 
-    return(
+        {/* =========================
+            MARCA
+        ========================= */}
+        <div className="footer-brand">
 
-        <footer className="footer">
+          <h2>FERREPLAST</h2>
 
+          <p>
+            Especialistas en resinas epóxicas,
+            herramientas y materiales profesionales
+            para tus proyectos.
+          </p>
 
-            <div className="footer-container">
+          <div className="socials">
 
+            <a href="#" onClick={(e) => e.preventDefault()}>
+              Facebook
+            </a>
 
-                {/* Marca */}
+            <a href="#" onClick={(e) => e.preventDefault()}>
+              Instagram
+            </a>
 
-                <div className="footer-brand">
+            <a href="#" onClick={(e) => e.preventDefault()}>
+              WhatsApp
+            </a>
 
-                    <h2>
-                        FERREPLAST
-                    </h2>
+          </div>
 
-                    <p>
-                        Especialistas en resinas epóxicas,
-                        herramientas y materiales profesionales
-                        para tus proyectos.
-                    </p>
+        </div>
 
 
-                    <div className="socials">
+        {/* =========================
+            NAVEGACIÓN
+        ========================= */}
+        <div className="footer-column">
 
-                        <a href="#">
-                            Facebook
-                        </a>
+          <h3>Navegación</h3>
 
-                        <a href="#">
-                            Instagram
-                        </a>
+          {/* Volver al Home */}
+          <Link to="/">
+            Inicio
+          </Link>
 
-                        <a href="#">
-                            WhatsApp
-                        </a>
+          {/* Ir al catálogo */}
+          <Link to="/catalogo">
+            Catálogo
+          </Link>
 
-                    </div>
+          {/* Ir al catálogo filtrado por familia */}
+          <Link to="/catalogo?familia=Resinas">
+            Resinas
+          </Link>
 
+          {/* Ir al catálogo filtrado por familia */}
+          <Link to="/catalogo?familia=Herramientas">
+            Herramientas
+          </Link>
 
-                </div>
+        </div>
 
 
+        {/* =========================
+            ATENCIÓN
+        ========================= */}
+        <div className="footer-column">
 
-                {/* Navegación */}
+          <h3>Atención</h3>
 
-                <div className="footer-column">
+          {/* Lleva a la sección Contacto del Home */}
+          <Link to="/#contacto">
+            Contacto
+          </Link>
 
-                    <h3>
-                        Navegación
-                    </h3>
+          <a href="#" onClick={(e) => e.preventDefault()}>
+            Preguntas frecuentes
+          </a>
 
+          <a href="#" onClick={(e) => e.preventDefault()}>
+            Políticas de compra
+          </a>
 
-                    <a href="#">
-                        Inicio
-                    </a>
+          <a href="#" onClick={(e) => e.preventDefault()}>
+            Términos y condiciones
+          </a>
 
-                    <a href="#">
-                        Catálogo
-                    </a>
+        </div>
 
-                    <a href="#">
-                        Resinas
-                    </a>
 
-                    <a href="#">
-                        Herramientas
-                    </a>
+        {/* =========================
+            CONTACTO
+        ========================= */}
+        <div className="footer-column">
 
+          <h3>Contacto</h3>
 
-                </div>
+          <p>📍 Chile</p>
 
+          <p>📞 +56 9 XXXX XXXX</p>
 
+          <p>✉ contacto@ferreplast.cl</p>
 
+          <p>💳 Transbank</p>
 
-                {/* Ayuda */}
+          <p>🏦 Transferencia bancaria</p>
 
-                <div className="footer-column">
+        </div>
 
-                    <h3>
-                        Atención
-                    </h3>
+      </div>
 
 
-                    <a href="#">
-                        Contacto
-                    </a>
+      {/* =========================
+          COPYRIGHT
+      ========================= */}
+      <div className="footer-bottom">
 
-                    <a href="#">
-                        Preguntas frecuentes
-                    </a>
+        <p>
+          © 2026 Ferreplast. Todos los derechos reservados.
+        </p>
 
-                    <a href="#">
-                        Políticas de compra
-                    </a>
+      </div>
 
-                    <a href="#">
-                        Términos y condiciones
-                    </a>
-
-
-                </div>
-
-
-
-
-                {/* Contacto */}
-
-                <div className="footer-column">
-
-
-                    <h3>
-                        Contacto
-                    </h3>
-
-
-                    <p>
-                        📍 Chile
-                    </p>
-
-                    <p>
-                        📞 +56 9 XXXX XXXX
-                    </p>
-
-                    <p>
-                        ✉ contacto@ferreplast.cl
-                    </p>
-
-
-                    <p>
-                        💳 Transbank
-                    </p>
-
-                    <p>
-                        🏦 Transferencia bancaria
-                    </p>
-
-
-                </div>
-
-
-            </div>
-
-
-
-            <div className="footer-bottom">
-
-
-                <p>
-                    © 2026 Ferreplast. Todos los derechos reservados.
-                </p>
-
-
-            </div>
-
-
-        </footer>
-
-    );
-
+    </footer>
+  );
 }
-
 
 export default Footer;

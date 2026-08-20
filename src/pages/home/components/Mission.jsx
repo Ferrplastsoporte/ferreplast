@@ -1,5 +1,6 @@
 import "../css/home.css";
 import FadeIn from "../../../animations/FadeIn";
+import { motion } from "motion/react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectFade } from "swiper/modules";
@@ -8,147 +9,132 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 
-import { FaBullseye, FaEye, FaHandshake } from "react-icons/fa";
+import {
+  FaBullseye,
+  FaEye,
+  FaHandshake,
+  FaCheck,
+} from "react-icons/fa";
 
 import proyecto1 from "../../../assets/proyectos/proyecto1.png";
 import proyecto2 from "../../../assets/proyectos/proyecto2.png";
+
+const pilares = [
+  {
+    icono: <FaBullseye />,
+    titulo: "Misión",
+    texto:
+      "Brindar soluciones confiables mediante productos de alta calidad y atención personalizada.",
+  },
+  {
+    icono: <FaEye />,
+    titulo: "Visión",
+    texto:
+      "Ser un referente nacional en resinas, herramientas y productos para la construcción.",
+  },
+  {
+    icono: <FaHandshake />,
+    titulo: "Valores",
+    texto:
+      "Calidad, compromiso, honestidad, innovación y cercanía en cada compra.",
+  },
+];
 
 function Mission() {
   return (
     <FadeIn>
       <section className="mission">
+        <div className="mission__glow mission__glow--one" />
+        <div className="mission__glow mission__glow--two" />
 
         <div className="mission-header">
-
-          {/* Carrusel */}
-
-          <div className="mission-slider">
-
+          <motion.div
+            className="mission-slider"
+            initial={{ opacity: 0, x: -35 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
             <Swiper
               modules={[Autoplay, Pagination, EffectFade]}
               effect="fade"
-              loop={true}
-              autoplay={{
-                delay: 4000,
-                disableOnInteraction: false,
-              }}
-              pagination={{
-                clickable: true,
-              }}
+              loop
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              pagination={{ clickable: true }}
               className="mission-swiper"
             >
-
               <SwiperSlide>
-                <img src={proyecto1} alt="Proyecto Ferreplast 1" />
+                <img src={proyecto1} alt="Proyecto realizado con productos Ferreplast" />
               </SwiperSlide>
 
               <SwiperSlide>
-                <img src={proyecto2} alt="Proyecto Ferreplast 2" />
+                <img src={proyecto2} alt="Materiales y soluciones Ferreplast" />
               </SwiperSlide>
-
             </Swiper>
 
-          </div>
+            <div className="mission-slider__badge">
+              <FaCheck />
+              <span>Calidad para proyectos reales</span>
+            </div>
+          </motion.div>
 
-          {/* Información */}
+          <motion.div
+            className="mission-info"
+            initial={{ opacity: 0, x: 35 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            <span className="mission-subtitle">DESDE PUERTO MONTT · CHILE</span>
 
-          <div className="mission-info">
-
-            <span className="mission-subtitle">
-              NUESTRA EMPRESA
-            </span>
-
-            <h2>
-              Construimos confianza para cada proyecto.
-            </h2>
+            <h1>
+              Materiales que hacen
+              <strong> durar tus proyectos.</strong>
+            </h1>
 
             <p className="mission-description">
-              En <strong>Ferreplast</strong> creemos que cada proyecto merece
-              materiales de calidad, asesoría especializada y soluciones que
-              entreguen resultados duraderos. Trabajamos para acompañar a
-              nuestros clientes desde la elección del producto hasta la
-              ejecución de sus ideas.
+              En <strong>Ferreplast</strong> combinamos productos profesionales,
+              asesoría técnica y atención cercana para acompañarte desde la idea
+              hasta el resultado final.
             </p>
 
             <div className="mission-stats">
-
               <div className="stat">
-                <h3>✔</h3>
-                <span>Productos Profesionales</span>
+                <strong>Calidad</strong>
+                <span>Productos seleccionados</span>
               </div>
 
               <div className="stat">
-                <h3>✔</h3>
-                <span>Calidad Garantizada</span>
+                <strong>Asesoría</strong>
+                <span>Atención especializada</span>
               </div>
 
               <div className="stat">
-                <h3>✔</h3>
-                <span>Atención Cercana</span>
+                <strong>Confianza</strong>
+                <span>Compra segura</span>
               </div>
-
             </div>
-
-          </div>
-
+          </motion.div>
         </div>
-
-        {/* Tarjetas */}
 
         <div className="mission-cards">
-
-          <div className="mission-card">
-
-            <div className="mission-icon">
-              <FaBullseye />
-            </div>
-
-            <h3>Misión</h3>
-
-            <p>
-              Brindar soluciones confiables mediante productos de alta
-              calidad y una atención personalizada que permita a nuestros
-              clientes desarrollar sus proyectos con seguridad, eficiencia
-              y confianza.
-            </p>
-
-          </div>
-
-          <div className="mission-card">
-
-            <div className="mission-icon">
-              <FaEye />
-            </div>
-
-            <h3>Visión</h3>
-
-            <p>
-              Convertirnos en un referente nacional en la distribución de
-              resinas epóxicas, herramientas y productos para la
-              construcción, destacando por nuestra innovación, compromiso
-              y excelencia.
-            </p>
-
-          </div>
-
-          <div className="mission-card">
-
-            <div className="mission-icon">
-              <FaHandshake />
-            </div>
-
-            <h3>Valores</h3>
-
-            <p>
-              Calidad, compromiso, honestidad, innovación y cercanía con
-              nuestros clientes son los pilares que guían cada una de
-              nuestras acciones.
-            </p>
-
-          </div>
-
+          {pilares.map((pilar, index) => (
+            <motion.article
+              key={pilar.titulo}
+              className="mission-card"
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: index * 0.12 }}
+              whileHover={{ y: -10 }}
+            >
+              <div className="mission-icon">{pilar.icono}</div>
+              <h2>{pilar.titulo}</h2>
+              <p>{pilar.texto}</p>
+              <span className="mission-card__line" />
+            </motion.article>
+          ))}
         </div>
-
       </section>
     </FadeIn>
   );
