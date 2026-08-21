@@ -71,7 +71,7 @@
 
 .cart-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   align-items: start;
   gap: 28px;
 }
@@ -212,6 +212,10 @@
   text-align: right;
 }
 
+/* =========================================================
+   RESUMEN DE COMPRA
+========================================================= */
+
 .cart-summary {
   position: sticky;
   top: 24px;
@@ -268,6 +272,163 @@
   font-size: 1.45rem;
 }
 
+/* =========================================================
+   DOCUMENTO TRIBUTARIO
+========================================================= */
+
+.cart-summary__document {
+  margin-top: 24px;
+  padding-top: 22px;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.cart-summary__document h3 {
+  margin: 0 0 14px;
+
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.cart-summary__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 10px;
+  padding: 11px 12px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  background: #f8fafc;
+
+  color: #334155;
+  font-size: 0.92rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.cart-summary__option:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.cart-summary__option:has(input:checked) {
+  border-color: #005bbb;
+  background: #eff6ff;
+  color: #0f172a;
+}
+
+.cart-summary__option input[type="radio"] {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+
+  accent-color: #005bbb;
+
+  cursor: pointer;
+}
+
+.cart-summary__option span {
+  line-height: 1.2;
+}
+
+/* =========================================================
+   DATOS DE FACTURACIÓN
+========================================================= */
+
+.cart-invoice {
+  display: grid;
+  gap: 14px;
+
+  margin-top: 18px;
+  padding: 18px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+
+  background: #f8fafc;
+}
+
+.cart-invoice h3 {
+  margin: 0 0 4px;
+
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.cart-invoice__field {
+  display: grid;
+  gap: 6px;
+}
+
+.cart-invoice__field label {
+  color: #334155;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cart-invoice__field input,
+.cart-invoice__field select {
+  width: 100%;
+  min-height: 42px;
+
+  box-sizing: border-box;
+
+  padding: 9px 11px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #0f172a;
+
+  font-family: inherit;
+  font-size: 0.9rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cart-invoice__field input::placeholder {
+  color: #94a3b8;
+}
+
+.cart-invoice__field input:focus,
+.cart-invoice__field select:focus {
+  border-color: #005bbb;
+
+  box-shadow: 0 0 0 3px rgb(0 91 187 / 10%);
+}
+
+.cart-invoice__field input:disabled,
+.cart-invoice__field select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+
+  cursor: not-allowed;
+}
+
+.cart-invoice__field select {
+  cursor: pointer;
+}
+
+/* =========================================================
+   BOTÓN WEBPAY
+========================================================= */
+
 .cart-summary__pay-button {
   width: 100%;
   min-height: 52px;
@@ -275,11 +436,33 @@
   border: none;
   border-radius: 12px;
 
-  background: #94a3b8;
+  background: #005bbb;
   color: #ffffff;
 
   font-size: 1rem;
   font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.15s ease;
+}
+
+.cart-summary__pay-button:hover:not(:disabled) {
+  background: #004a99;
+}
+
+.cart-summary__pay-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.cart-summary__pay-button:disabled {
+  background: #94a3b8;
+
+  opacity: 0.7;
+
   cursor: not-allowed;
 }
 
@@ -291,6 +474,10 @@
   line-height: 1.4;
   text-align: center;
 }
+
+/* =========================================================
+   CARRITO VACÍO
+========================================================= */
 
 .cart-empty {
   padding: 80px 24px;
@@ -319,6 +506,10 @@
   color: #64748b;
 }
 
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
 @media (max-width: 900px) {
   .cart-layout {
     grid-template-columns: 1fr;
@@ -345,6 +536,10 @@
 
   .cart-item__subtotal {
     text-align: left;
+  }
+
+  .cart-invoice {
+    padding: 16px;
   }
 }
 
@@ -376,5 +571,26 @@
 
   .cart-summary {
     padding: 22px;
+  }
+
+  .cart-summary__document {
+    margin-top: 20px;
+    padding-top: 18px;
+  }
+
+  .cart-summary__option {
+    padding: 12px;
+  }
+
+  .cart-invoice {
+    gap: 12px;
+
+    margin-top: 14px;
+    padding: 14px;
+  }
+
+  .cart-invoice__field input,
+  .cart-invoice__field select {
+    min-height: 44px;
   }
 }
