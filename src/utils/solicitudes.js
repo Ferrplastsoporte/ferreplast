@@ -12,6 +12,9 @@ export const NOMBRES_CAMPOS = {
   color_prod: "Color",
   id_marca: "Marca",
   est_prod: "Estado",
+
+  // Peligrosidad
+  peligrosidad: "Peligrosidad",
 };
 
 export const NOMBRES_ACCIONES = {
@@ -38,20 +41,55 @@ export function obtenerDetalleCambios(campos = {}) {
     return [];
   }
 
-  return Object.entries(campos).map(([campo, cambio]) => ({
-    campo: NOMBRES_CAMPOS[campo] || campo,
-    anterior:
-      cambio?.anterior === null ||
-      cambio?.anterior === undefined ||
-      cambio?.anterior === ""
-        ? "Sin valor"
-        : String(cambio.anterior),
+  return Object.entries(campos).flatMap(([campo, cambio]) => {
+    if (campo === "peligrosidad") {
+      const agregadas = Array.isArray(cambio?.agregadas)
+        ? cambio.agregadas
+        : [];
 
-    nuevo:
-      cambio?.nuevo === null ||
-      cambio?.nuevo === undefined ||
-      cambio?.nuevo === ""
-        ? "Sin valor"
-        : String(cambio.nuevo),
-  }));
+      const eliminadas = Array.isArray(cambio?.eliminadas)
+        ? cambio.eliminadas
+        : [];
+
+      const detalles = [];
+
+      if (agregadas.length > 0) {
+        detalles.push({
+          campo: "Peligrosidad agregada",
+          anterior: "Ninguna",
+          nuevo: agregadas.join(", "),
+        });
+      }
+
+      if (eliminadas.length > 0) {
+        detalles.push({
+          campo: "Peligrosidad eliminada",
+          anterior: eliminadas.join(", "),
+          nuevo: "Ninguna",
+        });
+      }
+
+      return detalles;
+    }
+
+    return [
+      {
+        campo: NOMBRES_CAMPOS[campo] || campo,
+
+        anterior:
+          cambio?.anterior === null ||
+          cambio?.anterior === undefined ||
+          cambio?.anterior === ""
+            ? "Sin valor"
+            : String(cambio.anterior),
+
+        nuevo:
+          cambio?.nuevo === null ||
+          cambio?.nuevo === undefined ||
+          cambio?.nuevo === ""
+            ? "Sin valor"
+            : String(cambio.nuevo),
+      },
+    ];
+  });
 }

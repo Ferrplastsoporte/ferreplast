@@ -139,22 +139,35 @@ export async function agregarDocumentoProducto({
   if (!esPdf) {
     throw new Error("Solo se permiten archivos PDF.");
   }
-
   const archivoPath = await subirDocumentoProducto(idProd, archivo);
 
-  const { data, error: insertError } = await supabase
-    .from("producto_documento")
-    .insert({
+  try {
+    const { data: idDocumento, error } = await supabase.rpc(
+      "agregar_documento_producto",
+      {
+        p_id_prod: idProd,
+        p_nombre_documento: archivo.name,
+        p_tipo_documento: tipoDocumento,
+        p_archivo_path: archivoPath,
+      },
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!idDocumento) {
+      throw new Error("No fue posible obtener el identificador del documento.");
+    }
+    return {
+      id_documento: idDocumento,
       id_prod: idProd,
       nombre_documento: archivo.name,
       tipo_documento: tipoDocumento,
       archivo_path: archivoPath,
       est_documento: true,
-    })
-    .select()
-    .single();
-
-  if (insertError) {
+    };
+  } catch (error) {
     try {
       await eliminarDocumentoProducto(archivoPath);
     } catch (cleanupError) {
@@ -164,8 +177,6 @@ export async function agregarDocumentoProducto({
       );
     }
 
-    throw insertError;
+    throw error;
   }
-
-  return data;
 }

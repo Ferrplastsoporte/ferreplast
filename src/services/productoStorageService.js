@@ -85,12 +85,14 @@ export async function subirImagenProducto(idProducto, archivo) {
   }
 
   const extension = obtenerExtensionImagen(archivo);
-  const rutaNueva = `producto/${idProducto}/imagen.${extension}`;
+  const identificador = crearIdentificadorArchivo();
+
+  const rutaNueva = `producto/${idProducto}/imagen_${identificador}.${extension}`;
 
   const { error } = await supabase.storage
     .from(BUCKET_IMAGENES)
     .upload(rutaNueva, archivo, {
-      upsert: true,
+      upsert: false,
       cacheControl: "0",
       contentType: archivo.type,
     });

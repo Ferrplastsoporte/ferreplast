@@ -20,6 +20,7 @@ function ProductoFormBodeguero({
   subcategorias = [],
   marcas = [],
   unidades = [],
+  tiposPeligrosidad = [],
   imagenActualUrl = "",
   documentoActual = [],
   onGuardar,
@@ -136,6 +137,12 @@ function ProductoFormBodeguero({
         productoInicial.peso_prod !== undefined
           ? String(productoInicial.peso_prod)
           : "1",
+
+      peligrosidades: Array.isArray(productoInicial.peligrosidades)
+        ? productoInicial.peligrosidades
+            .map(Number)
+            .filter((id) => Number.isInteger(id) && id > 0)
+        : [],
     });
 
     setImagen(null);
@@ -178,6 +185,26 @@ function ProductoFormBodeguero({
       familiaId: nuevaFamiliaId,
       subcategoriaId: "",
     }));
+  }
+
+  function cambiarPeligrosidad(idPeligrosidad) {
+    const id = Number(idPeligrosidad);
+
+    setFormulario((estadoAnterior) => {
+      const actuales = Array.isArray(estadoAnterior.peligrosidades)
+        ? estadoAnterior.peligrosidades
+        : [];
+
+      const yaSeleccionada = actuales.includes(id);
+
+      return {
+        ...estadoAnterior,
+
+        peligrosidades: yaSeleccionada
+          ? actuales.filter((idActual) => idActual !== id)
+          : [...actuales, id],
+      };
+    });
   }
 
   function seleccionarImagen(evento) {
@@ -577,9 +604,71 @@ function ProductoFormBodeguero({
 
           <small>JPG, PNG o WEBP. Máximo 10 MB.</small>
         </div>
+
+        {!esEdicion && (
+          <div className="producto-bodega-form__field">
+            <label htmlFor="documentoProducto">Documentos técnicos</label>
+
+            <input
+              ref={inputDocumentosRef}
+              id="documentoProducto"
+              type="file"
+              accept="application/pdf"
+              multiple
+              onChange={seleccionarDocumentos}
+              disabled={guardando}
+            />
+
+            <small>Puedes agregar varios PDF. Máximo 20 MB por archivo.</small>
+          </div>
+        )}
+
+        <div className="producto-bodega-form__field producto-bodega-form__field--full">
+          <label>Clasificación de peligrosidad</label>
+
+          <small>
+            Selecciona todas las características de riesgo que correspondan. Si
+            no seleccionas ninguna, el producto queda sin peligrosidad
+            registrada.
+          </small>
+
+          <div className="producto-bodega-form__peligrosidades">
+            {tiposPeligrosidad.length > 0 ? (
+              tiposPeligrosidad.map((tipo) => {
+                const idPeligrosidad = Number(tipo.id_peligrosidad);
+
+                const seleccionado = Array.isArray(formulario.peligrosidades)
+                  ? formulario.peligrosidades.includes(idPeligrosidad)
+                  : false;
+
+                return (
+                  <label
+                    key={tipo.id_peligrosidad}
+                    className={`producto-bodega-form__peligrosidad ${
+                      seleccionado
+                        ? "producto-bodega-form__peligrosidad--seleccionada"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={seleccionado}
+                      onChange={() => cambiarPeligrosidad(idPeligrosidad)}
+                      disabled={guardando}
+                    />
+
+                    <span>{tipo.nom_peligrosidad}</span>
+                  </label>
+                );
+              })
+            ) : (
+              <p>No hay tipos de peligrosidad disponibles.</p>
+            )}
+          </div>
+        </div>
       </div>
 
-      {documentosPdf.length > 0 && (
+      {!esEdicion && documentosPdf.length > 0 && (
         <section className="producto-bodega-form__new-documents">
           <h3>Nuevos documentos seleccionados</h3>
 

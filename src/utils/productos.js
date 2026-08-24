@@ -43,6 +43,7 @@ export const ESTADO_INICIAL_PRODUCTO = {
   unidadId: "",
   color: "",
   peso: "1",
+  peligrosidades: [],
 };
 
 export function limpiarTextoProducto(valor = "") {
@@ -226,10 +227,6 @@ export function validarFormularioProducto({
     return "Debes seleccionar una unidad de medida.";
   }
 
-  /*
-   * Stock solo se valida durante la creación.
-   * La edición utiliza ajustar_stock_producto().
-   */
   if (!esEdicion) {
     const stock = Number(formulario.stock);
 
@@ -261,36 +258,27 @@ export function construirDatosProducto(
 
   const datos = {
     nom_prod: formulario.nombre.trim(),
-
     desc_prod: formulario.descripcion.trim(),
-
     detalle_prod: formulario.detalle.trim() || null,
-
     precio_prod: precioNormal,
-
     precio_act:
       formulario.precioOferta === ""
         ? precioNormal
         : Number(formulario.precioOferta),
-
     id_subcategoria: Number(formulario.subcategoriaId),
-
     id_und_medida: Number(formulario.unidadId),
-
     id_marca: formulario.marcaId ? Number(formulario.marcaId) : null,
-
     color_prod: formulario.color.trim() || null,
-
     peso_prod: Number(formulario.peso),
-
+    peligrosidades: Array.isArray(formulario.peligrosidades)
+      ? formulario.peligrosidades
+          .map(Number)
+          .filter((id) => Number.isInteger(id) && id > 0)
+      : [],
     imagen,
-
     documentosPdf,
   };
 
-  /*
-   * Solo enviamos stock al crear.
-   */
   if (!esEdicion) {
     datos.stock_prod = Number(formulario.stock);
   }

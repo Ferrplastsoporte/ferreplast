@@ -923,6 +923,68 @@
   cursor: not-allowed;
 }
 
+/* =========================================
+   CLASIFICACIÓN DE PELIGROSIDAD
+========================================= */
+
+.producto-bodega-form__peligrosidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 12px;
+}
+
+.producto-bodega-form__peligrosidad {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  width: auto;
+  min-width: auto;
+
+  padding: 8px 12px;
+
+  border: 1px solid #d5dce6;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.producto-bodega-form__peligrosidad:hover {
+  border-color: #8fa9d4;
+  transform: translateY(-1px);
+}
+
+.producto-bodega-form__peligrosidad input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+
+  min-width: 18px;
+
+  margin: 0;
+
+  cursor: pointer;
+}
+
+.producto-bodega-form__peligrosidad span {
+  line-height: 1.2;
+}
+
+.producto-bodega-form__peligrosidad--seleccionada {
+  border-color: #0b63ce;
+  background: #eef6ff;
+}
+
 /* ============================
    RESPONSIVE
 ============================ */
@@ -988,5 +1050,16 @@
   .producto-bodega-form__save,
   .producto-bodega-form__cancel {
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .producto-bodega-form__peligrosidades {
+    gap: 10px;
+  }
+
+  .producto-bodega-form__peligrosidad {
+    font-size: 0.9rem;
+    padding: 7px 10px;
   }
 }

@@ -26,25 +26,19 @@ const TIPOS_DOCUMENTO_VALIDOS = [
 
 function BodegueroProductos() {
   const [productos, setProductos] = useState([]);
-
   const [familias, setFamilias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
   const [marcas, setMarcas] = useState([]);
   const [unidades, setUnidades] = useState([]);
-
+  const [tiposPeligrosidad, setTiposPeligrosidad] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
-
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
-
   const [documentosActuales, setDocumentosActuales] = useState([]);
-
   const [versionImagenes, setVersionImagenes] = useState(Date.now());
-
   const [mensajeError, setMensajeError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
-
   const [productoPorDesactivar, setProductoPorDesactivar] = useState(null);
   const [desactivando, setDesactivando] = useState(false);
 
@@ -75,6 +69,9 @@ function BodegueroProductos() {
       resultadoSubcategorias,
       resultadoMarcas,
       resultadoUnidades,
+
+      // NUEVO
+      resultadoPeligrosidades,
     ] = await Promise.all([
       supabase
         .from("familia")
@@ -121,13 +118,27 @@ function BodegueroProductos() {
         .order("nom_und_medida", {
           ascending: true,
         }),
+
+      // NUEVO
+      supabase
+        .from("tipo_peligrosidad")
+        .select(
+          `
+          id_peligrosidad,
+          nom_peligrosidad
+        `,
+        )
+        .order("nom_peligrosidad", {
+          ascending: true,
+        }),
     ]);
 
     const error =
       resultadoFamilias.error ||
       resultadoSubcategorias.error ||
       resultadoMarcas.error ||
-      resultadoUnidades.error;
+      resultadoUnidades.error ||
+      resultadoPeligrosidades.error;
 
     if (error) throw error;
 
@@ -135,6 +146,9 @@ function BodegueroProductos() {
     setSubcategorias(resultadoSubcategorias.data ?? []);
     setMarcas(resultadoMarcas.data ?? []);
     setUnidades(resultadoUnidades.data ?? []);
+
+    // NUEVO
+    setTiposPeligrosidad(resultadoPeligrosidades.data ?? []);
   }
 
   async function cargarProductos() {
@@ -192,6 +206,10 @@ function BodegueroProductos() {
           archivo_path,
           est_documento,
           created_at
+        ),
+
+        producto_peligrosidad (
+          id_peligrosidad
         )
       `,
       )
@@ -201,15 +219,28 @@ function BodegueroProductos() {
 
     if (error) throw error;
 
-    const normalizados = (data ?? []).map((producto) => ({
-      ...producto,
+    const normalizados = (data ?? []).map((producto) => {
+      const relacionesPeligrosidad = Array.isArray(
+        producto.producto_peligrosidad,
+      )
+        ? producto.producto_peligrosidad
+        : producto.producto_peligrosidad
+          ? [producto.producto_peligrosidad]
+          : [];
 
-      producto_documento: Array.isArray(producto.producto_documento)
-        ? producto.producto_documento
-        : producto.producto_documento
-          ? [producto.producto_documento]
-          : [],
-    }));
+      return {
+        ...producto,
+
+        producto_documento: Array.isArray(producto.producto_documento)
+          ? producto.producto_documento
+          : producto.producto_documento
+            ? [producto.producto_documento]
+            : [],
+        peligrosidades: relacionesPeligrosidad
+          .map((relacion) => Number(relacion.id_peligrosidad))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      };
+    });
 
     setProductos(normalizados);
   }
@@ -230,13 +261,11 @@ function BodegueroProductos() {
         "Uno de los documentos seleccionados no contiene un archivo válido.",
       );
     }
-
     if (documento.archivo.type !== "application/pdf") {
       throw new Error(
         `El archivo "${documento.archivo.name}" no está en formato PDF.`,
       );
     }
-
     if (!TIPOS_DOCUMENTO_VALIDOS.includes(documento.tipoDocumento)) {
       throw new Error(
         `Debes seleccionar un tipo válido para "${documento.archivo.name}".`,
@@ -244,31 +273,30 @@ function BodegueroProductos() {
     }
   }
 
-  async function guardarDatosProducto(datosProducto, idProducto = null) {
+  async function guardarDatosProducto(
+    datosProducto,
+    idProducto = null,
+    imagenUrl = null,
+  ) {
+    const peligrosidades = Array.isArray(datosProducto.peligrosidades)
+      ? datosProducto.peligrosidades
+      : [];
+
     const { data, error } = await supabase.rpc("guardar_producto", {
       p_id_prod: idProducto,
-
       p_nom_prod: datosProducto.nom_prod,
-
       p_desc_prod: datosProducto.desc_prod,
-
       p_detalle_prod: datosProducto.detalle_prod,
-
       p_precio_prod: datosProducto.precio_prod,
-
       p_precio_act: datosProducto.precio_act,
-
       p_stock_prod: datosProducto.stock_prod ?? null,
-
       p_id_subcategoria: datosProducto.id_subcategoria,
-
       p_id_und_medida: datosProducto.id_und_medida,
-
       p_id_marca: datosProducto.id_marca,
-
       p_color_prod: datosProducto.color_prod,
-
       p_peso_prod: datosProducto.peso_prod,
+      p_imagen_url: imagenUrl,
+      p_peligrosidades: peligrosidades,
     });
 
     if (error) throw error;
@@ -284,6 +312,7 @@ function BodegueroProductos() {
     idProducto,
     archivo,
     rutaAnterior = null,
+    esImagenInicial = false,
   ) {
     const rutaNueva = await subirImagenProducto(idProducto, archivo);
 
@@ -291,6 +320,7 @@ function BodegueroProductos() {
       const { error } = await supabase.rpc("actualizar_imagen_producto", {
         p_id_prod: idProducto,
         p_imagen_url: rutaNueva,
+        p_es_imagen_inicial: esImagenInicial,
       });
 
       if (error) throw error;
@@ -318,7 +348,6 @@ function BodegueroProductos() {
       let rutaDocumento = null;
 
       try {
-
         rutaDocumento = await subirDocumentoProducto(idProducto, archivo);
 
         const { error } = await supabase.rpc("guardar_documento_producto", {
@@ -333,7 +362,6 @@ function BodegueroProductos() {
 
         if (error) throw error;
       } catch (error) {
-
         if (rutaDocumento) {
           await eliminarDocumentoProducto(rutaDocumento);
         }
@@ -354,11 +382,10 @@ function BodegueroProductos() {
       separarArchivos(datosFormulario);
 
     try {
- 
       const idProducto = await guardarDatosProducto(datosProducto);
 
       if (imagen) {
-        await guardarImagenProducto(idProducto, imagen);
+        await guardarImagenProducto(idProducto, imagen, null, true);
       }
 
       if (documentosPdf.length > 0) {
@@ -395,18 +422,27 @@ function BodegueroProductos() {
     const { datosProducto, imagen, documentosPdf } =
       separarArchivos(datosFormulario);
 
+    let rutaImagenNueva = null;
+
     try {
+      if (imagen) {
+        rutaImagenNueva = await subirImagenProducto(
+          productoEditando.id_prod,
+          imagen,
+        );
+      }
       const idProducto = await guardarDatosProducto(
         datosProducto,
         productoEditando.id_prod,
+        rutaImagenNueva,
       );
 
-      if (imagen) {
-        await guardarImagenProducto(
-          idProducto,
-          imagen,
-          productoEditando.imagen_url,
-        );
+      if (
+        rutaImagenNueva &&
+        productoEditando.imagen_url &&
+        productoEditando.imagen_url !== rutaImagenNueva
+      ) {
+        await eliminarImagenProducto(productoEditando.imagen_url);
       }
 
       cerrarFormulario();
@@ -419,6 +455,10 @@ function BodegueroProductos() {
         "El producto fue actualizado y quedó pendiente de una nueva revisión.",
       );
     } catch (error) {
+      if (rutaImagenNueva) {
+        await eliminarImagenProducto(rutaImagenNueva);
+      }
+
       console.error("Error al actualizar el producto:", error);
 
       setMensajeError(
@@ -572,6 +612,8 @@ function BodegueroProductos() {
           subcategorias={subcategorias}
           marcas={marcas}
           unidades={unidades}
+          // NUEVO
+          tiposPeligrosidad={tiposPeligrosidad}
           imagenActualUrl={
             productoEditando?.imagen_url
               ? obtenerUrlImagenProducto(
