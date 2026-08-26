@@ -6,7 +6,7 @@ import { isValidEmail, isValidPassword } from "../../utils/validators";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
-
+import LoginMascot from "./LoginMascot";
 const INITIAL_VALUES = {
   email: "",
   password: "",
@@ -98,6 +98,7 @@ const LoginForm = () => {
 
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate>
+      <LoginMascot />
       <Input
         label="Correo electrónico"
         name="email"
