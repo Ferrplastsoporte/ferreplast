@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import useCartView from "../../hooks/useCartView";
 import useCheckoutFactura from "../../hooks/useCheckoutFactura";
-
 import { supabase } from "../../lib/supabase";
-
 import "../css/Carrito.css";
 
 function formatearPrecio(valor) {
@@ -20,7 +17,6 @@ function obtenerUrlImagen(rutaImagen) {
   if (!rutaImagen) {
     return "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
   }
-
   if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
     return rutaImagen;
   }
@@ -28,21 +24,16 @@ function obtenerUrlImagen(rutaImagen) {
   const { data } = supabase.storage
     .from("imagenes_productos")
     .getPublicUrl(rutaImagen);
-
   return data.publicUrl;
 }
 
 function Carrito() {
   const navigate = useNavigate();
-
   const [iniciandoPago, setIniciandoPago] = useState(false);
   const [errorPago, setErrorPago] = useState("");
-
   const [regiones, setRegiones] = useState([]);
   const [comunas, setComunas] = useState([]);
-
   const [idRegionFactura, setIdRegionFactura] = useState("");
-
   const [cargandoUbicaciones, setCargandoUbicaciones] = useState(false);
 
   const {
@@ -59,14 +50,18 @@ function Carrito() {
     cargando,
     actualizando,
     error,
-
     usuario,
-    tipoDespacho,
-
+    idComuna,
+    opcionesDespacho,
+    idTipoDespachoSeleccionado,
+    despachoSeleccionado,
+    despachoListo,
+    requiereCoordinacion,
     subtotal,
     envio,
     total,
 
+    seleccionarTipoDespacho,
     cambiarCantidad,
     eliminarProducto,
     vaciarCarritoCompleto,
@@ -85,9 +80,9 @@ function Carrito() {
           .from("region")
           .select(
             `
-            id_reg,
-            nom_reg
-          `,
+              id_reg,
+              nom_reg
+              `,
           )
           .order("nom_reg", {
             ascending: true,
@@ -97,10 +92,10 @@ function Carrito() {
           .from("comuna")
           .select(
             `
-            id_comuna,
-            nom_comuna,
-            id_reg
-          `,
+              id_comuna,
+              nom_comuna,
+              id_reg
+              `,
           )
           .order("nom_comuna", {
             ascending: true,
@@ -109,17 +104,13 @@ function Carrito() {
 
       const errorUbicaciones =
         resultadoRegiones.error || resultadoComunas.error;
-
       if (errorUbicaciones) {
         throw errorUbicaciones;
       }
-
       setRegiones(resultadoRegiones.data ?? []);
-
       setComunas(resultadoComunas.data ?? []);
     } catch (errorCarga) {
       console.error("Error al cargar regiones y comunas:", errorCarga);
-
       setErrorPago("No fue posible cargar las regiones y comunas.");
     } finally {
       setCargandoUbicaciones(false);
@@ -135,18 +126,20 @@ function Carrito() {
   function cambiarRegionFactura(valor) {
     setIdRegionFactura(valor);
     actualizarDatoFactura("id_comuna", "");
-
     setErrorPago("");
   }
 
   function cambiarTipoDocumento(tipo) {
     seleccionarTipoDocumento(tipo);
-
     setErrorPago("");
-
     if (tipo === "boleta") {
       setIdRegionFactura("");
     }
+  }
+
+  function cambiarTipoDespacho(idTipoDespacho) {
+    seleccionarTipoDespacho(idTipoDespacho);
+    setErrorPago("");
   }
 
   async function continuarCompra() {
@@ -156,28 +149,29 @@ function Carrito() {
           from: "/carrito",
         },
       });
-
       return;
     }
     setErrorPago("");
+
+    if (!despachoListo || !despachoSeleccionado) {
+      setErrorPago("Selecciona una modalidad de entrega antes de continuar.");
+      return;
+    }
 
     const validacionFactura = validarFactura();
 
     if (!validacionFactura.valido) {
       setErrorPago(validacionFactura.mensaje);
-
       return;
     }
 
     if (esFactura && !idRegionFactura) {
       setErrorPago("Selecciona la región de facturación.");
-
       return;
     }
 
     if (!Number.isInteger(Math.round(total)) || total <= 0) {
       setErrorPago("El total de la compra no es válido.");
-
       return;
     }
 
@@ -187,7 +181,21 @@ function Carrito() {
       JSON.stringify(facturacion),
     );
 
+    const datosDespacho = {
+      id_tipo_despacho: Number(despachoSeleccionado.id_tipo_despacho),
+      nom_tipo_despacho: despachoSeleccionado.nom_tipo_despacho,
+      costo_envio: Number(envio),
+      requiere_coordinacion: requiereCoordinacion,
+      id_comuna: Number(idComuna),
+    };
+
+    sessionStorage.setItem(
+      "ferreplast_checkout_despacho",
+      JSON.stringify(datosDespacho),
+    );
+
     console.log("Facturación preparada:", facturacion);
+    console.log("Despacho preparado:", datosDespacho);
 
     setIniciandoPago(true);
 
@@ -210,22 +218,15 @@ function Carrito() {
       if (!respuesta.ok) {
         throw new Error(data.error || "No fue posible iniciar el pago.");
       }
-
       const formulario = document.createElement("form");
-
       formulario.method = "POST";
       formulario.action = data.url;
-
       const token = document.createElement("input");
-
       token.type = "hidden";
       token.name = "token_ws";
       token.value = data.token;
-
       formulario.appendChild(token);
-
       document.body.appendChild(formulario);
-
       formulario.submit();
     } catch (errorInicio) {
       console.error("Error iniciando Webpay:", errorInicio);
@@ -239,47 +240,41 @@ function Carrito() {
   }
 
   /* =======================================================
-     DESPACHO ACTUAL
+     TEXTO COSTO DESPACHO
   ======================================================= */
-
   function obtenerTextoEnvio() {
     if (!usuario) {
-      return "Se calculará al continuar";
+      return "Por calcular";
     }
-
-    /*
-     * FALSE:
-     * despacho directo Ferreplast Puerto Montt.
-     */
-    if (tipoDespacho === false) {
-      return formatearPrecio(envio);
+    if (!despachoSeleccionado) {
+      return "Selecciona una opción";
     }
-
-    /*
-     * TRUE:
-     * transportista externo.
-     */
-    if (tipoDespacho === true) {
-      return "A cargo de transportista";
+    if (requiereCoordinacion) {
+      return "Por coordinar";
     }
-
-    return "Por determinar";
+    if (Number(envio) === 0) {
+      return "Gratis";
+    }
+    return formatearPrecio(envio);
   }
 
+  /* =======================================================
+     MENSAJE DESPACHO
+  ======================================================= */
   function obtenerMensajeDespacho() {
     if (!usuario) {
-      return "Inicia sesión para determinar la modalidad de despacho.";
+      return "Inicia sesión para conocer tus opciones y costos de despacho.";
     }
-
-    if (tipoDespacho === false) {
-      return "Entrega directa Ferreplast en Puerto Montt.";
+    if (!despachoSeleccionado) {
+      return "Selecciona una modalidad de entrega para continuar con la compra.";
     }
-
-    if (tipoDespacho === true) {
-      return "El despacho será realizado por un transportista externo. El costo de transporte no está incluido en este total.";
+    if (requiereCoordinacion) {
+      return "El costo de envío a otras ciudades no está incluido en este pago. Una vez realizada la compra, Ferreplast se pondrá en contacto contigo para coordinar el transporte y su costo.";
     }
-
-    return "No fue posible determinar la modalidad de despacho.";
+    if (Number(despachoSeleccionado.id_tipo_despacho) === 1) {
+      return "Tu pedido quedará disponible para retiro en tienda.";
+    }
+    return "El costo de despacho seleccionado está incluido en el total de la compra.";
   }
 
   if (cargando) {
@@ -584,6 +579,58 @@ function Carrito() {
               <strong>{obtenerTextoEnvio()}</strong>
             </div>
 
+            {/* =================================================
+                MODALIDAD DE ENTREGA
+            ================================================= */}
+            <div className="cart-summary__shipping">
+              <h3>Modalidad de entrega</h3>
+
+              {!usuario && (
+                <p className="cart-summary__shipping-message">
+                  Inicia sesión para conocer tus opciones y costos de despacho.
+                </p>
+              )}
+
+              {usuario && opcionesDespacho.length > 0 && (
+                <div className="cart-summary__shipping-options">
+                  {opcionesDespacho.map((tipo) => (
+                    <label
+                      key={tipo.id_tipo_despacho}
+                      className="cart-summary__option"
+                    >
+                      <input
+                        type="radio"
+                        name="tipoDespacho"
+                        value={tipo.id_tipo_despacho}
+                        checked={
+                          Number(idTipoDespachoSeleccionado) ===
+                          Number(tipo.id_tipo_despacho)
+                        }
+                        onChange={() =>
+                          cambiarTipoDespacho(tipo.id_tipo_despacho)
+                        }
+                        disabled={iniciandoPago}
+                      />
+
+                      <span className="cart-summary__shipping-option-content">
+                        <strong>{tipo.nom_tipo_despacho}</strong>
+
+                        <small>
+                          {Number(tipo.costo) === 0
+                            ? tipo.requiere_coordinacion
+                              ? "Costo por coordinar"
+                              : "Gratis"
+                            : formatearPrecio(tipo.costo)}
+                        </small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="cart-summary__divider" />
+
             <div className="cart-summary__document">
               <h3>Documento tributario</h3>
 
@@ -634,7 +681,15 @@ function Carrito() {
               {iniciandoPago ? "Redirigiendo a Webpay..." : "Pagar con Webpay"}
             </button>
 
-            <p className="cart-summary__notice">{obtenerMensajeDespacho()}</p>
+            <p
+              className={
+                requiereCoordinacion
+                  ? "cart-summary__notice cart-summary__notice--important"
+                  : "cart-summary__notice"
+              }
+            >
+              {obtenerMensajeDespacho()}
+            </p>
           </aside>
         </div>
       )}

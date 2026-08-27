@@ -3,7 +3,6 @@
    Diseño visual principal
 ========================================================= */
 
-
 /* =========================================================
    CONTENEDOR PRINCIPAL
 ========================================================= */
@@ -27,49 +26,20 @@
   color: #ffffff;
 
   background:
-    radial-gradient(
-      circle at 8% 15%,
-      rgba(0, 87, 184, 0.22),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 92% 85%,
+    radial-gradient(circle at 8% 15%, rgba(0, 87, 184, 0.22), transparent 30%),
+    radial-gradient(circle at 92% 85%,
       rgba(226, 28, 42, 0.14),
-      transparent 28%
-    ),
-    linear-gradient(
-      135deg,
-      #06132d 0%,
-      #0a1f46 50%,
-      #07152f 100%
-    );
+      transparent 28%),
+    linear-gradient(135deg, #06132d 0%, #0a1f46 50%, #07152f 100%);
 
   background-image:
-    linear-gradient(
-      rgba(255, 255, 255, 0.018) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.018) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 8% 15%,
-      rgba(0, 87, 184, 0.22),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 92% 85%,
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    radial-gradient(circle at 8% 15%, rgba(0, 87, 184, 0.22), transparent 30%),
+    radial-gradient(circle at 92% 85%,
       rgba(226, 28, 42, 0.14),
-      transparent 28%
-    ),
-    linear-gradient(
-      135deg,
-      #06132d 0%,
-      #0a1f46 50%,
-      #07152f 100%
-    );
+      transparent 28%),
+    linear-gradient(135deg, #06132d 0%, #0a1f46 50%, #07152f 100%);
 
   background-size:
     42px 42px,
@@ -78,7 +48,6 @@
     auto,
     auto;
 }
-
 
 /* =========================================================
    GLOW AZUL
@@ -97,8 +66,7 @@
 
   border-radius: 50%;
 
-  background:
-    rgba(0, 87, 184, 0.18);
+  background: rgba(0, 87, 184, 0.18);
 
   filter: blur(120px);
 
@@ -106,7 +74,6 @@
 
   z-index: -2;
 }
-
 
 /* =========================================================
    GLOW ROJO
@@ -125,8 +92,7 @@
 
   border-radius: 50%;
 
-  background:
-    rgba(226, 28, 42, 0.12);
+  background: rgba(226, 28, 42, 0.12);
 
   filter: blur(125px);
 
@@ -134,7 +100,6 @@
 
   z-index: -2;
 }
-
 
 /* =========================================================
    TARJETA
@@ -152,31 +117,22 @@
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.13);
 
   border-radius: 24px;
 
-  background:
-    linear-gradient(
-      145deg,
+  background: linear-gradient(145deg,
       rgba(20, 51, 96, 0.88),
-      rgba(7, 24, 53, 0.94)
-    );
+      rgba(7, 24, 53, 0.94));
 
   box-shadow:
-    0 30px 80px
-    rgba(0, 0, 0, 0.36),
-
-    0 0 50px
-    rgba(0, 87, 184, 0.10);
+    0 30px 80px rgba(0, 0, 0, 0.36),
+    0 0 50px rgba(0, 87, 184, 0.1);
 
   backdrop-filter: blur(20px);
 
   -webkit-backdrop-filter: blur(20px);
 }
-
 
 /* =========================================================
    LÍNEA SUPERIOR
@@ -193,15 +149,8 @@
 
   content: "";
 
-  background:
-    linear-gradient(
-      90deg,
-      #0039a6,
-      #4d9cff,
-      #e21c2a
-    );
+  background: linear-gradient(90deg, #0039a6, #4d9cff, #e21c2a);
 }
-
 
 /* =========================================================
    BRILLO INTERIOR
@@ -220,14 +169,12 @@
 
   border-radius: 50%;
 
-  background:
-    rgba(0, 87, 184, 0.12);
+  background: rgba(0, 87, 184, 0.12);
 
   filter: blur(80px);
 
   pointer-events: none;
 }
-
 
 /* =========================================================
    ENCABEZADO
@@ -242,7 +189,6 @@
 
   text-align: center;
 }
-
 
 .login-header span {
   display: inline-flex;
@@ -264,7 +210,6 @@
   text-transform: uppercase;
 }
 
-
 .login-header span::before {
   width: 25px;
   height: 2px;
@@ -273,7 +218,6 @@
 
   background: #e21c2a;
 }
-
 
 .login-header h1 {
   margin: 0 0 10px;
@@ -289,18 +233,15 @@
   line-height: 1.05;
 }
 
-
 .login-header p {
   margin: 0;
 
-  color:
-    rgba(225, 234, 248, 0.68);
+  color: rgba(225, 234, 248, 0.68);
 
   font-size: 0.94rem;
 
   line-height: 1.6;
 }
-
 
 /* =========================================================
    FORMULARIO
@@ -318,7 +259,6 @@
   gap: 21px;
 }
 
-
 /* =========================================================
    GRUPOS
 ========================================================= */
@@ -331,18 +271,15 @@
   min-width: 0;
 }
 
-
 .login-group label {
   margin-bottom: 8px;
 
-  color:
-    rgba(255, 255, 255, 0.90);
+  color: rgba(255, 255, 255, 0.9);
 
   font-size: 0.87rem;
 
   font-weight: 750;
 }
-
 
 /* =========================================================
    INPUT
@@ -355,19 +292,15 @@
 
   box-sizing: border-box;
 
-  padding:
-    0 14px;
+  padding: 0 14px;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.13);
 
   border-radius: 11px;
 
   outline: none;
 
-  background:
-    rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.055);
 
   color: #ffffff;
 
@@ -382,74 +315,53 @@
     transform 0.18s ease;
 }
 
-
 .login-control::placeholder {
-  color:
-    rgba(225, 234, 248, 0.40);
+  color: rgba(225, 234, 248, 0.4);
 }
-
 
 .login-control:hover {
-  border-color:
-    rgba(77, 156, 255, 0.35);
+  border-color: rgba(77, 156, 255, 0.35);
 
-  background:
-    rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.075);
 }
-
 
 .login-control:focus {
-  border-color:
-    #4d9cff;
+  border-color: #4d9cff;
 
-  background:
-    rgba(0, 87, 184, 0.10);
+  background: rgba(0, 87, 184, 0.1);
 
   box-shadow:
-    0 0 0 3px
-    rgba(77, 156, 255, 0.12),
-
-    0 8px 25px
-    rgba(0, 87, 184, 0.10);
+    0 0 0 3px rgba(77, 156, 255, 0.12),
+    0 8px 25px rgba(0, 87, 184, 0.1);
 }
-
 
 /* =========================================================
    ERRORES
 ========================================================= */
 
 .login-control--error {
-  border-color:
-    #ff4a55;
+  border-color: #ff4a55;
 
-  background:
-    rgba(226, 28, 42, 0.075);
+  background: rgba(226, 28, 42, 0.075);
 }
-
 
 .login-control--error:focus {
-  border-color:
-    #ff5962;
+  border-color: #ff5962;
 
-  box-shadow:
-    0 0 0 3px
-    rgba(226, 28, 42, 0.12);
+  box-shadow: 0 0 0 3px rgba(226, 28, 42, 0.12);
 }
-
 
 .login-error {
   display: block;
 
   margin-top: 7px;
 
-  color:
-    #ff6971;
+  color: #ff6971;
 
   font-size: 0.79rem;
 
   line-height: 1.4;
 }
-
 
 /* =========================================================
    CONTRASEÑA
@@ -459,11 +371,9 @@
   position: relative;
 }
 
-
 .login-password-wrapper .login-control {
   padding-right: 86px;
 }
-
 
 /* =========================================================
    MOSTRAR CONTRASEÑA
@@ -475,8 +385,7 @@
   top: 50%;
   right: 13px;
 
-  transform:
-    translateY(-50%);
+  transform: translateY(-50%);
 
   padding: 4px;
 
@@ -484,8 +393,7 @@
 
   background: transparent;
 
-  color:
-    #70b1ff;
+  color: #70b1ff;
 
   font-family: inherit;
 
@@ -495,10 +403,8 @@
 
   cursor: pointer;
 
-  transition:
-    color 0.2s ease;
+  transition: color 0.2s ease;
 }
-
 
 .login-password-toggle:hover {
   color: #ffffff;
@@ -506,17 +412,13 @@
   text-decoration: underline;
 }
 
-
 .login-password-toggle:focus-visible {
   border-radius: 4px;
 
-  outline:
-    2px solid
-    #4d9cff;
+  outline: 2px solid #4d9cff;
 
   outline-offset: 2px;
 }
-
 
 /* =========================================================
    OLVIDASTE CONTRASEÑA
@@ -530,7 +432,6 @@
   margin-top: 8px;
 }
 
-
 .login-forgot button {
   padding: 0;
 
@@ -538,8 +439,7 @@
 
   background: transparent;
 
-  color:
-    #70b1ff;
+  color: #70b1ff;
 
   font-family: inherit;
 
@@ -549,17 +449,14 @@
 
   cursor: pointer;
 
-  transition:
-    color 0.2s ease;
+  transition: color 0.2s ease;
 }
-
 
 .login-forgot button:hover {
   color: #ffffff;
 
   text-decoration: underline;
 }
-
 
 /* =========================================================
    BOTÓN LOGIN
@@ -576,19 +473,11 @@
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
   border-radius: 12px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #0057b8 0%,
-      #0039a6 55%,
-      #002b7a 100%
-    );
+  background: linear-gradient(135deg, #0057b8 0%, #0039a6 55%, #002b7a 100%);
 
   color: #ffffff;
 
@@ -602,16 +491,13 @@
 
   cursor: pointer;
 
-  box-shadow:
-    0 12px 30px
-    rgba(0, 57, 166, 0.30);
+  box-shadow: 0 12px 30px rgba(0, 57, 166, 0.3);
 
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease,
     background 0.25s ease;
 }
-
 
 .login-submit::before {
   position: absolute;
@@ -624,54 +510,34 @@
 
   content: "";
 
-  background:
-    linear-gradient(
-      90deg,
+  background: linear-gradient(90deg,
       transparent,
       rgba(255, 255, 255, 0.16),
-      transparent
-    );
+      transparent);
 
-  transform:
-    skewX(-20deg);
+  transform: skewX(-20deg);
 
-  transition:
-    left 0.55s ease;
+  transition: left 0.55s ease;
 }
-
 
 .login-submit:hover:not(:disabled) {
-  transform:
-    translateY(-3px);
+  transform: translateY(-3px);
 
-  background:
-    linear-gradient(
-      135deg,
-      #006dcc 0%,
-      #0050bd 55%,
-      #00358d 100%
-    );
+  background: linear-gradient(135deg, #006dcc 0%, #0050bd 55%, #00358d 100%);
 
-  box-shadow:
-    0 18px 38px
-    rgba(0, 87, 184, 0.38);
+  box-shadow: 0 18px 38px rgba(0, 87, 184, 0.38);
 }
-
 
 .login-submit:hover:not(:disabled)::before {
   left: 130%;
 }
 
-
 .login-submit:active:not(:disabled) {
-  transform:
-    translateY(0);
+  transform: translateY(0);
 }
 
-
 .login-submit:disabled {
-  background:
-    #334155;
+  background: #334155;
 
   box-shadow: none;
 
@@ -680,7 +546,6 @@
   cursor: not-allowed;
 }
 
-
 /* =========================================================
    REGISTRO
 ========================================================= */
@@ -688,8 +553,7 @@
 .login-register {
   margin: 21px 0 0;
 
-  color:
-    rgba(225, 234, 248, 0.58);
+  color: rgba(225, 234, 248, 0.58);
 
   text-align: center;
 
@@ -698,7 +562,6 @@
   line-height: 1.5;
 }
 
-
 .login-register button {
   padding: 0;
 
@@ -706,8 +569,7 @@
 
   background: transparent;
 
-  color:
-    #70b1ff;
+  color: #70b1ff;
 
   font-family: inherit;
 
@@ -717,17 +579,14 @@
 
   cursor: pointer;
 
-  transition:
-    color 0.2s ease;
+  transition: color 0.2s ease;
 }
-
 
 .login-register button:hover {
   color: #ffffff;
 
   text-decoration: underline;
 }
-
 
 /* =========================================================
    MODAL
@@ -747,22 +606,17 @@
 
   padding: 20px;
 
-  background:
-    rgba(2, 10, 25, 0.72);
+  background: rgba(2, 10, 25, 0.72);
 
-  backdrop-filter:
-    blur(8px);
+  backdrop-filter: blur(8px);
 
-  -webkit-backdrop-filter:
-    blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-
 
 .login-modal {
   position: relative;
 
-  width:
-    min(430px, 100%);
+  width: min(430px, 100%);
 
   box-sizing: border-box;
 
@@ -770,28 +624,18 @@
 
   overflow: hidden;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.13);
 
   border-radius: 20px;
 
-  background:
-    linear-gradient(
-      145deg,
-      #102b57,
-      #07182f
-    );
+  background: linear-gradient(145deg, #102b57, #07182f);
 
   color: #ffffff;
 
   text-align: center;
 
-  box-shadow:
-    0 30px 70px
-    rgba(0, 0, 0, 0.40);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
 }
-
 
 .login-modal::before {
   position: absolute;
@@ -804,15 +648,8 @@
 
   content: "";
 
-  background:
-    linear-gradient(
-      90deg,
-      #0039a6,
-      #4d9cff,
-      #e21c2a
-    );
+  background: linear-gradient(90deg, #0039a6, #4d9cff, #e21c2a);
 }
-
 
 .login-modal h2 {
   margin: 0 0 12px;
@@ -824,51 +661,34 @@
   font-weight: 850;
 }
 
-
 .login-modal p {
   margin: 0 0 24px;
 
-  color:
-    rgba(225, 234, 248, 0.68);
+  color: rgba(225, 234, 248, 0.68);
 
   line-height: 1.55;
 }
 
-
 .login-modal--error {
-  border-top:
-    3px solid
-    #e21c2a;
+  border-top: 3px solid #e21c2a;
 }
-
 
 .login-modal--warning {
-  border-top:
-    3px solid
-    #f59e0b;
+  border-top: 3px solid #f59e0b;
 }
-
 
 .login-modal button {
   min-width: 130px;
 
   min-height: 43px;
 
-  padding:
-    0 20px;
+  padding: 0 20px;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
   border-radius: 10px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #0057b8,
-      #0039a6
-    );
+  background: linear-gradient(135deg, #0057b8, #0039a6);
 
   color: #ffffff;
 
@@ -878,25 +698,18 @@
 
   cursor: pointer;
 
-  box-shadow:
-    0 8px 22px
-    rgba(0, 57, 166, 0.25);
+  box-shadow: 0 8px 22px rgba(0, 57, 166, 0.25);
 
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-
 .login-modal button:hover {
-  transform:
-    translateY(-2px);
+  transform: translateY(-2px);
 
-  box-shadow:
-    0 12px 28px
-    rgba(0, 87, 184, 0.35);
+  box-shadow: 0 12px 28px rgba(0, 87, 184, 0.35);
 }
-
 
 /* =========================================================
    MASCOTA — LOBO MARINO
@@ -908,21 +721,15 @@
   width: 180px;
   height: 175px;
 
-  margin:
-    5px auto 15px;
+  margin: 5px auto 15px;
 
   display: flex;
 
   align-items: center;
   justify-content: center;
 
-  animation:
-    seal-float
-    3.4s
-    ease-in-out
-    infinite;
+  animation: seal-float 3.4s ease-in-out infinite;
 }
-
 
 /* =========================================================
    CONTENEDOR DEL LOBO
@@ -934,7 +741,6 @@
   width: 145px;
   height: 150px;
 }
-
 
 /* =========================================================
    CABEZA
@@ -951,28 +757,14 @@
   width: 95px;
   height: 82px;
 
-  border-radius:
-    48%
-    48%
-    45%
-    45%;
+  border-radius: 48% 48% 45% 45%;
 
-  background:
-    linear-gradient(
-      145deg,
-      #5ca8ff 0%,
-      #1976d2 45%,
-      #0754a6 100%
-    );
+  background: linear-gradient(145deg, #5ca8ff 0%, #1976d2 45%, #0754a6 100%);
 
   box-shadow:
-    0 10px 22px
-    rgba(0, 70, 150, 0.30),
-
-    inset 0 3px 5px
-    rgba(255, 255, 255, 0.18);
+    0 10px 22px rgba(0, 70, 150, 0.3),
+    inset 0 3px 5px rgba(255, 255, 255, 0.18);
 }
-
 
 /* =========================================================
    OREJAS / LATERALES
@@ -988,32 +780,22 @@
 
   border-radius: 50%;
 
-  background:
-    linear-gradient(
-      145deg,
-      #4d9cff,
-      #0754a6
-    );
+  background: linear-gradient(145deg, #4d9cff, #0754a6);
 
   z-index: -1;
 }
 
-
 .mascot-seal__ear--left {
   left: -10px;
 
-  transform:
-    rotate(-25deg);
+  transform: rotate(-25deg);
 }
-
 
 .mascot-seal__ear--right {
   right: -10px;
 
-  transform:
-    rotate(25deg);
+  transform: rotate(25deg);
 }
-
 
 /* =========================================================
    CUERPO
@@ -1030,25 +812,12 @@
   width: 75px;
   height: 75px;
 
-  border-radius:
-    45%
-    45%
-    48%
-    48%;
+  border-radius: 45% 45% 48% 48%;
 
-  background:
-    linear-gradient(
-      145deg,
-      #4d9cff,
-      #0057b8 60%,
-      #003f91
-    );
+  background: linear-gradient(145deg, #4d9cff, #0057b8 60%, #003f91);
 
-  box-shadow:
-    0 12px 22px
-    rgba(0, 65, 145, 0.25);
+  box-shadow: 0 12px 22px rgba(0, 65, 145, 0.25);
 }
-
 
 /* =========================================================
    CARA
@@ -1059,7 +828,6 @@
 
   inset: 0;
 }
-
 
 /* =========================================================
    OJOS
@@ -1077,27 +845,20 @@
 
   background: #ffffff;
 
-  box-shadow:
-    0 1px 3px
-    rgba(0, 0, 0, 0.20);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 
-  transform-origin:
-    center;
+  transform-origin: center;
 
-  transition:
-    transform 0.2s ease;
+  transition: transform 0.2s ease;
 }
-
 
 .mascot-seal__eye--left {
   left: 27px;
 }
 
-
 .mascot-seal__eye--right {
   right: 27px;
 }
-
 
 /* =========================================================
    NARIZ
@@ -1112,19 +873,12 @@
   width: 15px;
   height: 11px;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 
-  border-radius:
-    55%
-    55%
-    45%
-    45%;
+  border-radius: 55% 55% 45% 45%;
 
-  background:
-    #172033;
+  background: #172033;
 }
-
 
 /* =========================================================
    BOCA
@@ -1139,16 +893,12 @@
   width: 24px;
   height: 11px;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 
-  border-bottom:
-    3px solid #ffffff;
+  border-bottom: 3px solid #ffffff;
 
-  border-radius:
-    0 0 50% 50%;
+  border-radius: 0 0 50% 50%;
 }
-
 
 /* =========================================================
    BIGOTES
@@ -1160,48 +910,38 @@
   width: 25px;
   height: 1.5px;
 
-  background:
-    rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.75);
 
   border-radius: 50%;
 }
-
 
 .mascot-seal__whisker--l1 {
   left: 2px;
   top: 49px;
 
-  transform:
-    rotate(10deg);
+  transform: rotate(10deg);
 }
-
 
 .mascot-seal__whisker--l2 {
   left: 1px;
   top: 57px;
 
-  transform:
-    rotate(-8deg);
+  transform: rotate(-8deg);
 }
-
 
 .mascot-seal__whisker--r1 {
   right: 2px;
   top: 49px;
 
-  transform:
-    rotate(-10deg);
+  transform: rotate(-10deg);
 }
-
 
 .mascot-seal__whisker--r2 {
   right: 1px;
   top: 57px;
 
-  transform:
-    rotate(8deg);
+  transform: rotate(8deg);
 }
-
 
 /* =========================================================
    ALETAS
@@ -1217,80 +957,45 @@
   width: 25px;
   height: 60px;
 
-  border-radius:
-    70%
-    30%
-    65%
-    35%;
+  border-radius: 70% 30% 65% 35%;
 
-  background:
-    linear-gradient(
-      145deg,
-      #4d9cff,
-      #0057b8
-    );
+  background: linear-gradient(145deg, #4d9cff, #0057b8);
 
-  transform-origin:
-    50% 10%;
+  transform-origin: 50% 10%;
 
-  transition:
-    transform 0.38s
-    cubic-bezier(
-      0.34,
-      1.56,
-      0.64,
-      1
-    );
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
 
 .mascot-seal__flipper--left {
   left: 19px;
 
-  transform:
-    rotate(28deg);
+  transform: rotate(28deg);
 }
-
 
 .mascot-seal__flipper--right {
   right: 19px;
 
-  transform:
-    rotate(-28deg);
+  transform: rotate(-28deg);
 }
-
 
 /* =========================================================
    AL ENTRAR A CONTRASEÑA:
    LAS ALETAS SUBEN Y TAPAN LOS OJOS
 ========================================================= */
 
-.login-form:has(#password:focus)
-.mascot-seal__flipper--left {
-  transform:
-    translateY(-38px)
-    translateX(18px)
-    rotate(18deg);
+.login-form:has(#password:focus) .mascot-seal__flipper--left {
+  transform: translateY(-38px) translateX(18px) rotate(18deg);
 }
 
-
-.login-form:has(#password:focus)
-.mascot-seal__flipper--right {
-  transform:
-    translateY(-38px)
-    translateX(-18px)
-    rotate(-18deg);
+.login-form:has(#password:focus) .mascot-seal__flipper--right {
+  transform: translateY(-38px) translateX(-18px) rotate(-18deg);
 }
-
 
 /* Ojos cerrados */
 
-.login-form:has(#password:focus)
-.mascot-seal__eye {
-  transform:
-    scaleY(0.15);
+.login-form:has(#password:focus) .mascot-seal__eye {
+  transform: scaleY(0.15);
 }
-
 
 /* =========================================================
    COLA
@@ -1307,14 +1012,12 @@
   width: 35px;
   height: 30px;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 
   display: flex;
 
   justify-content: center;
 }
-
 
 .mascot-seal__tail span {
   position: absolute;
@@ -1324,32 +1027,22 @@
   width: 32px;
   height: 24px;
 
-  border-radius:
-    50%
-    50%
-    30%
-    30%;
+  border-radius: 50% 50% 30% 30%;
 
-  background:
-    #0754a6;
+  background: #0754a6;
 }
-
 
 .mascot-seal__tail span:first-child {
   left: 0;
 
-  transform:
-    rotate(30deg);
+  transform: rotate(30deg);
 }
-
 
 .mascot-seal__tail span:last-child {
   right: 0;
 
-  transform:
-    rotate(-30deg);
+  transform: rotate(-30deg);
 }
-
 
 /* =========================================================
    BRILLOS
@@ -1360,64 +1053,46 @@
 
   z-index: 10;
 
-  color:
-    #4d9cff;
+  color: #4d9cff;
 
   font-size: 18px;
 
   pointer-events: none;
 
-  animation:
-    seal-spark
-    2s
-    ease-in-out
-    infinite;
+  animation: seal-spark 2s ease-in-out infinite;
 }
-
 
 .login-mascot__spark--one {
   top: 20px;
   right: 8px;
 }
 
-
 .login-mascot__spark--two {
   bottom: 25px;
   left: 5px;
 
-  color:
-    #e21c2a;
+  color: #e21c2a;
 
-  animation-delay:
-    0.6s;
+  animation-delay: 0.6s;
 }
-
 
 /* =========================================================
    ANIMACIÓN DEL LOBO MARINO
 ========================================================= */
 
 @keyframes seal-float {
-
   0% {
-    transform:
-      translateY(0)
-      rotate(0deg);
+    transform: translateY(0) rotate(0deg);
   }
 
   50% {
-    transform:
-      translateY(-9px)
-      rotate(1deg);
+    transform: translateY(-9px) rotate(1deg);
   }
 
   100% {
-    transform:
-      translateY(0)
-      rotate(0deg);
+    transform: translateY(0) rotate(0deg);
   }
 }
-
 
 /* =========================================================
    ANIMACIÓN DE BRILLOS
@@ -1429,30 +1104,25 @@
   100% {
     opacity: 0.35;
 
-    transform:
-      scale(0.8);
+    transform: scale(0.8);
   }
 
   50% {
     opacity: 1;
 
-    transform:
-      scale(1.15);
+    transform: scale(1.15);
   }
 }
-
 
 /* =========================================================
    RESPONSIVE
 ========================================================= */
 
 @media (max-width: 600px) {
-
   .login-container {
     align-items: center;
 
-    padding:
-      35px 14px;
+    padding: 35px 14px;
 
     background-size:
       35px 35px,
@@ -1462,89 +1132,68 @@
       auto;
   }
 
-
   .login-card {
     max-width: 100%;
 
-    padding:
-      34px 22px;
+    padding: 34px 22px;
 
     border-radius: 20px;
   }
-
 
   .login-header {
     margin-bottom: 20px;
   }
 
-
   .login-header h1 {
     font-size: 2rem;
   }
-
 
   .login-header p {
     font-size: 0.88rem;
   }
 
-
   .login-mascot {
-    transform:
-      scale(0.90);
+    transform: scale(0.9);
   }
-
 
   .login-form {
     gap: 19px;
   }
 
-
   .login-control {
     min-height: 49px;
   }
-
 
   .login-submit {
     min-height: 51px;
   }
 
-
   .login-modal {
-    padding:
-      26px 20px;
+    padding: 26px 20px;
   }
 }
-
 
 /* =========================================================
    PANTALLAS MUY PEQUEÑAS
 ========================================================= */
 
 @media (max-width: 380px) {
-
   .login-container {
-    padding:
-      25px 10px;
+    padding: 25px 10px;
   }
-
 
   .login-card {
-    padding:
-      28px 17px;
+    padding: 28px 17px;
   }
-
 
   .login-header h1 {
     font-size: 1.8rem;
   }
 
-
   .login-mascot {
-    transform:
-      scale(0.82);
+    transform: scale(0.82);
   }
 }
-
 
 /* =========================================================
    ACCESIBILIDAD
