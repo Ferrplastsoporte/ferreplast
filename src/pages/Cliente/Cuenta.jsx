@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import "../css/cuenta.css";
+import "./css/cuenta.css";
 function Cuenta() {
   const [usuario, setUsuario] = useState(null);
   const [correo, setCorreo] = useState("");

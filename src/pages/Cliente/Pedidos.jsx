@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import PedidoCard from "../../components/pedidos/PedidoCard";
-import "../css/pedidos.css";
+import "./css/pedidos.css";
 
 function Pedidos() {
   const [pedidos, setPedidos] = useState([]);

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useCartView from "../../hooks/useCartView";
 import useCheckoutFactura from "../../hooks/useCheckoutFactura";
 import { supabase } from "../../lib/supabase";
-import "../css/Carrito.css";
+import "./css/Carrito.css";
 
 function formatearPrecio(valor) {
   return new Intl.NumberFormat("es-CL", {

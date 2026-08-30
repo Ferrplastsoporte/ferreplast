@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import ProductDetail from "../../components/productos/ProductDetail";
 
-import "../css/DetalleProducto.css";
+import "./css/DetalleProducto.css";
 
 function DetalleProducto() {
   const { id } = useParams();

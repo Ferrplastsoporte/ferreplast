@@ -79,6 +79,74 @@ export const isValidAddress = (address) => {
   return formatoValido && address.length >= 5;
 };
 
+/**
+ * Limpia los campos del registro antes de guardarlos en el estado.
+ * Esta limpieza complementa las validaciones, pero no las reemplaza.
+ */
+export const sanitizeRegisterField = (name, value) => {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  switch (name) {
+    case "nombre":
+      return value
+        .replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/^\s+/, "")
+        .slice(0, 80);
+
+    case "rut": {
+      let rutLimpio = value
+        .toUpperCase()
+        .replace(/[.\s]/g, "")
+        .replace(/[^0-9K-]/g, "");
+
+      const posicionGuion = rutLimpio.indexOf("-");
+
+      if (posicionGuion !== -1) {
+        const cuerpo = rutLimpio
+          .slice(0, posicionGuion)
+          .replace(/\D/g, "")
+          .slice(0, 8);
+
+        const digitoVerificador = rutLimpio
+          .slice(posicionGuion + 1)
+          .replace(/[^0-9K]/g, "")
+          .slice(0, 1);
+
+        rutLimpio = `${cuerpo}-${digitoVerificador}`;
+      } else {
+        rutLimpio = rutLimpio.replace(/\D/g, "").slice(0, 8);
+      }
+
+      return rutLimpio;
+    }
+
+    case "email":
+      return value.toLowerCase().replace(/\s/g, "").slice(0, 120);
+
+    case "telefono": {
+      const tienePrefijo = value.startsWith("+");
+      const numeros = value.replace(/\D/g, "").slice(0, 11);
+
+      return tienePrefijo ? `+${numeros}` : numeros;
+    }
+
+    case "direccion":
+      return value
+        .replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9#\s]/g, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/^\s+/, "")
+        .slice(0, 120);
+
+    case "password":
+    case "confirmarPassword":
+    default:
+      return value;
+  }
+};
+
 // ============================
 // VALIDACIÓN DEL REGISTRO
 // ============================
@@ -189,12 +257,6 @@ export const validateRegisterField = (name, value, form) => {
       }
 
       return "";
-
-    /*
-     * Estos campos solo existen cuando mode="admin".
-     * Sus valores iniciales ya vienen definidos, pero igualmente
-     * los validamos por seguridad.
-     */
 
     case "rol":
       if (!val) {

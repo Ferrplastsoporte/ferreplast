@@ -12,7 +12,7 @@ import {
   enviarCotizacion,
 } from "../../services/cotizacionService";
 
-import "../css/Cotizacion.css";
+import "./css/Cotizacion.css";
 
 const CANTIDAD_MINIMA = 1;
 const CANTIDAD_MAXIMA = 100;

@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import ProductFilters from "../../components/productos/ProductFilters";
 import ProductList from "../../components/productos/ProductList";
-import "../css/Catalogo.css";
+import "./css/Catalogo.css";
 
 const PRODUCTOS_POR_PAGINA = 20;
 const TAMANO_LOTE_FILTROS = 1000;

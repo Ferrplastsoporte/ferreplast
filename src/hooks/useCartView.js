@@ -14,7 +14,7 @@ import {
   obtenerDespachoAutomatico,
   calcularCostoDespacho,
   requiereCoordinacionDespacho,
-} from "../utils/despachoUtils";
+} from "../utils/utilidadesDespacho";
 
 function useCartView() {
   const [productos, setProductos] = useState([]);

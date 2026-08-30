@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "../../hooks/useForm";
 import { useAuth } from "../../hooks/useAuth";
-import { isValidEmail, isValidPassword } from "../../utils/validators";
+import {
+  isValidEmail,
+  isValidPassword,
+} from "../../utils/validacionAutenticacion";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";

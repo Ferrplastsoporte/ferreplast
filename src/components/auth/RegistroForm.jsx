@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useForm } from "../../hooks/useForm";
 import { useAuth } from "../../hooks/useAuth";
-import { validateRegisterField } from "../../utils/validators";
-import { sanitizeRegisterField } from "../../utils/helpers";
+import {
+  sanitizeRegisterField,
+  validateRegisterField,
+} from "../../utils/validacionAutenticacion";
 
 import Input from "../ui/Input";
 import Select from "../ui/Select";

@@ -9,7 +9,7 @@ import StatsCard from "../../components/estadisticas/StatsCard";
 import {
   obtenerResumenBodega,
   obtenerUltimosProductos,
-} from "../../utils/dashboardBodeguero";
+} from "../../utils/panelBodeguero";
 
 import "./css/bodeguero.css";
 import "./css/dashboard.css";
