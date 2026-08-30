@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import { agregarProductoAlCarrito } from "../services/cartService"
+import { agregarProductoAlCarrito } from "../services/carritoService"
 
-function useCart() {
+function useCarrito() {
   const [agregando, setAgregando] = useState(false)
   const [agregado, setAgregado] = useState(false)
   const [errorCarrito, setErrorCarrito] = useState("")
@@ -99,4 +99,4 @@ function useCart() {
   }
 }
 
-export default useCart
+export default useCarrito

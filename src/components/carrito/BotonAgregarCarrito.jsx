@@ -1,9 +1,9 @@
 import { useState } from "react"
-import useCart from "../../hooks/useCart"
-import QuantityModal from "../ui/QuantityModal"
-import "../css/AddToCartButton.css"
+import useCarrito from "../../hooks/useCarrito"
+import ModalCantidad from "../ui/ModalCantidad"
+import "../css/BotonAgregarCarrito.css"
 
-function AddToCartButton({
+function BotonAgregarCarrito({
   producto,
   stockDisponible = 0,
   className = "",
@@ -16,7 +16,7 @@ function AddToCartButton({
     agregado,
     errorCarrito,
     agregarAlCarrito,
-  } = useCart()
+  } = useCarrito()
 
   const [mostrarCantidad, setMostrarCantidad] =
     useState(false)
@@ -124,7 +124,7 @@ function AddToCartButton({
       
       <div className="add-to-cart__modal">
         {mostrarCantidad && (
-          <QuantityModal
+          <ModalCantidad
             titulo="Cantidad para agregar"
             nombreProducto={producto.nom_prod}
             stockDisponible={stock}
@@ -150,4 +150,4 @@ function AddToCartButton({
   )
 }
 
-export default AddToCartButton
+export default BotonAgregarCarrito

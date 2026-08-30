@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function ProductFilters({
+function FiltrosProducto({
   familias,
   subcategorias,
   marcas,
@@ -345,4 +345,4 @@ function ProductFilters({
   );
 }
 
-export default ProductFilters;
+export default FiltrosProducto;

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export const useForm = (
+export const useFormulario = (
   initialValues,
   validateField,
   sanitizeField = (_name, value) => value

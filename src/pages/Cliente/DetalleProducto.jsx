@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import ProductDetail from "../../components/productos/ProductDetail";
+import DetalleProductoContenido from "../../components/productos/DetalleProducto";
 
 import "./css/DetalleProducto.css";
 
@@ -154,7 +154,7 @@ function DetalleProducto() {
 
   return (
     <main className="detalle-producto">
-      <ProductDetail producto={producto} />
+      <DetalleProductoContenido producto={producto} />
     </main>
   );
 }

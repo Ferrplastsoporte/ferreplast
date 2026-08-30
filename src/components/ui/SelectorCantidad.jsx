@@ -1,6 +1,6 @@
-import "../css/QuantitySelector.css";
+import "../css/SelectorCantidad.css";
 
-function QuantitySelector({
+function SelectorCantidad({
   cantidad,
   minimo = 1,
   maximo,
@@ -111,4 +111,4 @@ function QuantitySelector({
   );
 }
 
-export default QuantitySelector;
+export default SelectorCantidad;

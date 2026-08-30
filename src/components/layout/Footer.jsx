@@ -1,4 +1,4 @@
-import '../css/footer.css'  // ← ESTO FALTA
+import '../css/footer.css'
 
 function Footer() {
   return (

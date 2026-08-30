@@ -1,4 +1,4 @@
-const UserTable = ({ usuarios, onEditar, onCambiarEstado }) => {
+const TablaUsuarios = ({ usuarios, onEditar, onCambiarEstado }) => {
   if (!usuarios || usuarios.length === 0) {
     return (
       <p className="user-table__empty">No hay trabajadores registrados.</p>
@@ -73,4 +73,4 @@ const UserTable = ({ usuarios, onEditar, onCambiarEstado }) => {
   );
 };
 
-export default UserTable;
+export default TablaUsuarios;

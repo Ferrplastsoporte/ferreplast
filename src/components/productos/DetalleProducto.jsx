@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAutenticacion } from "../../hooks/useAutenticacion";
 import { FaArrowLeft } from "react-icons/fa";
 
-import AddToCartButton from "../carrito/AddToCartButton";
-import AddToCotizacionButton from "../cotizacion/AddToCotizacionButton";
+import BotonAgregarCarrito from "../carrito/BotonAgregarCarrito";
+import BotonAgregarCotizacion from "../cotizacion/BotonAgregarCotizacion";
 
 const NOMBRES_TIPO_DOCUMENTO = {
   ficha_tecnica: "Ficha técnica",
@@ -13,8 +13,8 @@ const NOMBRES_TIPO_DOCUMENTO = {
   otro: "Otro documento",
 };
 
-function ProductDetail({ producto }) {
-  const { user } = useAuth();
+function DetalleProducto({ producto }) {
+  const { user } = useAutenticacion();
 
   const precioOriginal = Number(producto.precio_prod);
 
@@ -184,14 +184,14 @@ function ProductDetail({ producto }) {
               )}
           </dl>
 
-          <AddToCartButton
+          <BotonAgregarCarrito
             producto={producto}
             stockDisponible={Number(producto.stock_prod) || 0}
             className="product-detail__cart-button"
           />
 
           {user && (
-            <AddToCotizacionButton
+            <BotonAgregarCotizacion
               producto={producto}
               stockDisponible={Number(producto.stock_prod) || 0}
             />
@@ -249,4 +249,4 @@ function ProductDetail({ producto }) {
   );
 }
 
-export default ProductDetail;
+export default DetalleProducto;

@@ -1,4 +1,4 @@
-import RegistroForm from '../../components/auth/RegistroForm'
+import FormularioRegistro from '../../components/auth/FormularioRegistro'
 import './css/Registro.css'
 
 function Registro() {
@@ -7,7 +7,7 @@ function Registro() {
       <div className="registro-card">
         <h1>Crear cuenta</h1>
         <p className="registro-subtitulo">Todos los campos son obligatorios.</p>
-        <RegistroForm mode="client" />
+        <FormularioRegistro mode="client" />
       </div>
     </div>
   )

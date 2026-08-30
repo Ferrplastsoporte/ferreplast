@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useCartView from "../../hooks/useCartView";
-import useCheckoutFactura from "../../hooks/useCheckoutFactura";
+import useVistaCarrito from "../../hooks/useVistaCarrito";
+import useFacturacionCompra from "../../hooks/useFacturacionCompra";
 import { supabase } from "../../lib/supabase";
 import "./css/Carrito.css";
 
@@ -43,7 +43,7 @@ function Carrito() {
     actualizarDatoFactura,
     validarFactura,
     obtenerDatosFacturacion,
-  } = useCheckoutFactura();
+  } = useFacturacionCompra();
 
   const {
     productos,
@@ -65,7 +65,7 @@ function Carrito() {
     cambiarCantidad,
     eliminarProducto,
     vaciarCarritoCompleto,
-  } = useCartView();
+  } = useVistaCarrito();
 
   useEffect(() => {
     cargarUbicaciones();

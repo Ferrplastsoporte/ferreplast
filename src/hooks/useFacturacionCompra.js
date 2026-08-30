@@ -10,7 +10,7 @@ const FACTURA_INICIAL = {
   correo: "",
 };
 
-function useCheckoutFactura() {
+function useFacturacionCompra() {
   const [esFactura, setEsFactura] = useState(false);
 
   const [datosFactura, setDatosFactura] = useState({
@@ -124,4 +124,4 @@ function useCheckoutFactura() {
   };
 }
 
-export default useCheckoutFactura;
+export default useFacturacionCompra;

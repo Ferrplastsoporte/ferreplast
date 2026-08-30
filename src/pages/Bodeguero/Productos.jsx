@@ -3,7 +3,7 @@ import { supabase } from "../../lib/supabase";
 
 import BodegueroHeader from "./components/BodegueroHeader";
 import ProductoFormBodeguero from "./components/ProductoFormBodeguero";
-import ProductTable from "../../components/productos/ProductTable";
+import TablaProductos from "../../components/productos/TablaProductos";
 
 import {
   obtenerUrlImagenProducto,
@@ -677,7 +677,7 @@ function BodegueroProductos() {
         </div>
       )}
 
-      <ProductTable
+      <TablaProductos
         productos={productos}
         onEditar={abrirEdicionProducto}
         onDesactivar={solicitarDesactivacion}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 import AdminHeader from "./components/AdminHeader";
-import UserTable from "../../components/usuarios/UserTable";
+import TablaUsuarios from "../../components/usuarios/TablaUsuarios";
 
 import "./css/admin.css";
 
@@ -118,7 +118,7 @@ function Usuarios() {
             Cargando trabajadores...
           </p>
         ) : (
-          <UserTable
+          <TablaUsuarios
             usuarios={usuarios}
             onEditar={manejarEditar}
             onCambiarEstado={manejarCambiarEstado}

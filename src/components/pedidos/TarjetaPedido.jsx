@@ -1,5 +1,4 @@
-import EstadoBadge from "./EstadoBadge";
-function PedidoCard({
+function TarjetaPedido({
   pedido,
   formatearFecha,
   formatearPrecio,
@@ -102,4 +101,4 @@ function PedidoCard({
   );
 }
 
-export default PedidoCard;
+export default TarjetaPedido;

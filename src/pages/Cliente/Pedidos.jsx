@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import PedidoCard from "../../components/pedidos/PedidoCard";
+import TarjetaPedido from "../../components/pedidos/TarjetaPedido";
 import "./css/pedidos.css";
 
 function Pedidos() {
@@ -245,7 +245,7 @@ const { data, error: errorPedidos } = await supabase
 
               {pedidos.map((pedido) => (
 
-                <PedidoCard
+                <TarjetaPedido
                   key={pedido.id_pedido}
                   pedido={pedido}
                   formatearFecha={formatearFecha}

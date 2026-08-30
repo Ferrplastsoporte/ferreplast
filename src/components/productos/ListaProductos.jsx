@@ -1,6 +1,6 @@
-import ProductCard from './ProductCard'
+import TarjetaProducto from './TarjetaProducto'
 
-const ProductList = ({ productos, onAgregar, onEditar, modo = 'cliente' }) => {
+const ListaProductos = ({ productos, onAgregar, onEditar, modo = 'cliente' }) => {
   if (!productos || productos.length === 0) {
     return (
       <p className="text-center text-gray-500">
@@ -12,7 +12,7 @@ const ProductList = ({ productos, onAgregar, onEditar, modo = 'cliente' }) => {
   return (
     <div className="product-list">
       {productos.map((producto) => (
-        <ProductCard
+        <TarjetaProducto
           key={producto.id_prod}
           producto={producto}
           onAgregar={onAgregar}
@@ -24,4 +24,4 @@ const ProductList = ({ productos, onAgregar, onEditar, modo = 'cliente' }) => {
   )
 }
 
-export default ProductList
+export default ListaProductos

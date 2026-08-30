@@ -3,7 +3,7 @@ import { formatPrice } from "../../utils/formateadores";
 
 const BUCKET_IMAGENES = "imagenes_productos";
 
-function ProductTable({
+function TablaProductos({
   productos = [],
   onEditar,
   onDesactivar,
@@ -242,4 +242,4 @@ function ProductTable({
   );
 }
 
-export default ProductTable;
+export default TablaProductos;

@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaArrowUp, FaDollarSign, FaWhatsapp } from "react-icons/fa";
 
-import { useAuth } from "../../hooks/useAuth";
-import "../css/floatingButtons.css";
+import { useAutenticacion } from "../../hooks/useAutenticacion";
+import "../css/BotonesFlotantes.css";
 
-function FloatingButtons() {
+function BotonesFlotantes() {
   const [showTop, setShowTop] = useState(false);
 
-  const auth = useAuth();
+  const auth = useAutenticacion();
 
   const user = auth?.user || auth?.session?.user || null;
 
@@ -78,4 +78,4 @@ function FloatingButtons() {
   );
 }
 
-export default FloatingButtons;
+export default BotonesFlotantes;

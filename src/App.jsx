@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 // Layout cliente
 import Navbar from "./components/layout/Navbar";
-import FloatingButtons from "./components/layout/FloatingButtons";
+import BotonesFlotantes from "./components/layout/BotonesFlotantes";
 
 // Layout bodeguero
 import BodegueroLayout from "./pages/Bodeguero/components/BodegueroLayout";
@@ -54,7 +54,7 @@ function ClienteLayout() {
   return (
     <>
       <Navbar />
-      <FloatingButtons />
+      <BotonesFlotantes />
       <Outlet />
     </>
   );

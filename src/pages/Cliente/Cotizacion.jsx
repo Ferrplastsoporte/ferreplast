@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import QuantitySelector from "../../components/ui/QuantitySelector";
+import SelectorCantidad from "../../components/ui/SelectorCantidad";
 
 import {
   obtenerCotizacionCompleta,
@@ -361,7 +361,7 @@ function Cotizacion() {
                       <div className="cotizacion-item__quantity">
                         <span>Cantidad</span>
 
-                        <QuantitySelector
+                        <SelectorCantidad
                           cantidad={producto.cantidad}
                           minimo={CANTIDAD_MINIMA}
                           maximo={CANTIDAD_MAXIMA}

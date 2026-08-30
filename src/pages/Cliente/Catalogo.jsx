@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import ProductFilters from "../../components/productos/ProductFilters";
-import ProductList from "../../components/productos/ProductList";
+import FiltrosProducto from "../../components/productos/FiltrosProducto";
+import ListaProductos from "../../components/productos/ListaProductos";
 import "./css/Catalogo.css";
 
 const PRODUCTOS_POR_PAGINA = 20;
@@ -729,7 +729,7 @@ function Catalogo() {
       )}
 
       <div className="catalogo__contenido">
-        <ProductFilters
+        <FiltrosProducto
           familias={familias}
           subcategorias={subcategorias}
           marcas={marcas}
@@ -779,7 +779,7 @@ function Catalogo() {
 
           {!cargando && !errorCarga && productos.length > 0 && (
             <>
-              <ProductList productos={productos} />
+              <ListaProductos productos={productos} />
 
               {totalPaginas > 1 && (
                 <nav

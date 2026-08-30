@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom"
-import AddToCartButton from "../carrito/AddToCartButton"
-import AddToCotizacionButton from "../cotizacion/AddToCotizacionButton"
-import { useAuth } from "../../hooks/useAuth"
+import BotonAgregarCarrito from "../carrito/BotonAgregarCarrito"
+import BotonAgregarCotizacion from "../cotizacion/BotonAgregarCotizacion"
+import { useAutenticacion } from "../../hooks/useAutenticacion"
 
 
-function ProductCard({ producto }) {
-  const { user } = useAuth()
+function TarjetaProducto({ producto }) {
+  const { user } = useAutenticacion()
 
   const navigate = useNavigate()
 
@@ -107,7 +107,7 @@ function ProductCard({ producto }) {
           </span>
         </div>
 
-        <AddToCartButton
+        <BotonAgregarCarrito
           producto={producto}
           stockDisponible={
             Number(producto.stock_prod) || 0
@@ -115,7 +115,7 @@ function ProductCard({ producto }) {
           className="btn-add"
         />
         {user && (
-          <AddToCotizacionButton
+          <BotonAgregarCotizacion
             producto={producto}
             stockDisponible={Number(producto.stock_prod) || 0}
           />
@@ -125,4 +125,4 @@ function ProductCard({ producto }) {
   )
 }
 
-export default ProductCard
+export default TarjetaProducto

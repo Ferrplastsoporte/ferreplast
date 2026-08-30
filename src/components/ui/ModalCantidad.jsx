@@ -1,7 +1,7 @@
-import QuantitySelector from "./QuantitySelector";
-import "../css/AddToCotizacionButton.css";
+import SelectorCantidad from "./SelectorCantidad";
+import "../css/BotonAgregarCotizacion.css";
 
-function QuantityModal({
+function ModalCantidad({
   titulo,
   nombreProducto,
   stockDisponible,
@@ -53,7 +53,7 @@ function QuantityModal({
         Stock actual: {stock}
       </p>
 
-      <QuantitySelector
+      <SelectorCantidad
         cantidad={cantidad}
         minimo={1}
         maximo={maximo}
@@ -86,4 +86,4 @@ function QuantityModal({
   );
 }
 
-export default QuantityModal;
+export default ModalCantidad;

@@ -6,7 +6,7 @@ import {
   obtenerProductosCarrito,
   obtenerUsuarioActual,
   vaciarCarrito,
-} from "../services/cartService";
+} from "../services/carritoService";
 import { obtenerTiposDespachoActivos } from "../services/despachoService";
 import {
   esPuertoMontt,
@@ -16,7 +16,7 @@ import {
   requiereCoordinacionDespacho,
 } from "../utils/utilidadesDespacho";
 
-function useCartView() {
+function useVistaCarrito() {
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [actualizando, setActualizando] = useState(false);
@@ -286,4 +286,4 @@ function useCartView() {
   };
 }
 
-export default useCartView;
+export default useVistaCarrito;

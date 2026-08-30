@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { useForm } from "../../hooks/useForm";
-import { useAuth } from "../../hooks/useAuth";
+import { useFormulario } from "../../hooks/useFormulario";
+import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
   sanitizeRegisterField,
   validateRegisterField,
@@ -25,7 +25,7 @@ const INITIAL_VALUES = {
   comuna: "",
 };
 
-const RegistroForm = () => {
+const FormularioRegistro = () => {
   const navigate = useNavigate();
 
   const {
@@ -37,9 +37,9 @@ const RegistroForm = () => {
     resetForm,
     setFieldValue,
     clearFieldError,
-  } = useForm(INITIAL_VALUES, validateRegisterField, sanitizeRegisterField);
+  } = useFormulario(INITIAL_VALUES, validateRegisterField, sanitizeRegisterField);
 
-  const { register, loading, modal, hideModal } = useAuth();
+  const { register, loading, modal, hideModal } = useAutenticacion();
 
   const [regiones, setRegiones] = useState([]);
 
@@ -327,4 +327,4 @@ const RegistroForm = () => {
   );
 };
 
-export default RegistroForm;
+export default FormularioRegistro;

@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase";
 
 import BodegueroHeader from "./components/BodegueroHeader";
 import EstadoCatalogoChart from "./components/EstadoCatalogoChart";
-import StatsCard from "../../components/estadisticas/StatsCard";
+import TarjetaEstadistica from "../../components/estadisticas/TarjetaEstadistica";
 
 import {
   obtenerResumenBodega,
@@ -112,32 +112,28 @@ function BodegueroDashboard() {
         <EstadoCatalogoChart resumen={resumen} />
 
         <section className="dashboard-bodega__stats">
-          <StatsCard
+          <TarjetaEstadistica
             titulo="Total productos"
             valor={resumen.total}
             icono="📦"
-            color="blue"
           />
 
-          <StatsCard
+          <TarjetaEstadistica
             titulo="Pendientes"
             valor={resumen.pendientes}
             icono="⏳"
-            color="yellow"
           />
 
-          <StatsCard
+          <TarjetaEstadistica
             titulo="Stock bajo"
             valor={resumen.stockBajo}
             icono="⚠️"
-            color="red"
           />
 
-          <StatsCard
+          <TarjetaEstadistica
             titulo="No disponibles"
             valor={resumen.noDisponibles}
             icono="⛔"
-            color="red"
           />
         </section>
       </div>

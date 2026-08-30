@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 import AdminHeader from "./components/AdminHeader";
-import StatsCard from "../../components/estadisticas/StatsCard";
+import TarjetaEstadistica from "../../components/estadisticas/TarjetaEstadistica";
 
 import "./css/admin.css";
 
@@ -180,13 +180,13 @@ function AdminDashboard() {
       )}
 
       <div className="admin-stats-grid">
-        <StatsCard titulo="Trabajadores" valor={resumen.trabajadores} />
+        <TarjetaEstadistica titulo="Trabajadores" valor={resumen.trabajadores} />
 
-        <StatsCard titulo="Administradores" valor={resumen.administradores} />
+        <TarjetaEstadistica titulo="Administradores" valor={resumen.administradores} />
 
-        <StatsCard titulo="Bodegueros" valor={resumen.bodegueros} />
+        <TarjetaEstadistica titulo="Bodegueros" valor={resumen.bodegueros} />
 
-        <StatsCard titulo="Pendientes de aprobación" valor={totalPendientes} />
+        <TarjetaEstadistica titulo="Pendientes de aprobación" valor={totalPendientes} />
       </div>
 
       <div className="admin-dashboard-grid">

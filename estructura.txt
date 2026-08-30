@@ -26,64 +26,59 @@ C:\USERS\ALVARO\DESKTOP\GD\NUEVA CARPETA\FERREPLAST\SRC
 ¦       
 +---components
 ¦   +---auth
+¦   ¦       FormularioRegistro.jsx
 ¦   ¦       LoginForm.jsx
-¦   ¦       RegistroForm.jsx
-¦   ¦       
+¦   ¦       LoginMascot.jsx
+¦   ¦
 ¦   +---carrito
-¦   ¦       AddToCartButton.jsx
-¦   ¦       
+¦   ¦       BotonAgregarCarrito.jsx
+¦   ¦
 ¦   +---cotizacion
-¦   ¦       AddToCotizacionButton.jsx
-¦   ¦       
+¦   ¦       BotonAgregarCotizacion.jsx
+¦   ¦
 ¦   +---css
-¦   ¦       AddToCotizacionButton.css
-¦   ¦       FloatingButtons.css
+¦   ¦       BotonAgregarCarrito.css
+¦   ¦       BotonAgregarCotizacion.css
+¦   ¦       BotonesFlotantes.css
 ¦   ¦       footer.css
 ¦   ¦       navbar.css
-¦   ¦       productos.css
-¦   ¦       QuantitySelector.css
-¦   ¦       
+¦   ¦       SelectorCantidad.css
+¦   ¦
 ¦   +---estadisticas
-¦   ¦       StatsCard.jsx
-¦   ¦       StatsGrid.jsx
-¦   ¦       
+¦   ¦       TarjetaEstadistica.jsx
+¦   ¦
 ¦   +---layout
-¦   ¦       AdminNavbar.jsx
-¦   ¦       FloatingButtons.jsx
+¦   ¦       BotonesFlotantes.jsx
 ¦   ¦       Footer.jsx
 ¦   ¦       Navbar.jsx
-¦   ¦       
+¦   ¦
 ¦   +---pedidos
-¦   ¦       EstadoBadge.jsx
-¦   ¦       PedidoList.jsx
-¦   ¦       
+¦   ¦       TarjetaPedido.jsx
+¦   ¦
 ¦   +---productos
-¦   ¦       ProductCard.jsx
-¦   ¦       ProductDetail.jsx
-¦   ¦       ProductFilters.jsx
-¦   ¦       ProductForm.jsx
-¦   ¦       ProductList.jsx
-¦   ¦       ProductTable.jsx
-¦   ¦       
+¦   ¦       DetalleProducto.jsx
+¦   ¦       FiltrosProducto.jsx
+¦   ¦       ListaProductos.jsx
+¦   ¦       TablaProductos.jsx
+¦   ¦       TarjetaProducto.jsx
+¦   ¦
 ¦   +---ui
 ¦   ¦       Button.jsx
-¦   ¦       Card.jsx
 ¦   ¦       Input.jsx
 ¦   ¦       Modal.jsx
-¦   ¦       QuantityModal.jsx
-¦   ¦       QuantitySelector.jsx
+¦   ¦       ModalCantidad.jsx
 ¦   ¦       Select.jsx
-¦   ¦       
+¦   ¦       SelectorCantidad.jsx
+¦   ¦
 ¦   +---usuarios
-¦           UserForm.jsx
-¦           UserTable.jsx
-¦           
+¦   ¦       TablaUsuarios.jsx
+¦   ¦
 +---hooks
-¦       useAdminAuth.js
-¦       useAuth.js
-¦       useCart.js
-¦       useCartView.js
-¦       useForm.js
+¦       useAutenticacion.js
+¦       useCarrito.js
+¦       useFacturacionCompra.js
+¦       useFormulario.js
+¦       useVistaCarrito.js
 ¦       
 +---lib
 ¦       supabase.ts
@@ -140,7 +135,7 @@ C:\USERS\ALVARO\DESKTOP\GD\NUEVA CARPETA\FERREPLAST\SRC
 ¦               home.css
 ¦               
 +---services
-¦       cartService.js
+¦       carritoService.js
 ¦       cotizacionService.js
 ¦       
 +---utils

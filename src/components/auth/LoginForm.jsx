@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "../../hooks/useForm";
-import { useAuth } from "../../hooks/useAuth";
+import { useFormulario } from "../../hooks/useFormulario";
+import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
   isValidEmail,
   isValidPassword,
@@ -49,12 +49,12 @@ const validateField = (name, value) => {
 const LoginForm = () => {
   const navigate = useNavigate();
 
-  const { values, errors, handleChange, handleBlur, validateForm } = useForm(
+  const { values, errors, handleChange, handleBlur, validateForm } = useFormulario(
     INITIAL_VALUES,
     validateField,
   );
 
-  const { login, loading, modal, hideModal } = useAuth();
+  const { login, loading, modal, hideModal } = useAutenticacion();
 
   const [showPassword, setShowPassword] = useState(false);
 

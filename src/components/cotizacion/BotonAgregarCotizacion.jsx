@@ -1,11 +1,11 @@
 import { useState } from "react";
-import QuantityModal from "../ui/QuantityModal";
-import "../css/AddToCotizacionButton.css";
+import ModalCantidad from "../ui/ModalCantidad";
+import "../css/BotonAgregarCotizacion.css";
 import {
   agregarProductoCotizacion,
 } from "../../services/cotizacionService";
 
-function AddToCotizacionButton({
+function BotonAgregarCotizacion({
   producto,
   stockDisponible = 0,
   onAgregar,
@@ -99,7 +99,7 @@ function AddToCotizacionButton({
       </button>
 
       {mostrarCantidad && (
-        <QuantityModal
+        <ModalCantidad
           titulo="Cantidad para cotizar"
           nombreProducto={producto.nom_prod}
           stockDisponible={stockActual}
@@ -123,4 +123,4 @@ function AddToCotizacionButton({
   );
 }
 
-export default AddToCotizacionButton;
+export default BotonAgregarCotizacion;
