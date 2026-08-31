@@ -26,53 +26,49 @@ C:\USERS\ALVARO\DESKTOP\GD\NUEVA CARPETA\FERREPLAST\SRC
 ¦       
 +---components
 ¦   +---auth
-¦   ¦       FormularioRegistro.jsx
-¦   ¦       LoginForm.jsx
-¦   ¦       LoginMascot.jsx
-¦   ¦
+¦          FormularioRegistro.jsx
+¦          LoginForm.jsx
+¦          LoginMascot.jsx
 ¦   +---carrito
-¦   ¦       BotonAgregarCarrito.jsx
-¦   ¦
+¦          BotonAgregarCarrito.jsx
 ¦   +---cotizacion
-¦   ¦       BotonAgregarCotizacion.jsx
-¦   ¦
+¦          BotonAgregarCotizacion.jsx
 ¦   +---css
-¦   ¦       BotonAgregarCarrito.css
-¦   ¦       BotonAgregarCotizacion.css
-¦   ¦       BotonesFlotantes.css
-¦   ¦       footer.css
-¦   ¦       navbar.css
-¦   ¦       SelectorCantidad.css
-¦   ¦
+¦          BotonAgregarCarrito.css
+¦          BotonAgregarCotizacion.css
+¦          BotonesFlotantes.css
+¦          footer.css
+¦          navbar.css
+¦          SelectorCantidad.css
 ¦   +---estadisticas
-¦   ¦       TarjetaEstadistica.jsx
-¦   ¦
+¦          TarjetaEstadistica.jsx
 ¦   +---layout
-¦   ¦       BotonesFlotantes.jsx
-¦   ¦       Footer.jsx
-¦   ¦       Navbar.jsx
-¦   ¦
+¦          BotonesFlotantes.jsx
+¦          Footer.jsx
+¦          Navbar.jsx
 ¦   +---pedidos
-¦   ¦       TarjetaPedido.jsx
-¦   ¦
+¦          TarjetaPedido.jsx
 ¦   +---productos
-¦   ¦       DetalleProducto.jsx
-¦   ¦       FiltrosProducto.jsx
-¦   ¦       ListaProductos.jsx
-¦   ¦       TablaProductos.jsx
-¦   ¦       TarjetaProducto.jsx
-¦   ¦
+¦          DetalleProducto.jsx
+¦          FiltrosProducto.jsx
+¦          ListaProductos.jsx
+¦          TablaProductos.jsx
+¦          TarjetaProducto.jsx
+¦   +---rutas
+¦          EstadoCargaRuta.jsx
+¦          ruta-protegida.css
+¦          RutaProtegida.jsx
+¦          RutaSitioCliente.jsx
+¦          RutaSoloVisitantes.jsx
 ¦   +---ui
-¦   ¦       Button.jsx
-¦   ¦       Input.jsx
-¦   ¦       Modal.jsx
-¦   ¦       ModalCantidad.jsx
-¦   ¦       Select.jsx
-¦   ¦       SelectorCantidad.jsx
-¦   ¦
+¦          Button.jsx
+¦          Input.jsx
+¦          Modal.jsx
+¦          ModalCantidad.jsx
+¦          Select.jsx
+¦          SelectorCantidad.jsx
 ¦   +---usuarios
-¦   ¦       TablaUsuarios.jsx
-¦   ¦
+¦          TablaUsuarios.jsx
 +---hooks
 ¦       useAutenticacion.js
 ¦       useCarrito.js
@@ -85,67 +81,105 @@ C:\USERS\ALVARO\DESKTOP\GD\NUEVA CARPETA\FERREPLAST\SRC
 ¦       supabase.ts.backup
 ¦       
 +---pages
-¦   ¦   Carrito.jsx
-¦   ¦   Catalogo.jsx
-¦   ¦   Cotizacion.jsx
-¦   ¦   DetalleProducto.jsx
-¦   ¦   Login.jsx
-¦   ¦   Registro.jsx
-¦   ¦   
 ¦   +---admin
-¦   ¦   ¦   AdminDashboard.jsx
-¦   ¦   ¦   Bodega.jsx
-¦   ¦   ¦   Configuracion.jsx
-¦   ¦   ¦   CrearUsuario.jsx
-¦   ¦   ¦   Dashboard.jsx
-¦   ¦   ¦   Productos.jsx
-¦   ¦   ¦   reportes.jsx
-¦   ¦   ¦   Usuarios.jsx
-¦   ¦   ¦   Ventas.jsx
-¦   ¦   ¦   
-¦   ¦   +---components
-¦   ¦   ¦       AdminHeader.jsx
-¦   ¦   ¦       AdminSidebar.jsx
-¦   ¦   ¦       
-¦   ¦   +---Css
-¦   ¦           admin.css
-¦   ¦           
-¦   +---css
-¦   ¦       Carrito.css
-¦   ¦       Catalogo.css
-¦   ¦       Cotizacion.css
-¦   ¦       DetalleProducto.css
-¦   ¦       Login.css
-¦   ¦       Registro.css
-¦   ¦       
+¦          AdminDashboard.jsx
+¦          Aprobaciones.jsx
+¦          Auditoria.jsx
+¦          Configuracion.jsx
+¦          Cotizaciones.jsx
+¦          CrearUsuario.jsx
+¦          Pagos.jsx
+¦          Pedidos.jsx
+¦          reportes.jsx
+¦          Usuarios.jsx
+¦          Ventas.jsx
+¦      +---components
+¦             AdminHeader.jsx
+¦             AdminLayout.jsx
+¦             AdminSidebar.jsx
+¦             UsuarioInvitacionForm.jsx
+¦      +---Css
+¦             admin.css
+¦   +---Autenticaci¢n-Registro
+¦          Login.jsx
+¦          NuevaPassword.jsx
+¦          RecuperarPassword.jsx
+¦          Registro.jsx
+¦      +---css
+¦             Login.css
+¦             NuevaPassword.css
+¦             RecuperarPassword.css
+¦             Registro.css
+¦   +---Bodeguero
+¦          Dashboard.jsx
+¦          DocumentosProductos.jsx
+¦          Familias.jsx
+¦          Marcas.jsx
+¦          Productos.jsx
+¦          Solicitudes.jsx
+¦          Stock.jsx
+¦          Unidades.jsx
+¦      +---components
+¦             BodegueroHeader.jsx
+¦             BodegueroLayout.jsx
+¦             BodegueroSidebar.jsx
+¦             EstadoCatalogoChart.jsx
+¦             ProductoFormBodeguero.jsx
+¦      +---css
+¦             bodeguero.css
+¦             dashboard.css
+¦             documentoProducto.css
+¦             familias.css
+¦             marcas.css
+¦             productos-bodeguero.css
+¦             solicitudes.css
+¦             stock.css
+¦             unidades.css
+¦   +---Cliente
+¦          Ayuda.jsx
+¦          Carrito.jsx
+¦          Catalogo.jsx
+¦          Cotizacion.jsx
+¦          Cuenta.jsx
+¦          DetalleProducto.jsx
+¦          pagoResultado.jsx
+¦          Pedidos.jsx
+¦      +---css
+¦             Ayuda.css
+¦             Carrito.css
+¦             Catalogo.css
+¦             Cotizacion.css
+¦             Cuenta.css
+¦             DetalleProducto.css
+¦             pedidos.css
+¦   +---Errores
+¦          PaginaNoEncontrada.jsx
+¦      +---css
+¦             pagina-no-encontrada.css
 ¦   +---home
-¦       ¦   Hero.jsx
-¦       ¦   Home.jsx
-¦       ¦   
-¦       +---components
-¦       ¦       Benefits.jsx
-¦       ¦       Brands.jsx
-¦       ¦       Contact.jsx
-¦       ¦       FeaturedProducts.jsx
-¦       ¦       Footer.jsx
-¦       ¦       Hero.jsx
-¦       ¦       Mission.jsx
-¦       ¦       
-¦       +---css
-¦               home.css
-¦               
+¦          Hero.jsx
+¦          Home.jsx
+¦      +---components
+¦             Brands.jsx
+¦             Contact.jsx
+¦             FeaturedProducts.jsx
+¦             Footer.jsx
+¦             Hero.jsx
+¦             Mission.jsx
+¦      +---css
+¦             home.css
 +---services
 ¦       carritoService.js
 ¦       cotizacionService.js
 ¦       
 +---utils
-        familias.js
-        formateadores.js
-        marcas.js
-        panelBodeguero.js
-        productos.js
-        solicitudes.js
-        unidadMedida.js
-        utilidadesDespacho.js
-        validacionAutenticacion.js
-        
+¦       autorizacion.js
+¦       familias.js
+¦       formateadores.js
+¦       marcas.js
+¦       panelBodeguero.js
+¦       productos.js
+¦       solicitudes.js
+¦       unidadMedida.js
+¦       utilidadesDespacho.js
+¦       validacionAutenticacion.js

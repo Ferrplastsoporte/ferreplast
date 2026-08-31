@@ -6,6 +6,7 @@ import {
   isValidEmail,
   isValidPassword,
 } from "../../utils/validacionAutenticacion";
+import { obtenerRutaInicialPorRol } from "../../utils/autorizacion";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
@@ -75,28 +76,9 @@ const LoginForm = () => {
       return;
     }
 
-    const rol = Number(perfilAutenticado.rol_user);
-
-    switch (rol) {
-      case 1:
-        navigate("/admin", {
-          replace: true,
-        });
-        break;
-
-      case 2:
-        navigate("/bodeguero", {
-          replace: true,
-        });
-        break;
-
-      case 0:
-      default:
-        navigate("/", {
-          replace: true,
-        });
-        break;
-    }
+    navigate(obtenerRutaInicialPorRol(perfilAutenticado.rol_user), {
+      replace: true,
+    });
   };
 
   return (

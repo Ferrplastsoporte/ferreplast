@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 // Layout cliente
 import Navbar from "./components/layout/Navbar";
 import BotonesFlotantes from "./components/layout/BotonesFlotantes";
+import RutaProtegida from "./components/rutas/RutaProtegida";
+import RutaSitioCliente from "./components/rutas/RutaSitioCliente";
+import RutaSoloVisitantes from "./components/rutas/RutaSoloVisitantes";
+import { ROLES_USUARIO } from "./utils/autorizacion";
 
 // Layout bodeguero
 import BodegueroLayout from "./pages/Bodeguero/components/BodegueroLayout";
@@ -14,6 +18,7 @@ import Login from "./pages/Autenticación-Registro/Login";
 import Registro from "./pages/Autenticación-Registro/Registro";
 import NuevaContrasena from "./pages/Autenticación-Registro/NuevaPassword";
 import RecuperarContrasena from "./pages/Autenticación-Registro/RecuperarPassword";
+import PaginaNoEncontrada from "./pages/Errores/PaginaNoEncontrada";
 
 // Páginas cliente
 import Home from "./pages/home/Home";
@@ -65,54 +70,90 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Autenticación */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
+        <Route element={<RutaSoloVisitantes />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+        </Route>
+
         <Route path="/NuevaContrasena" element={<NuevaContrasena />} />
         <Route path="/RecuperarContrasena" element={<RecuperarContrasena />} />
 
         {/* Cliente y sitio público */}
-        <Route element={<ClienteLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/catalogo" element={<Catalogo />} />
-          <Route path="/carrito" element={<Carrito />} />
-          <Route path="/pago/resultado" element={<PagoResultado />} />
-          <Route path="/cotizacion" element={<Cotizacion />} />
-          <Route path="/producto/:id" element={<DetalleProducto />} />
-          <Route path="/pedidos" element={<PedidosCliente />} />
-          <Route path="/cuenta" element={<Cuenta />} />
-          <Route path="/ayuda" element={<Ayuda />} />
-                    
+        <Route element={<RutaSitioCliente />}>
+          <Route element={<ClienteLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path="/carrito" element={<Carrito />} />
+            <Route path="/producto/:id" element={<DetalleProducto />} />
+            <Route path="/ayuda" element={<Ayuda />} />
 
+            <Route
+              element={
+                <RutaProtegida rolesPermitidos={[ROLES_USUARIO.CLIENTE]} />
+              }
+            >
+              <Route path="/pago/resultado" element={<PagoResultado />} />
+              <Route path="/cotizacion" element={<Cotizacion />} />
+              <Route path="/pedidos" element={<PedidosCliente />} />
+              <Route path="/cuenta" element={<Cuenta />} />
+            </Route>
+          </Route>
         </Route>
 
         {/* Administrador */}
-        <Route element={<AdministradorLayout />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/usuarios" element={<Usuarios />} />
-          <Route path="/admin/crearUsuario" element={<CrearUsuario />} />
-          <Route path="/admin/aprobaciones" element={<Aprobaciones />} />
-          <Route path="/admin/cotizaciones" element={<Cotizaciones />} />
-          <Route path="/admin/pedidos" element={<Pedidos />} />
-          <Route path="/admin/pagos" element={<Pagos />} />
-          <Route path="/admin/reportes" element={<Reportes />} />
-          <Route path="/admin/auditoria" element={<Auditoria />} />
-          <Route path="/admin/configuracion" element={<Configuracion />} />
+        <Route
+          element={
+            <RutaProtegida rolesPermitidos={[ROLES_USUARIO.ADMINISTRADOR]} />
+          }
+        >
+          <Route element={<AdministradorLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/usuarios" element={<Usuarios />} />
+            <Route path="/admin/crearUsuario" element={<CrearUsuario />} />
+            <Route path="/admin/aprobaciones" element={<Aprobaciones />} />
+            <Route path="/admin/cotizaciones" element={<Cotizaciones />} />
+            <Route path="/admin/pedidos" element={<Pedidos />} />
+            <Route path="/admin/pagos" element={<Pagos />} />
+            <Route path="/admin/reportes" element={<Reportes />} />
+            <Route path="/admin/auditoria" element={<Auditoria />} />
+            <Route path="/admin/configuracion" element={<Configuracion />} />
+          </Route>
         </Route>
 
         {/* Bodeguero */}
-        <Route element={<BodegueroLayout />}>
-          <Route path="/bodeguero" element={<BodegueroDashboard />} />
-          <Route path="/bodeguero/productos" element={<BodegueroProductos />} />
-          <Route path="/bodeguero/stock" element={<BodegueroStock />} />
-          <Route
-            path="/bodeguero/solicitudes"
-            element={<BodegueroSolicitudes />}
-          />
-          <Route path="/bodeguero/familias" element={<BodegueroFamilias />} />
-          <Route path="/bodeguero/marcas" element={<BodegueroMarcas />} />
-          <Route path="/bodeguero/unidades" element={<BodegueroUnidades />} />
-          <Route path="/bodeguero/documentos" element={<BodegueroDocumentos />} />
+        <Route
+          element={
+            <RutaProtegida rolesPermitidos={[ROLES_USUARIO.BODEGUERO]} />
+          }
+        >
+          <Route element={<BodegueroLayout />}>
+            <Route path="/bodeguero" element={<BodegueroDashboard />} />
+            <Route
+              path="/bodeguero/productos"
+              element={<BodegueroProductos />}
+            />
+            <Route path="/bodeguero/stock" element={<BodegueroStock />} />
+            <Route
+              path="/bodeguero/solicitudes"
+              element={<BodegueroSolicitudes />}
+            />
+            <Route
+              path="/bodeguero/familias"
+              element={<BodegueroFamilias />}
+            />
+            <Route path="/bodeguero/marcas" element={<BodegueroMarcas />} />
+            <Route
+              path="/bodeguero/unidades"
+              element={<BodegueroUnidades />}
+            />
+            <Route
+              path="/bodeguero/documentos"
+              element={<BodegueroDocumentos />}
+            />
+          </Route>
         </Route>
+
+        <Route path="*" element={<PaginaNoEncontrada />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,0 +1,36 @@
+.ruta-protegida__cargando {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.ruta-protegida__cargando p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ruta-protegida__indicador {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0.25rem solid #cbd5e1;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: ruta-protegida-girar 0.8s linear infinite;
+}
+
+@keyframes ruta-protegida-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruta-protegida__indicador {
+    animation: none;
+  }
+}
