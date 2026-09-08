@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import TarjetaPedido from "../../components/pedidos/TarjetaPedido";
-import "./css/pedidos.css";
+import "./css/pedido.css";
 
 function Pedidos() {
+  const navigate = useNavigate();
+
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -16,104 +19,126 @@ function Pedidos() {
     setCargando(true);
     setError("");
 
-    // Usuario actualmente autenticado
-    const {
-      data: { user },
-      error: errorUsuario,
-    } = await supabase.auth.getUser();
+    try {
+      // ==================================================
+      // OBTENER USUARIO AUTENTICADO
+      // ==================================================
 
-    if (errorUsuario) {
-      console.error("Error obteniendo usuario:", errorUsuario);
-      setError("No fue posible obtener tu sesión.");
-      setCargando(false);
-      return;
-    }
+      const {
+        data: { user },
+        error: errorUsuario,
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      setError("Debes iniciar sesión para ver tus pedidos.");
-      setCargando(false);
-      return;
-    }
+      if (errorUsuario) {
+        console.error(
+          "Error obteniendo usuario:",
+          errorUsuario
+        );
 
-    // Obtener pedidos del usuario
-const { data, error: errorPedidos } = await supabase
-  .from("pedido")
-.select(`
-  id_pedido,
-  fecha_predido,
-  total_pedido,
-  id_estado,
-  id_user,
-  es_factura,
-  registrado_erp,
+        setError(
+          "No fue posible obtener tu sesión."
+        );
 
-  estado_pedido (
-    id_estado,
-    nom_estado
-  ),
+        setPedidos([]);
+        return;
+      }
 
-  detalle_pedido (
-    id_detalle,
-    cantidad,
-    precio_unitario,
-    id_prod,
+      if (!user) {
+        setError(
+          "Debes iniciar sesión para ver tus pedidos."
+        );
 
-    producto (
-      id_prod,
-      nom_prod,
-      imagen_url
-    )
-  ),
+        setPedidos([]);
+        return;
+      }
 
-  pago (
-    id_pago,
-    metodo_pago,
-    fecha_pago,
-    estado_pago,
-    referencia_pago
-  )
-`)
-  .eq("id_user", user.id)
-  .order("fecha_predido", {
-    ascending: false,
-  });
-    if (errorPedidos) {
-      console.error("Error cargando pedidos:", errorPedidos);
+      // ==================================================
+      // OBTENER PEDIDOS MEDIANTE RPC
+      // ==================================================
+
+      const {
+        data,
+        error: errorPedidos,
+      } = await supabase.rpc(
+        "obtener_mis_pedidos"
+      );
+
+      if (errorPedidos) {
+        console.error(
+          "Error cargando pedidos:",
+          errorPedidos
+        );
+
+        setError(
+          "No fue posible cargar tus pedidos."
+        );
+
+        setPedidos([]);
+        return;
+      }
+
+      console.log(
+        "Pedidos obtenidos:",
+        data
+      );
+
+      setPedidos(data || []);
+    } catch (errorCarga) {
+      console.error(
+        "Error inesperado cargando pedidos:",
+        errorCarga
+      );
 
       setError(
-        "No fue posible cargar tus pedidos."
+        "Ocurrió un error al cargar tus pedidos."
       );
 
       setPedidos([]);
+    } finally {
       setCargando(false);
-      return;
     }
-
-    setPedidos(data || []);
-    setCargando(false);
   }
+
+  // ==================================================
+  // FORMATEAR FECHA
+  // ==================================================
 
   function formatearFecha(fecha) {
     if (!fecha) {
       return "Sin fecha";
     }
 
-    return new Intl.DateTimeFormat("es-CL", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(fecha));
+    return new Intl.DateTimeFormat(
+      "es-CL",
+      {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }
+    ).format(new Date(fecha));
   }
+
+  // ==================================================
+  // FORMATEAR PRECIO
+  // ==================================================
 
   function formatearPrecio(precio) {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-      maximumFractionDigits: 0,
-    }).format(Number(precio || 0));
+    return new Intl.NumberFormat(
+      "es-CL",
+      {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0,
+      }
+    ).format(Number(precio || 0));
   }
 
+  // ==================================================
+  // OBTENER ESTADO DEL PEDIDO
+  // ==================================================
+
   function obtenerEstado(pedido) {
-    const estado = pedido?.estado_pedido?.nom_estado;
+    const estado =
+      pedido?.estado_pedido?.nom_estado;
 
     if (!estado) {
       return "pendiente";
@@ -125,10 +150,24 @@ const { data, error: errorPedidos } = await supabase
       .replaceAll(" ", "_");
   }
 
+  // ==================================================
+  // VER DETALLE DEL PEDIDO
+  // ==================================================
+
+  function verDetallePedido(idPedido) {
+    navigate(`/pedidos/${idPedido}`);
+  }
+
+  // ==================================================
+  // RENDER
+  // ==================================================
+
   return (
     <main className="pedidos-page">
 
-      {/* Encabezado */}
+      {/* ==================================================
+          ENCABEZADO
+      ================================================== */}
 
       <section className="pedidos-header">
 
@@ -148,7 +187,9 @@ const { data, error: errorPedidos } = await supabase
       </section>
 
 
-      {/* Cargando */}
+      {/* ==================================================
+          CARGANDO
+      ================================================== */}
 
       {cargando && (
         <div className="pedidos-status">
@@ -163,7 +204,9 @@ const { data, error: errorPedidos } = await supabase
       )}
 
 
-      {/* Error */}
+      {/* ==================================================
+          ERROR
+      ================================================== */}
 
       {!cargando && error && (
         <div className="pedidos-status pedidos-status--error">
@@ -187,7 +230,9 @@ const { data, error: errorPedidos } = await supabase
       )}
 
 
-      {/* Sin pedidos */}
+      {/* ==================================================
+          SIN PEDIDOS
+      ================================================== */}
 
       {!cargando &&
         !error &&
@@ -212,7 +257,9 @@ const { data, error: errorPedidos } = await supabase
         )}
 
 
-      {/* Lista de pedidos */}
+      {/* ==================================================
+          LISTA DE PEDIDOS
+      ================================================== */}
 
       {!cargando &&
         !error &&
@@ -220,9 +267,12 @@ const { data, error: errorPedidos } = await supabase
 
           <section className="pedidos-content">
 
+            {/* Resumen */}
+
             <div className="pedidos-summary">
 
               <div>
+
                 <strong>
                   {pedidos.length}
                 </strong>
@@ -232,6 +282,7 @@ const { data, error: errorPedidos } = await supabase
                     ? "pedido"
                     : "pedidos"}
                 </span>
+
               </div>
 
               <span>
@@ -241,20 +292,32 @@ const { data, error: errorPedidos } = await supabase
             </div>
 
 
+            {/* Tarjetas */}
+
             <div className="pedidos-list">
 
               {pedidos.map((pedido) => (
 
                 <TarjetaPedido
                   key={pedido.id_pedido}
+
                   pedido={pedido}
-                  formatearFecha={formatearFecha}
-                  formatearPrecio={formatearPrecio}
-                  obtenerEstado={obtenerEstado}
+
+                  formatearFecha={
+                    formatearFecha
+                  }
+
+                  formatearPrecio={
+                    formatearPrecio
+                  }
+
+                  obtenerEstado={
+                    obtenerEstado
+                  }
+
                   onVerDetalle={() =>
-                    console.log(
-                      "Pedido seleccionado:",
-                      pedido
+                    verDetallePedido(
+                      pedido.id_pedido
                     )
                   }
                 />

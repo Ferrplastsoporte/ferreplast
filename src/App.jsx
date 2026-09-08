@@ -29,6 +29,8 @@ import Cotizacion from "./pages/Cliente/Cotizacion";
 import PedidosCliente from "./pages/Cliente/Pedidos";
 import Cuenta from "./pages/Cliente/Cuenta";
 import Ayuda from "./pages/Cliente/Ayuda";
+import DetallePedido from "./pages/Cliente/DetallePedido";
+
 
 // Páginas administrador
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -95,7 +97,9 @@ function App() {
               <Route path="/pago/resultado" element={<PagoResultado />} />
               <Route path="/cotizacion" element={<Cotizacion />} />
               <Route path="/pedidos" element={<PedidosCliente />} />
+              <Route path="/pedidos/:id" element={<DetallePedido />} />
               <Route path="/cuenta" element={<Cuenta />} />
+              
             </Route>
           </Route>
         </Route>
