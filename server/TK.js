@@ -91,11 +91,14 @@ app.post("/api/webpay/create", async (req, res) => {
   try {
     const {
       userId,
-      costoEnvio = 0,
+      idTipoDespacho,
+      idComuna,
+      esFactura = false,
+      facturacion = null,
     } = req.body;
 
     // -----------------------------------------------
-    // Validaciones básicas
+    // VALIDACIONES BÁSICAS
     // -----------------------------------------------
 
     if (!userId) {
@@ -104,19 +107,27 @@ app.post("/api/webpay/create", async (req, res) => {
       });
     }
 
-    const costoEnvioNumero = Number(costoEnvio);
-
-    if (
-      !Number.isInteger(costoEnvioNumero) ||
-      costoEnvioNumero < 0
-    ) {
+    if (!idTipoDespacho) {
       return res.status(400).json({
-        error: "Costo de despacho inválido.",
+        error: "Tipo de despacho no informado.",
+      });
+    }
+
+    if (!idComuna) {
+      return res.status(400).json({
+        error: "Comuna no informada.",
+      });
+    }
+
+    if (typeof esFactura !== "boolean") {
+      return res.status(400).json({
+        error: "El valor de esFactura es inválido.",
       });
     }
 
     // -----------------------------------------------
-    // Crear pedido + detalle + pago
+    // CREAR PEDIDO + DETALLE + DESPACHO
+    // + FACTURA + PAGO
     // -----------------------------------------------
 
     const {
@@ -126,7 +137,10 @@ app.post("/api/webpay/create", async (req, res) => {
       "crear_pedido_webpay",
       {
         p_user_id: userId,
-        p_costo_envio: costoEnvioNumero,
+        p_id_tipo_despacho: Number(idTipoDespacho),
+        p_id_comuna: Number(idComuna),
+        p_es_factura: esFactura,
+        p_facturacion: facturacion,
       },
     );
 
@@ -149,21 +163,24 @@ app.post("/api/webpay/create", async (req, res) => {
 
     const pedido = data[0];
 
-    console.log("Pedido creado:", {
+    console.log("==========================================");
+    console.log("Pedido creado:");
+    console.log({
       idPedido: pedido.id_pedido,
       idPago: pedido.id_pago,
       buyOrder: pedido.buy_order,
       monto: pedido.monto,
     });
+    console.log("==========================================");
 
     // -----------------------------------------------
-    // Crear transacción Webpay
+    // CREAR TRANSACCIÓN WEBPAY
     // -----------------------------------------------
 
     const response = await transaction.create(
       pedido.buy_order,
       userId,
-      pedido.monto,
+      Number(pedido.monto),
       `${BACKEND_URL}/api/webpay/return`,
     );
 
@@ -173,7 +190,7 @@ app.post("/api/webpay/create", async (req, res) => {
     });
 
     // -----------------------------------------------
-    // Inicializar pago
+    // INICIALIZAR PAGO
     // -----------------------------------------------
 
     const {
@@ -199,13 +216,14 @@ app.post("/api/webpay/create", async (req, res) => {
     }
 
     // -----------------------------------------------
-    // Responder al frontend
+    // RESPONDER AL FRONTEND
     // -----------------------------------------------
 
     return res.json({
       token: response.token,
       url: response.url,
       idPedido: pedido.id_pedido,
+      idPago: pedido.id_pago,
       buyOrder: pedido.buy_order,
       monto: pedido.monto,
     });
@@ -234,10 +252,14 @@ app.all(
       req.query?.token_ws;
 
     // -----------------------------------------------
-    // Sin token = cancelación
+    // SIN TOKEN = CANCELACIÓN
     // -----------------------------------------------
 
     if (!token) {
+      console.log(
+        "Webpay retornó sin token. Pago cancelado.",
+      );
+
       return res.redirect(
         `${FRONTEND_URL}/pago/resultado?estado=cancelado`,
       );
@@ -245,13 +267,15 @@ app.all(
 
     try {
       // -----------------------------------------------
-      // Confirmar con Transbank
+      // CONFIRMAR CON TRANSBANK
       // -----------------------------------------------
 
       const response =
         await transaction.commit(token);
 
-      console.log("Resultado Webpay:", {
+      console.log("==========================================");
+      console.log("Resultado Webpay:");
+      console.log({
         status: response.status,
         responseCode:
           response.response_code,
@@ -266,9 +290,10 @@ app.all(
         installmentsNumber:
           response.installments_number,
       });
+      console.log("==========================================");
 
       // -----------------------------------------------
-      // Validar buy_order
+      // VALIDAR BUY ORDER
       // -----------------------------------------------
 
       if (!response.buy_order) {
@@ -321,7 +346,7 @@ app.all(
       });
 
       // -----------------------------------------------
-      // Validar monto
+      // VALIDAR MONTO
       // -----------------------------------------------
 
       if (
@@ -350,6 +375,7 @@ app.all(
         Number(response.response_code) === 0;
 
       if (aprobado) {
+
         const {
           error: errorConfirmacion,
         } = await supabase.rpc(
@@ -368,16 +394,13 @@ app.all(
               Number(response.response_code),
 
             p_authorization_code:
-              response.authorization_code ??
-              null,
+              response.authorization_code ?? null,
 
             p_payment_type_code:
-              response.payment_type_code ??
-              null,
+              response.payment_type_code ?? null,
 
             p_installments_number:
-              response.installments_number ??
-              null,
+              response.installments_number ?? null,
 
             p_card_last4:
               null,

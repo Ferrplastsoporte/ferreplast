@@ -143,141 +143,212 @@ function Carrito() {
   }
 
   async function continuarCompra() {
-    if (!usuario) {
-      navigate("/login", {
-        state: {
-          from: "/carrito",
+  if (!usuario) {
+    navigate("/login", {
+      state: {
+        from: "/carrito",
+      },
+    });
+    return;
+  }
+
+  setErrorPago("");
+
+  // ==================================================
+  // VALIDAR DESPACHO
+  // ==================================================
+
+  if (!despachoListo || !despachoSeleccionado) {
+    setErrorPago(
+      "Selecciona una modalidad de entrega antes de continuar.",
+    );
+    return;
+  }
+
+  // ==================================================
+  // VALIDAR FACTURACIÓN
+  // ==================================================
+
+  const validacionFactura = validarFactura();
+
+  if (!validacionFactura.valido) {
+    setErrorPago(validacionFactura.mensaje);
+    return;
+  }
+
+  if (esFactura && !idRegionFactura) {
+    setErrorPago(
+      "Selecciona la región de facturación.",
+    );
+    return;
+  }
+
+  // ==================================================
+  // VALIDAR TOTAL
+  // ==================================================
+
+  if (
+    !Number.isInteger(Math.round(total)) ||
+    total <= 0
+  ) {
+    setErrorPago(
+      "El total de la compra no es válido.",
+    );
+    return;
+  }
+
+  // ==================================================
+  // PREPARAR FACTURACIÓN
+  // ==================================================
+
+  const facturacion = obtenerDatosFacturacion();
+
+  // ==================================================
+  // PREPARAR DESPACHO
+  // ==================================================
+
+  const datosDespacho = {
+    id_tipo_despacho: Number(
+      despachoSeleccionado.id_tipo_despacho,
+    ),
+
+    nom_tipo_despacho:
+      despachoSeleccionado.nom_tipo_despacho,
+
+    costo_envio: Number(envio),
+
+    requiere_coordinacion:
+      requiereCoordinacion,
+
+    id_comuna: Number(idComuna),
+  };
+
+  // ==================================================
+  // GUARDAR INFORMACIÓN TEMPORAL DEL CHECKOUT
+  // ==================================================
+
+  sessionStorage.setItem(
+    "ferreplast_checkout_facturacion",
+    JSON.stringify(facturacion),
+  );
+
+  sessionStorage.setItem(
+    "ferreplast_checkout_despacho",
+    JSON.stringify(datosDespacho),
+  );
+
+  console.log(
+    "Facturación preparada:",
+    facturacion,
+  );
+
+  console.log(
+    "Despacho preparado:",
+    datosDespacho,
+  );
+
+  // ==================================================
+  // INICIAR PAGO
+  // ==================================================
+
+  setIniciandoPago(true);
+
+  try {
+    // ==================================================
+    // CREAR PEDIDO + DESPACHO + FACTURA + PAGO
+    // ==================================================
+
+    const respuesta = await fetch(
+      "http://localhost:3000/api/webpay/create",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
         },
-      });
-      return;
-    }
 
-    setErrorPago("");
+        body: JSON.stringify({
+          userId: usuario.id,
 
-    if (!despachoListo || !despachoSeleccionado) {
-      setErrorPago(
-        "Selecciona una modalidad de entrega antes de continuar.",
-      );
-      return;
-    }
+          idTipoDespacho:
+            Number(
+              despachoSeleccionado.id_tipo_despacho,
+            ),
 
-    const validacionFactura = validarFactura();
+          idComuna:
+            Number(idComuna),
 
-    if (!validacionFactura.valido) {
-      setErrorPago(validacionFactura.mensaje);
-      return;
-    }
+          esFactura:
+            Boolean(esFactura),
 
-    if (esFactura && !idRegionFactura) {
-      setErrorPago("Selecciona la región de facturación.");
-      return;
-    }
-
-    if (!Number.isInteger(Math.round(total)) || total <= 0) {
-      setErrorPago("El total de la compra no es válido.");
-      return;
-    }
-
-    const facturacion = obtenerDatosFacturacion();
-
-    sessionStorage.setItem(
-      "ferreplast_checkout_facturacion",
-      JSON.stringify(facturacion),
+          facturacion:
+            esFactura
+              ? facturacion?.detalle_factura
+              : null,
+        }),
+      },
     );
 
-    const datosDespacho = {
-      id_tipo_despacho: Number(
-        despachoSeleccionado.id_tipo_despacho,
-      ),
-      nom_tipo_despacho:
-        despachoSeleccionado.nom_tipo_despacho,
-      costo_envio: Number(envio),
-      requiere_coordinacion: requiereCoordinacion,
-      id_comuna: Number(idComuna),
-    };
+    const data = await respuesta.json();
 
-    sessionStorage.setItem(
-      "ferreplast_checkout_despacho",
-      JSON.stringify(datosDespacho),
-    );
+    // ==================================================
+    // VALIDAR RESPUESTA DEL BACKEND
+    // ==================================================
 
-    console.log("Facturación preparada:", facturacion);
-    console.log("Despacho preparado:", datosDespacho);
-
-    setIniciandoPago(true);
-
-    try {
-      // ==================================================
-      // CREAR PEDIDO + PAGO + TRANSACCIÓN WEBPAY
-      // ==================================================
-
-      const respuesta = await fetch(
-        "http://localhost:3000/api/webpay/create",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            userId: usuario.id,
-            costoEnvio: Math.round(envio),
-          }),
-        },
+    if (!respuesta.ok) {
+      throw new Error(
+        data.error ||
+          "No fue posible iniciar el pago.",
       );
+    }
 
-      const data = await respuesta.json();
-
-      if (!respuesta.ok) {
-        throw new Error(
-          data.error ||
-            "No fue posible iniciar el pago.",
-        );
-      }
-
-      console.log("Pago Webpay iniciado:", {
+    console.log(
+      "Pago Webpay iniciado:",
+      {
         idPedido: data.idPedido,
+        idPago: data.idPago,
         buyOrder: data.buyOrder,
         monto: data.monto,
-      });
+      },
+    );
 
-      // ==================================================
-      // REDIRIGIR A WEBPAY
-      // ==================================================
+    // ==================================================
+    // REDIRIGIR A WEBPAY
+    // ==================================================
 
-      const formulario =
-        document.createElement("form");
+    const formulario =
+      document.createElement("form");
 
-      formulario.method = "POST";
-      formulario.action = data.url;
+    formulario.method = "POST";
+    formulario.action = data.url;
 
-      const token =
-        document.createElement("input");
+    const token =
+      document.createElement("input");
 
-      token.type = "hidden";
-      token.name = "token_ws";
-      token.value = data.token;
+    token.type = "hidden";
+    token.name = "token_ws";
+    token.value = data.token;
 
-      formulario.appendChild(token);
-      document.body.appendChild(formulario);
+    formulario.appendChild(token);
 
-      formulario.submit();
+    document.body.appendChild(formulario);
 
-    } catch (errorInicio) {
-      console.error(
-        "Error iniciando Webpay:",
-        errorInicio,
-      );
+    formulario.submit();
 
-      setErrorPago(
-        errorInicio.message ||
-          "No fue posible conectar con Webpay.",
-      );
+  } catch (errorInicio) {
+    console.error(
+      "Error iniciando Webpay:",
+      errorInicio,
+    );
 
-      setIniciandoPago(false);
-    }
+    setErrorPago(
+      errorInicio.message ||
+        "No fue posible conectar con Webpay.",
+    );
+
+    setIniciandoPago(false);
   }
+}
   /* =======================================================
      TEXTO COSTO DESPACHO
   ======================================================= */
