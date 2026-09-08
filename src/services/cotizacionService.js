@@ -314,23 +314,22 @@ export async function enviarCotizacion({
     throw errorDetalles;
   }
 
-  /*
-    Pendiente para una etapa posterior:
+  /* Función para enviar los correos de las cotizaciones */
+  const { error: errorNotificacion } = await supabase.functions.invoke(
+    "notificar-cotizacion",
+    {
+      body: {
+        idCotizacion: cabecera.id_cotizacion,
+      },
+    },
+  );
 
-    await supabase.functions.invoke(
-      "notificar-cotizacion",
-      {
-        body: {
-          idCotizacion:
-            cabecera.id_cotizacion,
-        },
-      }
-    )
-
-    La Edge Function enviará el correo
-    al administrador cuando se defina
-    su dirección.
-  */
+  if (errorNotificacion) {
+    console.error(
+      "La cotización fue creada, pero no se pudo enviar la notificación:",
+      errorNotificacion,
+    );
+  }
 
   return {
     idCotizacion: cabecera.id_cotizacion,
