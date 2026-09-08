@@ -151,10 +151,13 @@ function Carrito() {
       });
       return;
     }
+
     setErrorPago("");
 
     if (!despachoListo || !despachoSeleccionado) {
-      setErrorPago("Selecciona una modalidad de entrega antes de continuar.");
+      setErrorPago(
+        "Selecciona una modalidad de entrega antes de continuar.",
+      );
       return;
     }
 
@@ -176,14 +179,18 @@ function Carrito() {
     }
 
     const facturacion = obtenerDatosFacturacion();
+
     sessionStorage.setItem(
       "ferreplast_checkout_facturacion",
       JSON.stringify(facturacion),
     );
 
     const datosDespacho = {
-      id_tipo_despacho: Number(despachoSeleccionado.id_tipo_despacho),
-      nom_tipo_despacho: despachoSeleccionado.nom_tipo_despacho,
+      id_tipo_despacho: Number(
+        despachoSeleccionado.id_tipo_despacho,
+      ),
+      nom_tipo_despacho:
+        despachoSeleccionado.nom_tipo_despacho,
       costo_envio: Number(envio),
       requiere_coordinacion: requiereCoordinacion,
       id_comuna: Number(idComuna),
@@ -200,45 +207,77 @@ function Carrito() {
     setIniciandoPago(true);
 
     try {
-      const respuesta = await fetch("http://localhost:3000/api/webpay/create", {
-        method: "POST",
+      // ==================================================
+      // CREAR PEDIDO + PAGO + TRANSACCIÓN WEBPAY
+      // ==================================================
 
-        headers: {
-          "Content-Type": "application/json",
+      const respuesta = await fetch(
+        "http://localhost:3000/api/webpay/create",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            userId: usuario.id,
+            costoEnvio: Math.round(envio),
+          }),
         },
-
-        body: JSON.stringify({
-          amount: Math.round(total),
-          sessionId: usuario.id,
-        }),
-      });
+      );
 
       const data = await respuesta.json();
 
       if (!respuesta.ok) {
-        throw new Error(data.error || "No fue posible iniciar el pago.");
+        throw new Error(
+          data.error ||
+            "No fue posible iniciar el pago.",
+        );
       }
-      const formulario = document.createElement("form");
+
+      console.log("Pago Webpay iniciado:", {
+        idPedido: data.idPedido,
+        buyOrder: data.buyOrder,
+        monto: data.monto,
+      });
+
+      // ==================================================
+      // REDIRIGIR A WEBPAY
+      // ==================================================
+
+      const formulario =
+        document.createElement("form");
+
       formulario.method = "POST";
       formulario.action = data.url;
-      const token = document.createElement("input");
+
+      const token =
+        document.createElement("input");
+
       token.type = "hidden";
       token.name = "token_ws";
       token.value = data.token;
+
       formulario.appendChild(token);
       document.body.appendChild(formulario);
+
       formulario.submit();
+
     } catch (errorInicio) {
-      console.error("Error iniciando Webpay:", errorInicio);
+      console.error(
+        "Error iniciando Webpay:",
+        errorInicio,
+      );
 
       setErrorPago(
-        errorInicio.message || "No fue posible conectar con Webpay.",
+        errorInicio.message ||
+          "No fue posible conectar con Webpay.",
       );
 
       setIniciandoPago(false);
     }
   }
-
   /* =======================================================
      TEXTO COSTO DESPACHO
   ======================================================= */
