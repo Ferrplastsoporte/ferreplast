@@ -38,7 +38,7 @@ function Contact() {
 
             <div>
               <h4>Teléfono</h4>
-              <p>+56 9 XXXX XXXX</p>
+              <p>+56 9 5498 0237</p>
             </div>
           </div>
 
@@ -47,7 +47,7 @@ function Contact() {
 
             <div>
               <h4>Correo</h4>
-              <p>contacto@ferreplast.cl</p>
+              <p>efuentes.m@ferreplast.cl</p>
             </div>
           </div>
 

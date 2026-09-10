@@ -87,10 +87,10 @@ function Mission() {
           >
             <span className="mission-subtitle">DESDE PUERTO MONTT · CHILE</span>
 
-            <h1>
+            <h2>
               Materiales que hacen
               <strong> durar tus proyectos.</strong>
-            </h1>
+            </h2>
 
             <p className="mission-description">
               En <strong>Ferreplast</strong> combinamos productos profesionales,

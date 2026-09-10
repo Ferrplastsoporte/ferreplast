@@ -70,11 +70,9 @@ function Hero() {
 
     if (error) {
       console.error("Error al cargar categorías del Hero:", error);
-
       setFamilias([]);
       setErrorCarga("No fue posible cargar las categorías.");
       setLoading(false);
-
       return;
     }
 
@@ -104,10 +102,7 @@ function Hero() {
 
     const familiasOrdenadas = [...mapaFamilias.values()]
       .sort((a, b) =>
-        a.nom_familia.localeCompare(
-          b.nom_familia,
-          "es"
-        )
+        a.nom_familia.localeCompare(b.nom_familia, "es")
       )
       .slice(0, MAX_CATEGORIAS);
 
@@ -121,9 +116,7 @@ function Hero() {
     }
 
     const resinas = familias.find((familia) =>
-      familia.nom_familia
-        .toLowerCase()
-        .includes("resina")
+      familia.nom_familia.toLowerCase().includes("resina")
     );
 
     return resinas || familias[0];
@@ -137,10 +130,9 @@ function Hero() {
     return familias
       .filter(
         (familia) =>
-          familia.id_familia !==
-          familiaPrincipal.id_familia
+          familia.id_familia !== familiaPrincipal.id_familia
       )
-      .slice(0, 4);
+      .slice(0, 3);
   }, [familias, familiaPrincipal]);
 
   function abrirCategoria(idFamilia) {
@@ -154,44 +146,31 @@ function Hero() {
   return (
     <FadeIn>
       <section className="hero">
-
-        {/* Brillos ambientales */}
-
         <div className="hero__glow hero__glow--blue" />
 
-        <div className="hero__glow hero__glow--red" />
-
         <div className="hero__content">
-
-          {/* =========================
-              INFORMACIÓN
-          ========================= */}
-
           <div className="hero__info">
-
             <span className="hero__eyebrow">
               FERREPLAST · SOLUCIONES PROFESIONALES
             </span>
 
             <h1>
-              Todo lo que necesitas
-              <strong>para tus proyectos.</strong>
+              Materiales para
+              <strong> proyectos que duran.</strong>
             </h1>
 
             <p>
-              Descubre productos profesionales, materiales y
-              soluciones de calidad para construcción,
-              reparación y proyectos especializados.
+              Resinas, herramientas y productos profesionales para
+              construcción, reparación y proyectos especializados.
             </p>
 
             <div className="hero__actions">
-
               <button
                 type="button"
                 className="hero__button hero__button--primary"
                 onClick={abrirCatalogo}
               >
-                Ver catálogo
+                Ver productos
                 <span>→</span>
               </button>
 
@@ -200,249 +179,117 @@ function Hero() {
                   type="button"
                   className="hero__button hero__button--secondary"
                   onClick={() =>
-                    abrirCategoria(
-                      familiaPrincipal.id_familia
-                    )
+                    abrirCategoria(familiaPrincipal.id_familia)
                   }
                 >
-                  Explorar categorías
+                  {familiaPrincipal.nom_familia}
                 </button>
               )}
-
             </div>
 
             <div className="hero__stats">
-
               <div>
-                <strong>
-                  {loading
-                    ? "..."
-                    : familias.length}
-                </strong>
-
-                <span>
-                  Categorías
-                </span>
-              </div>
-
-              <div>
-                <strong>100%</strong>
-
-                <span>
-                  Productos del catálogo
-                </span>
+                <strong>{loading ? "..." : familias.length}</strong>
+                <span>Categorías disponibles</span>
               </div>
 
               <div>
                 <strong>PRO</strong>
-
-                <span>
-                  Calidad profesional
-                </span>
+                <span>Calidad profesional</span>
               </div>
 
+              <div>
+                <strong>PM</strong>
+                <span>Desde Puerto Montt</span>
+              </div>
             </div>
-
           </div>
 
-          {/* =========================
-              CATEGORÍA PRINCIPAL
-          ========================= */}
-
           <div className="hero__featured">
-
-            <div className="hero__featured-glow" />
-
             {loading ? (
               <div className="hero__loading">
                 <div className="hero__loading-spinner" />
-                <span>
-                  Cargando categorías...
-                </span>
+                <span>Preparando productos...</span>
               </div>
             ) : errorCarga ? (
               <div className="hero__empty">
                 <span>⚠</span>
-
-                <p>
-                  {errorCarga}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={cargarFamilias}
-                >
+                <p>{errorCarga}</p>
+                <button type="button" onClick={cargarFamilias}>
                   Reintentar
                 </button>
               </div>
             ) : familiaPrincipal ? (
               <>
                 <img
-                  src={
-                    familiaPrincipal
-                      .producto_destacado
-                      .imagen_url
-                  }
-                  alt={
-                    familiaPrincipal
-                      .nom_familia
-                  }
+                  src={familiaPrincipal.producto_destacado.imagen_url}
+                  alt={familiaPrincipal.nom_familia}
                   className="hero__featured-image"
                   onError={(event) => {
                     event.currentTarget.onerror = null;
-                    event.currentTarget.src =
-                      heroFallback;
+                    event.currentTarget.src = heroFallback;
                   }}
                 />
 
                 <div className="hero__featured-overlay" />
 
                 <div className="hero__featured-content">
+                  <span>DESTACADO</span>
 
-                  <span>
-                    CATEGORÍA DESTACADA
-                  </span>
-
-                  <h2>
-                    {familiaPrincipal.nom_familia}
-                  </h2>
+                  <h2>{familiaPrincipal.nom_familia}</h2>
 
                   <p>
-                    Explora productos disponibles
-                    y encuentra la solución ideal
-                    para tu proyecto.
+                    Encuentra productos seleccionados para tus
+                    proyectos en un solo lugar.
                   </p>
 
                   <button
                     type="button"
                     onClick={() =>
-                      abrirCategoria(
-                        familiaPrincipal.id_familia
-                      )
+                      abrirCategoria(familiaPrincipal.id_familia)
                     }
                   >
-                    Ver productos
+                    Explorar categoría
                     <span>→</span>
                   </button>
-
                 </div>
 
                 <div className="hero__featured-badge">
-                  <span>★</span>
-                  Disponible en catálogo
+                  <span>✓</span>
+                  Productos disponibles
                 </div>
+
+                {familiasSecundarias.length > 0 && (
+                  <div className="hero__quick-categories">
+                    <span>También puedes buscar</span>
+
+                    <div>
+                      {familiasSecundarias.map((familia) => (
+                        <button
+                          key={familia.id_familia}
+                          type="button"
+                          onClick={() =>
+                            abrirCategoria(familia.id_familia)
+                          }
+                        >
+                          {familia.nom_familia}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="hero__empty">
                 <span>📦</span>
-
-                <p>
-                  Actualmente no hay categorías
-                  disponibles.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={abrirCatalogo}
-                >
+                <p>No hay categorías disponibles actualmente.</p>
+                <button type="button" onClick={abrirCatalogo}>
                   Ir al catálogo
                 </button>
               </div>
             )}
-
           </div>
-
         </div>
-
-        {/* =========================
-            CATEGORÍAS DESDE BDD
-        ========================= */}
-
-        {!loading &&
-          !errorCarga &&
-          familiasSecundarias.length > 0 && (
-
-            <div className="hero__categories">
-
-              <div className="hero__categories-header">
-
-                <div>
-                  <span>
-                    EXPLORA NUESTRO CATÁLOGO
-                  </span>
-
-                  <h2>
-                    Encuentra lo que necesitas
-                  </h2>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={abrirCatalogo}
-                >
-                  Ver todo →
-                </button>
-
-              </div>
-
-              <div className="hero__category-list">
-
-                {familiasSecundarias.map(
-                  (familia, index) => (
-
-                    <button
-                      type="button"
-                      key={familia.id_familia}
-                      className="hero__category"
-                      style={{
-                        "--delay":
-                          `${index * 0.08}s`,
-                      }}
-                      onClick={() =>
-                        abrirCategoria(
-                          familia.id_familia
-                        )
-                      }
-                    >
-
-                      <img
-                        src={
-                          familia
-                            .producto_destacado
-                            .imagen_url
-                        }
-                        alt={
-                          familia.nom_familia
-                        }
-                        onError={(event) => {
-                          event.currentTarget.onerror =
-                            null;
-
-                          event.currentTarget.src =
-                            heroFallback;
-                        }}
-                      />
-
-                      <span className="hero__category-overlay" />
-
-                      <span className="hero__category-name">
-                        {familia.nom_familia}
-                      </span>
-
-                      <span className="hero__category-arrow">
-                        →
-                      </span>
-
-                    </button>
-
-                  )
-                )}
-
-              </div>
-
-            </div>
-          )}
-
       </section>
     </FadeIn>
   );
