@@ -12,7 +12,8 @@ import {
 } from "react-icons/fa";
 import { supabase } from "../../lib/supabase";
 import "../css/navbar.css";
-/// import del logo
+
+// Import del logo
 import logo from "../../assets/logo.png";
 
 function Navbar() {
@@ -65,7 +66,10 @@ function Navbar() {
     document.addEventListener("mousedown", cerrarMenuAlHacerClickFuera);
 
     return () => {
-      document.removeEventListener("mousedown", cerrarMenuAlHacerClickFuera);
+      document.removeEventListener(
+        "mousedown",
+        cerrarMenuAlHacerClickFuera
+      );
     };
   }, []);
 
@@ -200,10 +204,16 @@ function Navbar() {
 
   return (
     <nav className="navbar">
+      {/* LOGO */}
       <Link to="/" className="navbar__logo">
-        <img src={logo} alt="Ferreplast" className="navbar__logo-image" />
+        <img
+          src={logo}
+          alt="Ferreplast"
+          className="navbar__logo-image"
+        />
       </Link>
 
+      {/* BUSCADOR */}
       <form className="navbar__search" onSubmit={buscarProductos}>
         <input
           type="search"
@@ -218,6 +228,7 @@ function Navbar() {
         </button>
       </form>
 
+      {/* CATÁLOGO */}
       <div className="navbar__categories">
         <details ref={menuCategoriasRef}>
           <summary>
@@ -226,7 +237,10 @@ function Navbar() {
           </summary>
 
           <div className="navbar__categories-menu">
-            <button type="button" onClick={irATodasLasCategorias}>
+            <button
+              type="button"
+              onClick={irATodasLasCategorias}
+            >
               <b>Ver todo el Catálogo</b>
             </button>
 
@@ -247,7 +261,9 @@ function Navbar() {
                 <button
                   key={categoria.id_cat}
                   type="button"
-                  onClick={() => irACategoria(categoria.id_cat)}
+                  onClick={() =>
+                    irACategoria(categoria.id_cat)
+                  }
                 >
                   {categoria.nom_cat}
                 </button>
@@ -256,9 +272,16 @@ function Navbar() {
         </details>
       </div>
 
-      <div className="navbar__account-wrapper" ref={menuUsuarioRef}>
+      {/* CUENTA */}
+      <div
+        className="navbar__account-wrapper"
+        ref={menuUsuarioRef}
+      >
         {!sesion ? (
-          <Link to="/login" className="navbar__login">
+          <Link
+            to="/login"
+            className="navbar__login"
+          >
             <FaUser />
             <span>Iniciar sesión</span>
           </Link>
@@ -268,7 +291,9 @@ function Navbar() {
               type="button"
               className="navbar__account-button"
               onClick={() =>
-                setMenuUsuarioAbierto((estadoActual) => !estadoActual)
+                setMenuUsuarioAbierto(
+                  (estadoActual) => !estadoActual
+                )
               }
               aria-expanded={menuUsuarioAbierto}
               aria-haspopup="menu"
@@ -287,13 +312,18 @@ function Navbar() {
 
               <FaChevronDown
                 className={`navbar__account-arrow ${
-                  menuUsuarioAbierto ? "navbar__account-arrow--open" : ""
+                  menuUsuarioAbierto
+                    ? "navbar__account-arrow--open"
+                    : ""
                 }`}
               />
             </button>
 
             {menuUsuarioAbierto && (
-              <div className="navbar__account-menu" role="menu">
+              <div
+                className="navbar__account-menu"
+                role="menu"
+              >
                 <button
                   type="button"
                   role="menuitem"
@@ -338,7 +368,12 @@ function Navbar() {
         )}
       </div>
 
-      <Link to="/carrito" className="navbar__cart" aria-label="Carrito">
+      {/* CARRITO */}
+      <Link
+        to="/carrito"
+        className="navbar__cart"
+        aria-label="Carrito"
+      >
         <FaShoppingCart />
       </Link>
     </nav>

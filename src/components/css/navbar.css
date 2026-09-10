@@ -650,8 +650,22 @@
     height: 48px;
   }
 
+  /* Catálogo visible en tablet */
   .navbar__categories {
-    display: none;
+    display: block;
+  }
+
+  .navbar__categories details {
+    display: block;
+  }
+
+  .navbar__categories summary {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    cursor: pointer;
   }
 
   .navbar__account-button {
@@ -677,22 +691,35 @@
       12px;
   }
 
+  /* Logo */
   .navbar__logo {
     order: 1;
   }
 
-  .navbar__account-wrapper {
+  /* Catálogo hacia la derecha */
+  .navbar__categories {
     order: 2;
+
+    display: block;
 
     margin-left: auto;
   }
 
-  .navbar__cart {
+  /* Cuenta después del catálogo */
+  .navbar__account-wrapper {
     order: 3;
+
+    margin-left: 0;
   }
 
-  .navbar__search {
+  /* Carrito */
+  .navbar__cart {
     order: 4;
+  }
+
+  /* Buscador debajo */
+  .navbar__search {
+    order: 5;
 
     flex-basis: 100%;
 
@@ -720,6 +747,12 @@
     right: -35px;
 
     width: 250px;
+  }
+
+  .navbar__categories-menu {
+    right: 0;
+
+    left: auto;
   }
 
 }
@@ -800,6 +833,21 @@
     width: 245px;
   }
 
+  /* Catálogo en móvil */
+  .navbar__categories summary {
+    padding:
+      9px 10px;
+
+    font-size: 0.9rem;
+  }
+
+  .navbar__categories-menu {
+    width: 235px;
+
+    right: 0;
+    left: auto;
+  }
+
 }
 
 
@@ -832,6 +880,12 @@
 
   .navbar__search {
     height: 40px;
+  }
+
+  .navbar__categories summary {
+    padding: 8px;
+
+    font-size: 0.85rem;
   }
 
 }
