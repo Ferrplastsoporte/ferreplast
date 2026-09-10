@@ -15,6 +15,10 @@ function DetallePedido() {
     cargarPedido();
   }, [id]);
 
+  // ==================================================
+  // OBTENER PEDIDO
+  // ==================================================
+
   async function cargarPedido() {
     setCargando(true);
     setError("");
@@ -104,19 +108,38 @@ function DetallePedido() {
         .eq("id_user", user.id)
         .single();
 
-if (errorPedido) {
-  console.error("ERROR COMPLETO DEL PEDIDO:", errorPedido);
-  console.error("Mensaje:", errorPedido.message);
-  console.error("Código:", errorPedido.code);
-  console.error("Detalles:", errorPedido.details);
-  console.error("Hint:", errorPedido.hint);
+      if (errorPedido) {
+        console.error(
+          "ERROR COMPLETO DEL PEDIDO:",
+          errorPedido
+        );
 
-  setError(
-    `No fue posible cargar el pedido: ${errorPedido.message}`
-  );
+        console.error(
+          "Mensaje:",
+          errorPedido.message
+        );
 
-  return;
-}
+        console.error(
+          "Código:",
+          errorPedido.code
+        );
+
+        console.error(
+          "Detalles:",
+          errorPedido.details
+        );
+
+        console.error(
+          "Hint:",
+          errorPedido.hint
+        );
+
+        setError(
+          `No fue posible cargar el pedido: ${errorPedido.message}`
+        );
+
+        return;
+      }
 
       setPedido(data);
     } catch (errorCarga) {
@@ -146,6 +169,37 @@ if (errorPedido) {
         maximumFractionDigits: 0,
       }
     ).format(Number(precio || 0));
+  }
+
+  // ==================================================
+  // OBTENER URL DE IMAGEN
+  // ==================================================
+
+  function obtenerUrlImagen(imagenUrl) {
+    if (!imagenUrl) {
+      return null;
+    }
+
+    // Si ya es una URL completa,
+    // la utilizamos directamente.
+    if (
+      imagenUrl.startsWith("http://") ||
+      imagenUrl.startsWith("https://")
+    ) {
+      return imagenUrl;
+    }
+
+    // La BD guarda solamente la ruta:
+    // producto/93/imagen.jpg
+    //
+    // El bucket es:
+    // imagenes_productos
+
+    const { data } = supabase.storage
+      .from("imagenes_productos")
+      .getPublicUrl(imagenUrl);
+
+    return data?.publicUrl || null;
   }
 
   // ==================================================
@@ -182,7 +236,11 @@ if (errorPedido) {
   // ==================================================
 
   function obtenerEstadoPago() {
-    const estado = pedido?.pago?.id_estado_pago;
+    const pago = Array.isArray(pedido?.pago)
+      ? pedido.pago[0]
+      : pedido?.pago;
+
+    const estado = pago?.id_estado_pago;
 
     switch (estado) {
       case 0:
@@ -339,76 +397,103 @@ if (errorPedido) {
           <div className="detalle-pedido-productos">
 
             {(pedido.detalle_pedido || []).map(
-              (detalle) => (
+              (detalle) => {
 
-                <article
-                  className="detalle-pedido-producto"
-                  key={detalle.id_detalle}
-                >
+                const urlImagen =
+                  obtenerUrlImagen(
+                    detalle.producto?.imagen_url
+                  );
 
-                  <div className="detalle-pedido-producto-info">
+                return (
+                  <article
+                    className="detalle-pedido-producto"
+                    key={detalle.id_detalle}
+                  >
 
-                    <div className="detalle-pedido-producto-imagen">
+                    <div className="detalle-pedido-producto-info">
 
-                      {detalle.producto?.imagen_url ? (
+                      {/* ==================================================
+                          IMAGEN
+                      ================================================== */}
 
-                        <img
-                          src={
-                            detalle.producto.imagen_url
-                          }
-                          alt={
-                            detalle.producto?.nom_prod ||
-                            "Producto"
-                          }
-                        />
+                      <div className="detalle-pedido-producto-imagen">
 
-                      ) : (
+                        {urlImagen ? (
 
-                        <span>
-                          📦
-                        </span>
+                          <img
+                            src={urlImagen}
+                            alt={
+                              detalle.producto?.nom_prod ||
+                              "Producto"
+                            }
+                            onError={(e) => {
+                              console.error(
+                                "No se pudo cargar la imagen:",
+                                urlImagen
+                              );
 
-                      )}
+                              e.currentTarget.style.display =
+                                "none";
+                            }}
+                          />
 
-                    </div>
+                        ) : (
 
-                    <div>
+                          <span>
+                            📦
+                          </span>
 
-                      <h3>
-                        {detalle.producto?.nom_prod ||
-                          "Producto"}
-                      </h3>
-
-                      <p>
-                        Cantidad:{" "}
-                        {detalle.cantidad}
-                      </p>
-
-                      <p>
-                        Precio unitario:{" "}
-                        {formatearPrecio(
-                          detalle.precio_unitario
                         )}
-                      </p>
+
+                      </div>
+
+
+                      {/* ==================================================
+                          INFORMACIÓN DEL PRODUCTO
+                      ================================================== */}
+
+                      <div>
+
+                        <h3>
+                          {detalle.producto?.nom_prod ||
+                            "Producto"}
+                        </h3>
+
+                        <p>
+                          Cantidad:{" "}
+                          {detalle.cantidad}
+                        </p>
+
+                        <p>
+                          Precio unitario:{" "}
+                          {formatearPrecio(
+                            detalle.precio_unitario
+                          )}
+                        </p>
+
+                      </div>
 
                     </div>
 
-                  </div>
 
-                  <strong>
-                    {formatearPrecio(
-                      Number(
-                        detalle.precio_unitario
-                      ) *
+                    {/* ==================================================
+                        SUBTOTAL
+                    ================================================== */}
+
+                    <strong>
+                      {formatearPrecio(
                         Number(
-                          detalle.cantidad
-                        )
-                    )}
-                  </strong>
+                          detalle.precio_unitario
+                        ) *
+                          Number(
+                            detalle.cantidad
+                          )
+                      )}
+                    </strong>
 
-                </article>
-
-              )
+                  </article>
+                );
+              }
             )}
 
           </div>
@@ -428,6 +513,8 @@ if (errorPedido) {
 
           <div className="detalle-pedido-info">
 
+            {/* MÉTODO DE PAGO */}
+
             <div>
 
               <span>
@@ -435,12 +522,19 @@ if (errorPedido) {
               </span>
 
               <strong>
-                {pedido.pago?.metodo_pago === 1
+                {(
+                  Array.isArray(pedido?.pago)
+                    ? pedido.pago[0]
+                    : pedido?.pago
+                )?.metodo_pago === 1
                   ? "Webpay"
                   : "Otro método"}
               </strong>
 
             </div>
+
+
+            {/* ESTADO DEL PAGO */}
 
             <div>
 
@@ -454,7 +548,14 @@ if (errorPedido) {
 
             </div>
 
-            {pedido.pago?.buy_order && (
+
+            {/* ORDEN DE COMPRA */}
+
+            {(
+              Array.isArray(pedido?.pago)
+                ? pedido.pago[0]
+                : pedido?.pago
+            )?.buy_order && (
 
               <div>
 
@@ -463,7 +564,11 @@ if (errorPedido) {
                 </span>
 
                 <strong>
-                  {pedido.pago.buy_order}
+                  {(
+                    Array.isArray(pedido?.pago)
+                      ? pedido.pago[0]
+                      : pedido?.pago
+                  )?.buy_order}
                 </strong>
 
               </div>
@@ -487,6 +592,8 @@ if (errorPedido) {
 
           <div className="detalle-pedido-info">
 
+            {/* TIPO DE DOCUMENTO */}
+
             <div>
 
               <span>
@@ -500,6 +607,9 @@ if (errorPedido) {
               </strong>
 
             </div>
+
+
+            {/* ESTADO ERP */}
 
             <div>
 
