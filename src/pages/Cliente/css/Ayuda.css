@@ -1,36 +1,25 @@
 /* =========================================================
-   AYUDA
-   Diseño alineado con Home / Cuenta - Ferreplast
+   AYUDA - FERREPLAST
+   Diseño alineado con Home / Cuenta
    ========================================================= */
 
 .ayuda-page {
   min-height: 100vh;
   padding: 120px 6% 110px;
-
-  color: #ffffff;
-
+  color: #171717;
   background:
     radial-gradient(
       circle at 8% 12%,
-      rgba(42, 126, 255, 0.18),
+      rgba(0, 82, 164, 0.06),
       transparent 28%
     ),
     radial-gradient(
       circle at 92% 80%,
-      rgba(255, 45, 55, 0.12),
+      rgba(217, 39, 28, 0.045),
       transparent 25%
     ),
-    linear-gradient(
-      135deg,
-      #071a38 0%,
-      #092b5c 48%,
-      #07182f 100%
-    );
-
-  position: relative;
-  overflow: hidden;
+    #f7f8fa;
 }
-
 
 /* =========================================================
    ENCABEZADO
@@ -38,61 +27,50 @@
 
 .ayuda-header {
   width: min(1250px, 100%);
-  margin: 0 auto 70px;
+  margin: 0 auto 65px;
 }
 
 .ayuda-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-
-  margin-bottom: 20px;
-
-  color: #ff3344;
-
-  font-size: 13px;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: #0052a4;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
 }
 
 .ayuda-eyebrow::before {
   content: "";
-
-  width: 34px;
+  width: 30px;
   height: 2px;
-
-  background: #ff3344;
+  border-radius: 10px;
+  background: #0052a4;
 }
 
 .ayuda-header h1 {
   max-width: 900px;
-
   margin: 0;
-
-  color: #ffffff;
-
-  font-size: clamp(52px, 6vw, 82px);
-  font-weight: 850;
-  line-height: 0.98;
+  color: #171717;
+  font-size: clamp(44px, 6vw, 72px);
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: -3px;
 }
 
 .ayuda-header h1 span {
-  color: #4d9cff;
+  color: #0052a4;
 }
 
 .ayuda-header p {
   max-width: 760px;
-
-  margin: 24px 0 0;
-
-  color: rgba(255, 255, 255, 0.68);
-
+  margin: 20px 0 0;
+  color: #68717c;
   font-size: 18px;
-  line-height: 1.7;
+  line-height: 1.65;
 }
-
 
 /* =========================================================
    ACCESOS RÁPIDOS
@@ -100,79 +78,49 @@
 
 .ayuda-accesos {
   width: min(1250px, 100%);
-  margin: 0 auto 100px;
-
+  margin: 0 auto 85px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-
-  gap: 25px;
+  gap: 22px;
 }
 
 .ayuda-acceso {
   position: relative;
-
   display: flex;
   align-items: flex-start;
-
-  gap: 22px;
-
-  min-height: 190px;
-
-  padding: 30px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 24px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0.035)
-    );
-
+  gap: 20px;
+  min-height: 180px;
+  padding: 28px;
+  border: 1px solid #e3e7ec;
+  border-radius: 22px;
+  background: #ffffff;
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-  backdrop-filter: blur(14px);
-
+    0 8px 25px rgba(17, 24, 39, 0.05),
+    0 2px 6px rgba(17, 24, 39, 0.025);
   transition:
-    transform 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .ayuda-acceso::before {
   content: "";
-
   position: absolute;
-
   top: 0;
   left: 28px;
   right: 28px;
-
-  height: 2px;
-
-  background: linear-gradient(
-    90deg,
-    #ff3344,
-    #1675ff,
-    transparent
-  );
-
-  border-radius: 0 0 10px 10px;
+  height: 3px;
+  border-radius: 0 0 8px 8px;
+  background: #0052a4;
 }
 
 .ayuda-acceso:hover {
-  transform: translateY(-6px);
-
-  border-color: rgba(54, 145, 255, 0.45);
-
+  transform: translateY(-4px);
+  border-color: rgba(0, 82, 164, 0.22);
   box-shadow:
-    0 28px 65px rgba(0, 0, 0, 0.3),
-    0 0 35px rgba(35, 125, 255, 0.08);
+    0 16px 35px rgba(17, 24, 39, 0.08),
+    0 4px 10px rgba(0, 82, 164, 0.04);
 }
-
 
 /* =========================================================
    ICONOS DE ACCESO
@@ -181,31 +129,29 @@
 .ayuda-acceso__icon {
   width: 58px;
   height: 58px;
-
   flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border: 1px solid rgba(80, 155, 255, 0.25);
-  border-radius: 16px;
-
-  background: rgba(20, 102, 205, 0.22);
-
+  border: 1px solid #d8e6f5;
+  border-radius: 15px;
+  background: #edf5ff;
+  color: #0052a4;
   font-size: 24px;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
 
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.ayuda-acceso:hover .ayuda-acceso__icon {
+  background: #e5f0ff;
+  transform: scale(1.04);
 }
 
 .ayuda-acceso span {
   display: block;
-
   margin-bottom: 8px;
-
-  color: #ff4050;
-
+  color: #0052a4;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 2px;
@@ -213,22 +159,18 @@
 
 .ayuda-acceso h2 {
   margin: 0;
-
-  color: #ffffff;
-
-  font-size: 23px;
+  color: #171717;
+  font-size: 22px;
   font-weight: 750;
+  line-height: 1.2;
 }
 
 .ayuda-acceso p {
-  margin: 10px 0 0;
-
-  color: rgba(255, 255, 255, 0.55);
-
+  margin: 9px 0 0;
+  color: #68717c;
   font-size: 14px;
   line-height: 1.6;
 }
-
 
 /* =========================================================
    TÍTULO DE PREGUNTAS
@@ -236,20 +178,17 @@
 
 .ayuda-faq {
   width: min(1050px, 100%);
-  margin: 0 auto 100px;
+  margin: 0 auto 85px;
 }
 
 .ayuda-section-title {
-  margin-bottom: 35px;
+  margin-bottom: 30px;
 }
 
 .ayuda-section-title > span {
   display: block;
-
-  margin-bottom: 10px;
-
-  color: #ff4050;
-
+  margin-bottom: 9px;
+  color: #0052a4;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 2.5px;
@@ -257,25 +196,20 @@
 
 .ayuda-section-title h2 {
   margin: 0;
-
-  color: #ffffff;
-
+  color: #171717;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 800;
+  line-height: 1.1;
   letter-spacing: -1px;
 }
 
 .ayuda-section-title p {
   max-width: 650px;
-
-  margin: 14px 0 0;
-
-  color: rgba(255, 255, 255, 0.58);
-
+  margin: 13px 0 0;
+  color: #68717c;
   font-size: 15px;
   line-height: 1.7;
 }
-
 
 /* =========================================================
    PREGUNTAS
@@ -284,45 +218,31 @@
 .ayuda-preguntas {
   display: flex;
   flex-direction: column;
-
-  gap: 14px;
+  gap: 12px;
 }
 
 .ayuda-pregunta {
   position: relative;
-
   overflow: hidden;
-
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 17px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.075),
-      rgba(255, 255, 255, 0.025)
-    );
-
+  border: 1px solid #e3e7ec;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.035);
   transition:
     border-color 0.25s ease,
-    background 0.25s ease;
+    box-shadow 0.25s ease;
 }
 
 .ayuda-pregunta:hover {
-  border-color: rgba(54, 145, 255, 0.35);
+  border-color: rgba(0, 82, 164, 0.25);
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.05);
 }
 
 .ayuda-pregunta--abierta {
-  border-color: rgba(54, 145, 255, 0.42);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(22, 105, 210, 0.13),
-      rgba(255, 255, 255, 0.035)
-    );
+  border-color: rgba(0, 82, 164, 0.3);
+  box-shadow: 0 8px 22px rgba(0, 82, 164, 0.06);
+  background: #ffffff;
 }
-
 
 /* =========================================================
    BOTÓN DE PREGUNTA
@@ -330,93 +250,73 @@
 
 .ayuda-pregunta__button {
   width: 100%;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 25px;
-
-  padding: 25px 28px;
-
+  padding: 23px 26px;
   border: 0;
-
   background: transparent;
-  color: #ffffff;
-
+  color: #171717;
   font-family: inherit;
   font-size: 17px;
   font-weight: 700;
-
   text-align: left;
-
   cursor: pointer;
 }
 
 .ayuda-pregunta__button span {
+  color: #171717;
   transition: color 0.2s ease;
 }
 
-.ayuda-pregunta:hover
-.ayuda-pregunta__button span {
-  color: #69aaff;
+.ayuda-pregunta:hover .ayuda-pregunta__button span {
+  color: #0052a4;
 }
 
 .ayuda-pregunta__button strong {
   width: 34px;
   height: 34px;
-
   flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid #d8e0e8;
   border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.05);
-
-  color: #ffffff;
-
+  background: #f7f8fa;
+  color: #0052a4;
   font-size: 20px;
   font-weight: 400;
-
+  line-height: 1;
   transition:
     background 0.2s ease,
+    color 0.2s ease,
     transform 0.2s ease;
 }
 
-.ayuda-pregunta--abierta
-.ayuda-pregunta__button strong {
-  background: #1268d8;
-
-  border-color: #1268d8;
-
+.ayuda-pregunta--abierta .ayuda-pregunta__button strong {
+  background: #0052a4;
+  border-color: #0052a4;
+  color: #ffffff;
   transform: rotate(180deg);
 }
-
 
 /* =========================================================
    RESPUESTA
    ========================================================= */
 
 .ayuda-pregunta__respuesta {
-  padding: 0 28px 26px;
+  padding: 0 26px 25px;
 }
 
 .ayuda-pregunta__respuesta p {
   max-width: 850px;
-
   margin: 0;
-  padding-top: 4px;
-
-  color: rgba(255, 255, 255, 0.62);
-
+  padding-top: 3px;
+  color: #68717c;
   font-size: 15px;
   line-height: 1.8;
 }
-
 
 /* =========================================================
    CONTACTO
@@ -425,54 +325,36 @@
 .ayuda-contacto {
   width: min(1250px, 100%);
   margin: 0 auto;
-
   position: relative;
-
   display: flex;
   align-items: center;
-
   gap: 25px;
-
-  padding: 38px 42px;
-
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 26px;
-
+  padding: 34px 38px;
+  border: 1px solid #d9e3ee;
+  border-radius: 22px;
   background:
-    radial-gradient(
-      circle at 0% 50%,
-      rgba(20, 110, 220, 0.2),
-      transparent 40%
-    ),
     linear-gradient(
-      120deg,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0.035)
+      135deg,
+      #edf5ff 0%,
+      #ffffff 70%
     );
-
   box-shadow:
-    0 25px 60px rgba(0, 0, 0, 0.25);
-
-  backdrop-filter: blur(14px);
+    0 10px 30px rgba(17, 24, 39, 0.06);
 }
 
 .ayuda-contacto__icon {
   width: 62px;
   height: 62px;
-
   flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-radius: 17px;
-
-  background: rgba(20, 102, 205, 0.25);
-
-  border: 1px solid rgba(80, 155, 255, 0.25);
-
+  border-radius: 16px;
+  background: #0052a4;
+  border: 1px solid #0052a4;
+  color: #ffffff;
   font-size: 26px;
+  box-shadow: 0 8px 18px rgba(0, 82, 164, 0.18);
 }
 
 .ayuda-contacto__text {
@@ -481,11 +363,8 @@
 
 .ayuda-contacto__text > span {
   display: block;
-
   margin-bottom: 7px;
-
-  color: #ff4050;
-
+  color: #d9271c;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 2px;
@@ -493,24 +372,19 @@
 
 .ayuda-contacto__text h2 {
   margin: 0;
-
-  color: #ffffff;
-
+  color: #171717;
   font-size: 28px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 .ayuda-contacto__text p {
   max-width: 650px;
-
   margin: 8px 0 0;
-
-  color: rgba(255, 255, 255, 0.58);
-
+  color: #68717c;
   font-size: 14px;
   line-height: 1.6;
 }
-
 
 /* =========================================================
    BOTÓN CONTACTO
@@ -520,27 +394,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   gap: 15px;
-
   flex-shrink: 0;
-
-  padding: 15px 23px;
-
-  border-radius: 11px;
-
-  background: #1268d8;
-
+  padding: 14px 22px;
+  border: none;
+  border-radius: 10px;
+  background: #0052a4;
   color: #ffffff;
-
   font-size: 14px;
   font-weight: 750;
-
   text-decoration: none;
-
-  box-shadow:
-    0 10px 25px rgba(18, 104, 216, 0.25);
-
+  box-shadow: 0 8px 20px rgba(0, 82, 164, 0.18);
   transition:
     background 0.2s ease,
     transform 0.2s ease,
@@ -549,36 +413,31 @@
 
 .ayuda-contacto__button span {
   font-size: 18px;
-
   transition: transform 0.2s ease;
 }
 
 .ayuda-contacto__button:hover {
-  background: #1979f0;
-
-  transform: translateY(-3px);
-
-  box-shadow:
-    0 15px 30px rgba(18, 104, 216, 0.35);
+  background: #003b78;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 82, 164, 0.25);
 }
 
 .ayuda-contacto__button:hover span {
   transform: translateX(4px);
 }
 
-
 /* =========================================================
    TABLET
    ========================================================= */
 
 @media (max-width: 950px) {
-
   .ayuda-page {
     padding: 100px 30px 80px;
   }
 
   .ayuda-accesos {
     grid-template-columns: 1fr;
+    margin-bottom: 70px;
   }
 
   .ayuda-acceso {
@@ -592,48 +451,52 @@
   .ayuda-contacto__text {
     min-width: 250px;
   }
-
 }
-
 
 /* =========================================================
    MÓVIL
    ========================================================= */
 
 @media (max-width: 600px) {
-
   .ayuda-page {
     padding: 80px 18px 60px;
   }
 
   .ayuda-header {
-    margin-bottom: 45px;
+    margin-bottom: 42px;
+  }
+
+  .ayuda-eyebrow {
+    font-size: 11px;
+    letter-spacing: 1.8px;
   }
 
   .ayuda-header h1 {
-    font-size: 46px;
+    font-size: 44px;
     letter-spacing: -2px;
   }
 
   .ayuda-header p {
+    margin-top: 16px;
     font-size: 15px;
+    line-height: 1.6;
   }
 
   .ayuda-accesos {
-    margin-bottom: 65px;
-    gap: 18px;
+    margin-bottom: 60px;
+    gap: 16px;
   }
 
   .ayuda-acceso {
-    padding: 24px;
-
-    border-radius: 20px;
+    gap: 16px;
+    padding: 23px;
+    border-radius: 19px;
   }
 
   .ayuda-acceso__icon {
     width: 50px;
     height: 50px;
-
+    border-radius: 13px;
     font-size: 21px;
   }
 
@@ -642,44 +505,98 @@
   }
 
   .ayuda-faq {
-    margin-bottom: 65px;
+    margin-bottom: 60px;
+  }
+
+  .ayuda-section-title {
+    margin-bottom: 25px;
   }
 
   .ayuda-section-title h2 {
     font-size: 34px;
   }
 
-  .ayuda-pregunta__button {
-    padding: 21px;
+  .ayuda-section-title p {
+    font-size: 14px;
+  }
 
+  .ayuda-pregunta__button {
+    padding: 20px;
+    gap: 15px;
     font-size: 15px;
   }
 
+  .ayuda-pregunta__button strong {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
   .ayuda-pregunta__respuesta {
-    padding: 0 21px 22px;
+    padding: 0 20px 21px;
+  }
+
+  .ayuda-pregunta__respuesta p {
+    font-size: 14px;
+    line-height: 1.7;
   }
 
   .ayuda-contacto {
     align-items: flex-start;
-
-    padding: 28px 24px;
-
-    border-radius: 21px;
+    gap: 18px;
+    padding: 27px 23px;
+    border-radius: 20px;
   }
 
   .ayuda-contacto__icon {
     width: 52px;
     height: 52px;
-
+    border-radius: 13px;
     font-size: 22px;
   }
 
   .ayuda-contacto__text h2 {
-    font-size: 24px;
+    font-size: 23px;
+  }
+
+  .ayuda-contacto__text p {
+    font-size: 13px;
   }
 
   .ayuda-contacto__button {
     width: 100%;
+    margin-top: 4px;
+  }
+}
+
+/* =========================================================
+   MÓVILES PEQUEÑOS
+   ========================================================= */
+
+@media (max-width: 380px) {
+  .ayuda-page {
+    padding: 75px 14px 50px;
   }
 
+  .ayuda-header h1 {
+    font-size: 38px;
+  }
+
+  .ayuda-acceso {
+    padding: 20px;
+  }
+
+  .ayuda-acceso__icon {
+    width: 46px;
+    height: 46px;
+    font-size: 19px;
+  }
+
+  .ayuda-pregunta__button {
+    padding: 18px;
+  }
+
+  .ayuda-pregunta__respuesta {
+    padding: 0 18px 19px;
+  }
 }

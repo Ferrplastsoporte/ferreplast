@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 // Layout cliente
 import Navbar from "./components/layout/Navbar";
 import BotonesFlotantes from "./components/layout/BotonesFlotantes";
+import Footer from "./components/layout/Footer";
+import ScrollToTop from "./components/layout/ScrollToTop";
 import RutaProtegida from "./components/rutas/RutaProtegida";
 import RutaSitioCliente from "./components/rutas/RutaSitioCliente";
 import RutaSoloVisitantes from "./components/rutas/RutaSoloVisitantes";
@@ -63,6 +65,7 @@ function ClienteLayout() {
       <Navbar />
       <BotonesFlotantes />
       <Outlet />
+      <Footer />
     </>
   );
 }
@@ -70,6 +73,7 @@ function ClienteLayout() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Autenticación */}
         <Route element={<RutaSoloVisitantes />}>
