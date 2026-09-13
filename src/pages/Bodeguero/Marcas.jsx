@@ -35,6 +35,9 @@ function Marcas() {
   const [mensajeError, setMensajeError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
 
+  const [filtroEstado, setFiltroEstado] = useState("todas");
+  const [filtroRelevancia, setFiltroRelevancia] = useState("todas");
+
   const [versionImagenes, setVersionImagenes] = useState(Date.now());
 
   useEffect(() => {
@@ -232,6 +235,46 @@ function Marcas() {
     }
   }
 
+  const totalActivas = marcas.filter(
+    (marca) => marca.est_marca === true,
+  ).length;
+
+  const totalNoDisponibles = marcas.filter(
+    (marca) => marca.est_marca === false,
+  ).length;
+
+  const marcasPorEstado = marcas.filter((marca) => {
+    if (filtroEstado === "activas") {
+      return marca.est_marca === true;
+    }
+
+    if (filtroEstado === "no-disponibles") {
+      return marca.est_marca === false;
+    }
+
+    return true;
+  });
+
+  const totalDestacadas = marcasPorEstado.filter(
+    (marca) => marca.marca_destacar === true,
+  ).length;
+
+  const totalNormales = marcasPorEstado.filter(
+    (marca) => marca.marca_destacar === false,
+  ).length;
+
+  const marcasFiltradas = marcasPorEstado.filter((marca) => {
+    if (filtroRelevancia === "destacadas") {
+      return marca.marca_destacar === true;
+    }
+
+    if (filtroRelevancia === "normales") {
+      return marca.marca_destacar === false;
+    }
+
+    return true;
+  });
+
   return (
     <section className="bodeguero-page marcas-page">
       <BodegueroHeader
@@ -263,6 +306,88 @@ function Marcas() {
         <p className="bodeguero-message bodeguero-message--error" role="alert">
           {mensajeError}
         </p>
+      )}
+
+      {!cargando && (
+        <div className="marcas-filtros" aria-label="Filtros de marcas">
+          <div className="marcas-filtros__grupo">
+            <span className="marcas-filtros__label">Estado</span>
+
+            <div className="marcas-filtros__opciones">
+              <button
+                type="button"
+                className={`marcas-filtro ${
+                  filtroEstado === "todas" ? "active" : ""
+                }`}
+                onClick={() => setFiltroEstado("todas")}
+                aria-pressed={filtroEstado === "todas"}
+              >
+                Todas ({marcas.length})
+              </button>
+
+              <button
+                type="button"
+                className={`marcas-filtro ${
+                  filtroEstado === "activas" ? "active" : ""
+                }`}
+                onClick={() => setFiltroEstado("activas")}
+                aria-pressed={filtroEstado === "activas"}
+              >
+                Activas ({totalActivas})
+              </button>
+
+              <button
+                type="button"
+                className={`marcas-filtro ${
+                  filtroEstado === "no-disponibles" ? "active" : ""
+                }`}
+                onClick={() => setFiltroEstado("no-disponibles")}
+                aria-pressed={filtroEstado === "no-disponibles"}
+              >
+                No disponibles ({totalNoDisponibles})
+              </button>
+            </div>
+          </div>
+
+          <div className="marcas-filtros__grupo">
+            <span className="marcas-filtros__label">Relevancia</span>
+
+            <div className="marcas-filtros__opciones">
+              <button
+                type="button"
+                className={`marcas-filtro ${
+                  filtroRelevancia === "todas" ? "active" : ""
+                }`}
+                onClick={() => setFiltroRelevancia("todas")}
+                aria-pressed={filtroRelevancia === "todas"}
+              >
+                Todas ({marcasPorEstado.length})
+              </button>
+
+              <button
+                type="button"
+                className={`marcas-filtro ${
+                  filtroRelevancia === "destacadas" ? "active" : ""
+                }`}
+                onClick={() => setFiltroRelevancia("destacadas")}
+                aria-pressed={filtroRelevancia === "destacadas"}
+              >
+                Destacadas ({totalDestacadas})
+              </button>
+
+              <button
+                type="button"
+                className={`marcas-filtro ${
+                  filtroRelevancia === "normales" ? "active" : ""
+                }`}
+                onClick={() => setFiltroRelevancia("normales")}
+                aria-pressed={filtroRelevancia === "normales"}
+              >
+                Normales ({totalNormales})
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {mostrarFormulario && (
@@ -385,14 +510,16 @@ function Marcas() {
             </thead>
 
             <tbody>
-              {marcas.length === 0 ? (
+              {marcasFiltradas.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="marcas-table__empty">
-                    No hay marcas registradas.
+                    {marcas.length === 0
+                      ? "No hay marcas registradas."
+                      : "No hay marcas que coincidan con los filtros seleccionados."}
                   </td>
                 </tr>
               ) : (
-                marcas.map((marca) => {
+                marcasFiltradas.map((marca) => {
                   const logoPublico = obtenerUrlLogoMarca(
                     marca.logo_url,
                     versionImagenes,
@@ -438,7 +565,7 @@ function Marcas() {
                               : "status-badge status-badge--pending"
                           }
                         >
-                          {marca.est_marca ? "Activa" : "Pendiente"}
+                          {marca.est_marca ? "Activa" : "No disponible"}
                         </span>
                       </td>
 

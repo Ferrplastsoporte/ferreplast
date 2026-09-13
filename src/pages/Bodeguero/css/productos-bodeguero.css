@@ -7,6 +7,104 @@
 }
 
 /* ============================
+   FILTROS DE PRODUCTOS
+============================ */
+
+.productos-filtros {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) repeat(3, minmax(170px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.productos-filtros__field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.productos-filtros__field label {
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.productos-filtros__field input,
+.productos-filtros__field select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  font-size: 0.88rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.productos-filtros__field select {
+  cursor: pointer;
+}
+
+.productos-filtros__field input:focus,
+.productos-filtros__field select:focus {
+  outline: none;
+  border-color: #0647b9;
+  box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.13);
+}
+
+.productos-filtros__footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.productos-filtros__footer span {
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.productos-filtros__footer strong {
+  color: #1e293b;
+}
+
+.productos-filtros__footer button {
+  padding: 7px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.productos-filtros__footer button:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #0647b9;
+}
+
+/* ============================
    TABLA DE PRODUCTOS
 ============================ */
 
@@ -187,6 +285,13 @@
   overflow-wrap: anywhere;
 }
 
+.product-table__product small {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 /* ============================
    PRECIOS
 ============================ */
@@ -256,6 +361,7 @@
 .productos-page .estado-activo,
 .productos-page .estado-pendiente,
 .productos-page .estado-inactivo,
+.productos-page .estado-rechazado,
 .productos-page .estado-desconocido {
   display: inline-flex;
   align-items: center;
@@ -292,6 +398,12 @@
   color: #dc2626;
 }
 
+.productos-page .estado-rechazado {
+  border: 1px solid #fecaca;
+  background: #dc2626;
+  color: #ffffff;
+}
+
 .productos-page .estado-desconocido {
   border: 1px solid #e2e8f0;
   background: #f8fafc;
@@ -313,6 +425,7 @@
 
 .productos-page .btn-edit,
 .productos-page .btn-deactivate,
+.productos-page .btn-reactivate,
 .productos-page .btn-approve,
 .productos-page .btn-delete {
   display: inline-flex;
@@ -350,6 +463,11 @@
   background: #fffbeb;
 }
 
+.productos-page .btn-reactivate {
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+}
+
 .productos-page .btn-approve {
   border: 1px solid #bbf7d0;
   background: #f0fdf4;
@@ -362,6 +480,7 @@
 
 .productos-page .btn-edit:hover,
 .productos-page .btn-deactivate:hover,
+.productos-page .btn-reactivate:hover,
 .productos-page .btn-approve:hover,
 .productos-page .btn-delete:hover {
   transform: translateY(-2px);
@@ -877,6 +996,11 @@
   font-size: 0.93rem;
 }
 
+.productos-modal__note--success {
+  border-left-color: #16a34a;
+  background: #f0fdf4;
+}
+
 .productos-modal__actions {
   display: flex;
   justify-content: flex-end;
@@ -907,6 +1031,14 @@
 
 .productos-modal__confirm:hover:not(:disabled) {
   background: #b91c1c;
+}
+
+.productos-modal__confirm--reactivate {
+  background: #15803d;
+}
+
+.productos-modal__confirm--reactivate:hover:not(:disabled) {
+  background: #166534;
 }
 
 .productos-modal__cancel {
@@ -990,6 +1122,10 @@
 ============================ */
 
 @media (max-width: 1200px) {
+  .productos-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .productos-page .product-table {
     min-width: 940px;
   }
@@ -1015,6 +1151,16 @@
 }
 
 @media (max-width: 650px) {
+  .productos-filtros {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .productos-filtros__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .producto-bodega-form {
     padding: 18px;
   }

@@ -7,8 +7,10 @@ function TablaProductos({
   productos = [],
   onEditar,
   onDesactivar,
+  onReactivar,
   onAprobar,
   onEliminar,
+  mensajeVacio = "No hay productos registrados.",
   modo = "bodeguero",
 }) {
   function obtenerUrlImagen(rutaImagen) {
@@ -48,6 +50,10 @@ function TablaProductos({
       return "estado-inactivo";
     }
 
+    if (nombreEstado === "rechazado") {
+      return "estado-rechazado";
+    }
+
     return "estado-desconocido";
   }
 
@@ -84,6 +90,15 @@ function TablaProductos({
     );
   }
 
+  function puedeReactivar(producto) {
+    return (
+      modo === "bodeguero" &&
+      Number(producto.est_prod) === 3 &&
+      Number(producto.stock_prod) >= 1 &&
+      typeof onReactivar === "function"
+    );
+  }
+
   function puedeAprobar(producto) {
     return (
       modo === "admin" &&
@@ -99,7 +114,7 @@ function TablaProductos({
   if (productos.length === 0) {
     return (
       <div className="product-table-wrapper">
-        <div className="product-table-empty">No hay productos registrados.</div>
+        <div className="product-table-empty">{mensajeVacio}</div>
       </div>
     );
   }
@@ -146,6 +161,8 @@ function TablaProductos({
                 <td>
                   <div className="product-table__product">
                     <strong>{producto.nom_prod}</strong>
+
+                    <small>Producto #{producto.id_prod}</small>
 
                     <span>
                       {producto.subcategoria?.nom_subcategoria ||
@@ -205,6 +222,18 @@ function TablaProductos({
                         aria-label={`Deshabilitar ${producto.nom_prod}`}
                       >
                         ⛔
+                      </button>
+                    )}
+
+                    {puedeReactivar(producto) && (
+                      <button
+                        type="button"
+                        className="btn-reactivate"
+                        onClick={() => onReactivar(producto)}
+                        title="Reactivar producto"
+                        aria-label={`Reactivar ${producto.nom_prod}`}
+                      >
+                        ♻️
                       </button>
                     )}
 

@@ -19,7 +19,7 @@ function BodegueroSolicitudes() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [mensajeError, setMensajeError] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [filtroTipo, setFiltroTipo] = useState("pendientes");
 
   useEffect(() => {
     cargarSolicitudes();
@@ -73,7 +73,7 @@ function BodegueroSolicitudes() {
           )
         `,
         )
-        .in("est_prod", [1, 3])
+        .in("est_prod", [1, 4])
         .order("created_prod", {
           ascending: false,
         });
@@ -126,8 +126,8 @@ function BodegueroSolicitudes() {
             return true;
           }
 
-          if (Number(producto.est_prod) === 3) {
-            return cambiosMap.has(producto.id_prod);
+          if (Number(producto.est_prod) === 4) {
+            return true;
           }
 
           return false;
@@ -135,7 +135,7 @@ function BodegueroSolicitudes() {
         .map((producto) => {
           const ultimoCambio = cambiosMap.get(producto.id_prod) ?? null;
 
-          const esDeshabilitado = Number(producto.est_prod) === 3;
+          const esRechazado = Number(producto.est_prod) === 4;
 
           return {
             ...producto,
@@ -151,7 +151,7 @@ function BodegueroSolicitudes() {
 
             detalle: producto.marca_producto?.nom_marca || "Sin marca",
 
-            estado: esDeshabilitado ? "Deshabilitado" : "Pendiente",
+            estado: esRechazado ? "Rechazado" : "Pendiente",
 
             ultimoCambio,
           };
@@ -210,34 +210,40 @@ function BodegueroSolicitudes() {
 
   const totalProductos = solicitudes.filter(
     (solicitud) =>
-      solicitud.tipo === "producto" && solicitud.estado !== "Deshabilitado",
+      solicitud.tipo === "producto" && solicitud.estado === "Pendiente",
   ).length;
 
-  const totalDeshabilitados = solicitudes.filter(
+  const totalRechazados = solicitudes.filter(
     (solicitud) =>
-      solicitud.tipo === "producto" && solicitud.estado === "Deshabilitado",
+      solicitud.tipo === "producto" && solicitud.estado === "Rechazado",
   ).length;
 
   const totalMarcas = solicitudes.filter(
     (solicitud) => solicitud.tipo === "marca",
   ).length;
 
+  const totalPendientes = solicitudes.filter(
+    (solicitud) => solicitud.estado === "Pendiente",
+  ).length;
+
   const solicitudesFiltradas = (() => {
-    if (filtroTipo === "todos") {
-      return solicitudes;
+    if (filtroTipo === "pendientes") {
+      return solicitudes.filter(
+        (solicitud) => solicitud.estado === "Pendiente",
+      );
     }
 
     if (filtroTipo === "productos") {
       return solicitudes.filter(
         (solicitud) =>
-          solicitud.tipo === "producto" && solicitud.estado !== "Deshabilitado",
+          solicitud.tipo === "producto" && solicitud.estado === "Pendiente",
       );
     }
 
-    if (filtroTipo === "deshabilitados") {
+    if (filtroTipo === "rechazados") {
       return solicitudes.filter(
         (solicitud) =>
-          solicitud.tipo === "producto" && solicitud.estado === "Deshabilitado",
+          solicitud.tipo === "producto" && solicitud.estado === "Rechazado",
       );
     }
 
@@ -280,11 +286,11 @@ function BodegueroSolicitudes() {
         <button
           type="button"
           className={`solicitudes-filtro ${
-            filtroTipo === "todos" ? "active" : ""
+            filtroTipo === "pendientes" ? "active" : ""
           }`}
-          onClick={() => setFiltroTipo("todos")}
+          onClick={() => setFiltroTipo("pendientes")}
         >
-          Todos ({solicitudes.length})
+          Pendientes ({totalPendientes})
         </button>
 
         <button
@@ -310,11 +316,11 @@ function BodegueroSolicitudes() {
         <button
           type="button"
           className={`solicitudes-filtro ${
-            filtroTipo === "deshabilitados" ? "active" : ""
+            filtroTipo === "rechazados" ? "active" : ""
           }`}
-          onClick={() => setFiltroTipo("deshabilitados")}
+          onClick={() => setFiltroTipo("rechazados")}
         >
-          Deshabilitados ({totalDeshabilitados})
+          Rechazados ({totalRechazados})
         </button>
       </div>
 
@@ -323,12 +329,12 @@ function BodegueroSolicitudes() {
           <h2>No hay solicitudes pendientes</h2>
 
           <p>
-            {filtroTipo === "todos"
+            {filtroTipo === "pendientes"
               ? "No hay productos ni marcas pendientes de revisión."
               : filtroTipo === "productos"
                 ? "No hay productos pendientes de revisión."
-                : filtroTipo === "deshabilitados"
-                  ? "No hay productos deshabilitados pendientes de revisión."
+                : filtroTipo === "rechazados"
+                  ? "No hay solicitudes rechazadas que requieran cambios."
                   : "No hay marcas pendientes de revisión."}
           </p>
 
@@ -375,14 +381,14 @@ function BodegueroSolicitudes() {
                     ? obtenerDetalleCambios(cambio.campos_modificados)
                     : [];
 
-                  const esDeshabilitado = solicitud.estado === "Deshabilitado";
+                  const esRechazado = solicitud.estado === "Rechazado";
 
-                  const estadoClase = esDeshabilitado
-                    ? "estado-deshabilitado"
+                  const estadoClase = esRechazado
+                    ? "estado-rechazado"
                     : "estado-pendiente";
 
-                  const estadoTexto = esDeshabilitado
-                    ? "⛔ Deshabilitado"
+                  const estadoTexto = esRechazado
+                    ? "⛔ Rechazado"
                     : "⏳ Pendiente";
 
                   const rutaImagen = esProducto
@@ -453,6 +459,12 @@ function BodegueroSolicitudes() {
                             )}
 
                             <small>Por {nombreUsuario}</small>
+                          </div>
+                        ) : esRechazado ? (
+                          <div className="solicitudes-change solicitudes-change--empty">
+                            <strong>Solicitud rechazada</strong>
+
+                            <span>Realiza cambios para enviarla nuevamente.</span>
                           </div>
                         ) : esProducto ? (
                           <div className="solicitudes-change solicitudes-change--empty">

@@ -13,7 +13,7 @@
 
 .stock-summary {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 260px));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 
   margin-bottom: 22px;
@@ -48,15 +48,32 @@
   line-height: 1;
 }
 
+.stock-summary > .stock-summary--danger {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.stock-summary > .stock-summary--danger strong {
+  color: #dc2626;
+}
+
+.stock-summary > .stock-summary--warning {
+  border-color: #fde68a;
+  background: #fffdf5;
+}
+
+.stock-summary > .stock-summary--warning strong {
+  color: #b45309;
+}
+
 /* ==========================================================
    BUSCADOR Y FILTRO
 ========================================================== */
 
 .stock-toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) repeat(3, minmax(170px, 1fr));
+  gap: 16px;
 
   margin-bottom: 20px;
   padding: 18px 20px;
@@ -69,21 +86,21 @@
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
 }
 
-.stock-toolbar__search {
+.stock-toolbar__field {
   display: flex;
   flex-direction: column;
   gap: 7px;
-
-  width: min(420px, 100%);
+  min-width: 0;
 }
 
-.stock-toolbar__search label {
+.stock-toolbar__field label {
   color: #1e293b;
   font-size: 0.85rem;
   font-weight: 800;
 }
 
-.stock-toolbar__search input {
+.stock-toolbar__field input,
+.stock-toolbar__field select {
   width: 100%;
   min-height: 42px;
   box-sizing: border-box;
@@ -103,33 +120,65 @@
     box-shadow 0.2s ease;
 }
 
-.stock-toolbar__search input:focus {
+.stock-toolbar__field select {
+  cursor: pointer;
+}
+
+.stock-toolbar__field input:focus,
+.stock-toolbar__field select:focus {
   outline: none;
   border-color: #0647b9;
 
   box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.13);
 }
 
-.stock-toolbar__filter {
-  display: inline-flex;
+.stock-toolbar__footer {
+  grid-column: 1 / -1;
+
+  display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
+  gap: 16px;
 
-  min-height: 42px;
+  padding-top: 14px;
 
-  color: #334155;
-  font-size: 0.86rem;
-  font-weight: 700;
-
-  cursor: pointer;
+  border-top: 1px solid #e2e8f0;
 }
 
-.stock-toolbar__filter input {
-  width: 17px;
-  height: 17px;
+.stock-toolbar__footer span {
+  color: #64748b;
+  font-size: 0.86rem;
+}
 
-  accent-color: #0647b9;
+.stock-toolbar__footer strong {
+  color: #1e293b;
+}
+
+.stock-toolbar__footer button {
+  padding: 7px 11px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #475569;
+
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+
   cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.stock-toolbar__footer button:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #0647b9;
 }
 
 /* ==========================================================
@@ -209,36 +258,42 @@
 
 .stock-table th:nth-child(1),
 .stock-table td:nth-child(1) {
-  width: 30%;
+  width: 28%;
 }
 
 .stock-table th:nth-child(2),
 .stock-table td:nth-child(2) {
-  width: 14%;
+  width: 13%;
 }
 
 .stock-table th:nth-child(3),
 .stock-table td:nth-child(3) {
-  width: 16%;
+  width: 14%;
 }
 
 .stock-table th:nth-child(4),
 .stock-table td:nth-child(4) {
-  width: 13%;
+  width: 15%;
 }
 
 .stock-table th:nth-child(5),
 .stock-table td:nth-child(5) {
-  width: 14%;
+  width: 16%;
 }
 
 .stock-table th:nth-child(6),
 .stock-table td:nth-child(6) {
-  width: 13%;
+  width: 14%;
   text-align: center;
 }
 
-.stock-table td:first-child strong {
+.stock-table__product {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stock-table__product strong {
   display: block;
 
   color: #172033;
@@ -246,6 +301,12 @@
   line-height: 1.35;
 
   overflow-wrap: anywhere;
+}
+
+.stock-table__product small {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 /* ==========================================================
@@ -274,6 +335,59 @@
 .stock-page .stock-badge.stock-bajo {
   border: 1px solid #fecaca;
 
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.stock-page .stock-badge.stock-agotado {
+  border: 1px solid #fecaca;
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* ==========================================================
+   ESTADO DEL PRODUCTO
+========================================================== */
+
+.stock-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 30px;
+  padding: 0 11px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+
+  background: #f8fafc;
+  color: #64748b;
+
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.stock-status--1 {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.stock-status--2 {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.stock-status--3 {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.stock-status--4 {
+  border-color: #fecaca;
   background: #fef2f2;
   color: #dc2626;
 }
@@ -410,12 +524,7 @@
   }
 
   .stock-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .stock-toolbar__search {
-    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -425,7 +534,13 @@
   }
 
   .stock-toolbar {
+    grid-template-columns: 1fr;
     padding: 16px;
+  }
+
+  .stock-toolbar__footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .stock-table th,

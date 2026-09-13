@@ -235,7 +235,7 @@
     white-space: nowrap;
 }
 
-.estado-deshabilitado {
+.estado-rechazado {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;

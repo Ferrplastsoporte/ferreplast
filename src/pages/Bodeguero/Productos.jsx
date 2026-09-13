@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 import BodegueroHeader from "./components/BodegueroHeader";
@@ -41,6 +41,13 @@ function BodegueroProductos() {
   const [mensajeExito, setMensajeExito] = useState("");
   const [productoPorDesactivar, setProductoPorDesactivar] = useState(null);
   const [desactivando, setDesactivando] = useState(false);
+  const [productoPorReactivar, setProductoPorReactivar] = useState(null);
+  const [reactivando, setReactivando] = useState(false);
+
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [filtroFamilia, setFiltroFamilia] = useState("todas");
+  const [filtroMarca, setFiltroMarca] = useState("todas");
 
   useEffect(() => {
     cargarVista();
@@ -419,8 +426,7 @@ function BodegueroProductos() {
     setMensajeError("");
     setMensajeExito("");
 
-    const { datosProducto, imagen, documentosPdf } =
-      separarArchivos(datosFormulario);
+    const { datosProducto, imagen } = separarArchivos(datosFormulario);
 
     let rutaImagenNueva = null;
 
@@ -431,7 +437,7 @@ function BodegueroProductos() {
           imagen,
         );
       }
-      const idProducto = await guardarDatosProducto(
+      await guardarDatosProducto(
         datosProducto,
         productoEditando.id_prod,
         rutaImagenNueva,
@@ -553,6 +559,122 @@ function BodegueroProductos() {
     }
   }
 
+  function solicitarReactivacion(producto) {
+    setProductoPorReactivar(producto);
+    setMensajeError("");
+    setMensajeExito("");
+  }
+
+  function cancelarReactivacion() {
+    if (reactivando) return;
+
+    setProductoPorReactivar(null);
+  }
+
+  async function confirmarReactivacion() {
+    if (!productoPorReactivar || reactivando) {
+      return;
+    }
+
+    setReactivando(true);
+    setMensajeError("");
+    setMensajeExito("");
+
+    try {
+      const { data, error } = await supabase
+        .from("producto")
+        .update({ est_prod: 2 })
+        .eq("id_prod", productoPorReactivar.id_prod)
+        .eq("est_prod", 3)
+        .gte("stock_prod", 1)
+        .select("id_prod")
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        throw new Error(
+          "El producto ya no cumple las condiciones para ser reactivado.",
+        );
+      }
+
+      const nombreProducto = productoPorReactivar.nom_prod;
+
+      setProductoPorReactivar(null);
+      await cargarProductos();
+
+      setMensajeExito(`El producto "${nombreProducto}" fue reactivado.`);
+    } catch (error) {
+      console.error("Error al reactivar el producto:", error);
+
+      setMensajeError(
+        error?.message ||
+          "No fue posible reactivar el producto. Comprueba su estado y stock.",
+      );
+    } finally {
+      setReactivando(false);
+    }
+  }
+
+  const marcasDisponiblesEnTabla = useMemo(() => {
+    const marcasPorId = new Map();
+
+    productos.forEach((producto) => {
+      const marca = producto.marca_producto;
+
+      if (marca?.id_marca) {
+        marcasPorId.set(marca.id_marca, marca);
+      }
+    });
+
+    return [...marcasPorId.values()].sort((marcaA, marcaB) =>
+      (marcaA.nom_marca || "").localeCompare(marcaB.nom_marca || "", "es-CL"),
+    );
+  }, [productos]);
+
+  const productosFiltrados = useMemo(() => {
+    const texto = busqueda.trim().toLocaleLowerCase("es-CL");
+
+    return productos.filter((producto) => {
+      const coincideBusqueda =
+        !texto ||
+        producto.nom_prod?.toLocaleLowerCase("es-CL").includes(texto) ||
+        String(producto.id_prod).includes(texto);
+
+      const coincideEstado =
+        filtroEstado === "todos" ||
+        Number(producto.est_prod) === Number(filtroEstado);
+
+      const coincideFamilia =
+        filtroFamilia === "todas" ||
+        Number(producto.subcategoria?.id_familia) === Number(filtroFamilia);
+
+      const coincideMarca =
+        filtroMarca === "todas" ||
+        Number(producto.id_marca) === Number(filtroMarca);
+
+      return (
+        coincideBusqueda &&
+        coincideEstado &&
+        coincideFamilia &&
+        coincideMarca
+      );
+    });
+  }, [productos, busqueda, filtroEstado, filtroFamilia, filtroMarca]);
+
+  const hayFiltrosActivos =
+    busqueda.trim() ||
+    filtroEstado !== "todos" ||
+    filtroFamilia !== "todas" ||
+    filtroMarca !== "todas";
+
+  function limpiarFiltros() {
+    setBusqueda("");
+    setFiltroEstado("todos");
+    setFiltroFamilia("todas");
+    setFiltroMarca("todas");
+  }
+
   if (cargando) {
     return (
       <section className="bodeguero-page productos-page">
@@ -604,6 +726,85 @@ function BodegueroProductos() {
           </button>
         </div>
       )}
+
+      <div className="productos-filtros" aria-label="Filtros de productos">
+        <div className="productos-filtros__field productos-filtros__search">
+          <label htmlFor="buscarProductoBodega">Buscar producto</label>
+
+          <input
+            id="buscarProductoBodega"
+            type="search"
+            value={busqueda}
+            onChange={(evento) => setBusqueda(evento.target.value)}
+            placeholder="Buscar por nombre o ID..."
+          />
+        </div>
+
+        <div className="productos-filtros__field">
+          <label htmlFor="filtroEstadoProducto">Estado</label>
+
+          <select
+            id="filtroEstadoProducto"
+            value={filtroEstado}
+            onChange={(evento) => setFiltroEstado(evento.target.value)}
+          >
+            <option value="todos">Todos los estados</option>
+            <option value="1">Pendientes</option>
+            <option value="2">Activos</option>
+            <option value="3">No disponibles</option>
+            <option value="4">Rechazados</option>
+          </select>
+        </div>
+
+        <div className="productos-filtros__field">
+          <label htmlFor="filtroFamiliaProducto">Familia</label>
+
+          <select
+            id="filtroFamiliaProducto"
+            value={filtroFamilia}
+            onChange={(evento) => setFiltroFamilia(evento.target.value)}
+          >
+            <option value="todas">Todas las familias</option>
+
+            {familias.map((familia) => (
+              <option key={familia.id_familia} value={familia.id_familia}>
+                {familia.nom_familia}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="productos-filtros__field">
+          <label htmlFor="filtroMarcaProducto">Marca</label>
+
+          <select
+            id="filtroMarcaProducto"
+            value={filtroMarca}
+            onChange={(evento) => setFiltroMarca(evento.target.value)}
+          >
+            <option value="todas">Todas las marcas</option>
+
+            {marcasDisponiblesEnTabla.map((marca) => (
+              <option key={marca.id_marca} value={marca.id_marca}>
+                {marca.nom_marca}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="productos-filtros__footer">
+          <span>
+            Mostrando <strong>{productosFiltrados.length}</strong> de{" "}
+            <strong>{productos.length}</strong> productos
+          </span>
+
+          {hayFiltrosActivos && (
+            <button type="button" onClick={limpiarFiltros}>
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+      </div>
 
       {mostrarFormulario && (
         <ProductoFormBodeguero
@@ -677,10 +878,64 @@ function BodegueroProductos() {
         </div>
       )}
 
+      {productoPorReactivar && (
+        <div
+          className="productos-modal-backdrop"
+          role="presentation"
+          onMouseDown={cancelarReactivacion}
+        >
+          <div
+            className="productos-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tituloReactivarProducto"
+            onMouseDown={(evento) => evento.stopPropagation()}
+          >
+            <h2 id="tituloReactivarProducto">Reactivar producto</h2>
+
+            <p>
+              ¿Deseas volver a activar{" "}
+              <strong>{productoPorReactivar.nom_prod}</strong>?
+            </p>
+
+            <p className="productos-modal__note productos-modal__note--success">
+              El producto volverá a estar disponible para los clientes porque
+              cuenta con {productoPorReactivar.stock_prod} unidades en stock.
+            </p>
+
+            <div className="productos-modal__actions">
+              <button
+                type="button"
+                className="productos-modal__confirm productos-modal__confirm--reactivate"
+                onClick={confirmarReactivacion}
+                disabled={reactivando}
+              >
+                {reactivando ? "Reactivando..." : "Reactivar"}
+              </button>
+
+              <button
+                type="button"
+                className="productos-modal__cancel"
+                onClick={cancelarReactivacion}
+                disabled={reactivando}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <TablaProductos
-        productos={productos}
+        productos={productosFiltrados}
         onEditar={abrirEdicionProducto}
         onDesactivar={solicitarDesactivacion}
+        onReactivar={solicitarReactivacion}
+        mensajeVacio={
+          productos.length === 0
+            ? "No hay productos registrados."
+            : "No hay productos que coincidan con los filtros seleccionados."
+        }
         modo="bodeguero"
       />
     </section>

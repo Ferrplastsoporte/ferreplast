@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
 
@@ -35,6 +35,9 @@ function Familias() {
 
   const [mensajeError, setMensajeError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
+
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroFamilia, setFiltroFamilia] = useState("todas");
 
   useEffect(() => {
     cargarDatos();
@@ -255,6 +258,62 @@ function Familias() {
     }
   }
 
+  const familiasConCantidad = useMemo(
+    () =>
+      familias.map((familia) => ({
+        ...familia,
+        totalSubcategorias: subcategorias.filter(
+          (subcategoria) =>
+            Number(subcategoria.id_familia) === Number(familia.id_familia),
+        ).length,
+      })),
+    [familias, subcategorias],
+  );
+
+  const familiasFiltradas = useMemo(() => {
+    const texto = busqueda.trim().toLocaleLowerCase("es-CL");
+
+    return familiasConCantidad.filter((familia) => {
+      const coincideBusqueda =
+        !texto ||
+        familia.nom_familia?.toLocaleLowerCase("es-CL").includes(texto);
+
+      const coincideFamilia =
+        filtroFamilia === "todas" ||
+        Number(familia.id_familia) === Number(filtroFamilia);
+
+      return coincideBusqueda && coincideFamilia;
+    });
+  }, [familiasConCantidad, busqueda, filtroFamilia]);
+
+  const subcategoriasFiltradas = useMemo(() => {
+    const texto = busqueda.trim().toLocaleLowerCase("es-CL");
+
+    return subcategorias.filter((subcategoria) => {
+      const coincideBusqueda =
+        !texto ||
+        subcategoria.nom_subcategoria
+          ?.toLocaleLowerCase("es-CL")
+          .includes(texto) ||
+        subcategoria.familia?.nom_familia
+          ?.toLocaleLowerCase("es-CL")
+          .includes(texto);
+
+      const coincideFamilia =
+        filtroFamilia === "todas" ||
+        Number(subcategoria.id_familia) === Number(filtroFamilia);
+
+      return coincideBusqueda && coincideFamilia;
+    });
+  }, [subcategorias, busqueda, filtroFamilia]);
+
+  const hayFiltrosActivos = busqueda.trim() || filtroFamilia !== "todas";
+
+  function limpiarFiltros() {
+    setBusqueda("");
+    setFiltroFamilia("todas");
+  }
+
   return (
     <section className="bodeguero-page familias-page">
       <BodegueroHeader
@@ -303,6 +362,54 @@ function Familias() {
         <p className="bodeguero-message bodeguero-message--error" role="alert">
           {mensajeError}
         </p>
+      )}
+
+      {!cargando && (
+        <div className="familias-filtros" aria-label="Filtros de clasificación">
+          <div className="familias-filtros__field">
+            <label htmlFor="buscarClasificacion">Buscar</label>
+
+            <input
+              id="buscarClasificacion"
+              type="search"
+              value={busqueda}
+              onChange={(evento) => setBusqueda(evento.target.value)}
+              placeholder="Buscar familia o subcategoría..."
+            />
+          </div>
+
+          <div className="familias-filtros__field">
+            <label htmlFor="filtrarFamilia">Familia</label>
+
+            <select
+              id="filtrarFamilia"
+              value={filtroFamilia}
+              onChange={(evento) => setFiltroFamilia(evento.target.value)}
+            >
+              <option value="todas">Todas las familias</option>
+
+              {familiasConCantidad.map((familia) => (
+                <option key={familia.id_familia} value={familia.id_familia}>
+                  {familia.nom_familia} ({familia.totalSubcategorias})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="familias-filtros__footer">
+            <span>
+              {familiasFiltradas.length} de {familias.length} familias ·{" "}
+              {subcategoriasFiltradas.length} de {subcategorias.length}{" "}
+              subcategorías
+            </span>
+
+            {hayFiltrosActivos && (
+              <button type="button" onClick={limpiarFiltros}>
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {mostrarFormularioFamilia && (
@@ -461,8 +568,8 @@ function Familias() {
                 <h2>Familias</h2>
 
                 <p>
-                  {familias.length}{" "}
-                  {familias.length === 1
+                  {familiasFiltradas.length}{" "}
+                  {familiasFiltradas.length === 1
                     ? "familia registrada"
                     : "familias registradas"}
                 </p>
@@ -479,17 +586,25 @@ function Familias() {
                 </thead>
 
                 <tbody>
-                  {familias.length === 0 ? (
+                  {familiasFiltradas.length === 0 ? (
                     <tr>
                       <td colSpan="2" className="familias-table__empty">
-                        No hay familias registradas.
+                        {familias.length === 0
+                          ? "No hay familias registradas."
+                          : "No hay familias que coincidan con los filtros."}
                       </td>
                     </tr>
                   ) : (
-                    familias.map((familia) => (
+                    familiasFiltradas.map((familia) => (
                       <tr key={familia.id_familia}>
                         <td>
                           <strong>{familia.nom_familia}</strong>
+                          <small>
+                            {familia.totalSubcategorias}{" "}
+                            {familia.totalSubcategorias === 1
+                              ? "subcategoría"
+                              : "subcategorías"}
+                          </small>
                         </td>
 
                         <td>
@@ -516,8 +631,8 @@ function Familias() {
                 <h2>Subcategorías</h2>
 
                 <p>
-                  {subcategorias.length}{" "}
-                  {subcategorias.length === 1
+                  {subcategoriasFiltradas.length}{" "}
+                  {subcategoriasFiltradas.length === 1
                     ? "subcategoría registrada"
                     : "subcategorías registradas"}
                 </p>
@@ -535,14 +650,16 @@ function Familias() {
                 </thead>
 
                 <tbody>
-                  {subcategorias.length === 0 ? (
+                  {subcategoriasFiltradas.length === 0 ? (
                     <tr>
                       <td colSpan="3" className="familias-table__empty">
-                        No hay subcategorías registradas.
+                        {subcategorias.length === 0
+                          ? "No hay subcategorías registradas."
+                          : "No hay subcategorías que coincidan con los filtros."}
                       </td>
                     </tr>
                   ) : (
-                    subcategorias.map((subcategoria) => (
+                    subcategoriasFiltradas.map((subcategoria) => (
                       <tr key={subcategoria.id_subcategoria}>
                         <td>
                           <strong>{subcategoria.nom_subcategoria}</strong>

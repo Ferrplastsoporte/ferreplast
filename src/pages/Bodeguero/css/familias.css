@@ -30,6 +30,96 @@
 }
 
 /* ============================
+   FILTROS
+============================ */
+
+.familias-filtros {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(220px, 0.7fr);
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.familias-filtros__field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.familias-filtros__field label {
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.familias-filtros__field input,
+.familias-filtros__field select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  font-size: 0.88rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.familias-filtros__field select {
+  cursor: pointer;
+}
+
+.familias-filtros__field input:focus,
+.familias-filtros__field select:focus {
+  outline: none;
+  border-color: #0647b9;
+  box-shadow: 0 0 0 3px rgba(6, 71, 185, 0.13);
+}
+
+.familias-filtros__footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.familias-filtros__footer span {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.familias-filtros__footer button {
+  padding: 7px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.familias-filtros__footer button:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #0647b9;
+}
+
+/* ============================
    FORMULARIOS
 ============================ */
 
@@ -289,6 +379,18 @@
   font-size: 0.93rem;
 }
 
+.familias-table td strong,
+.familias-table td small {
+  display: block;
+}
+
+.familias-table td small {
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .familias-table tbody tr {
   transition: background-color 0.2s ease;
 }
@@ -367,6 +469,16 @@
 
 @media (max-width: 720px) {
   .familias-toolbar {
+    flex-direction: column;
+  }
+
+  .familias-filtros {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .familias-filtros__footer {
+    align-items: flex-start;
     flex-direction: column;
   }
 

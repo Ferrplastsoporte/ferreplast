@@ -14,6 +14,87 @@
 }
 
 /* ============================
+   FILTROS
+============================ */
+
+.marcas-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+
+  margin-bottom: 22px;
+  padding: 18px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 14px;
+
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+
+.marcas-filtros__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.marcas-filtros__label {
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.marcas-filtros__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.marcas-filtro {
+  min-height: 40px;
+  padding: 0 14px;
+
+  border: 1px solid #dbe3ec;
+  border-radius: 999px;
+
+  background: #ffffff;
+  color: #475569;
+
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.marcas-filtro:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #0647b9;
+  transform: translateY(-1px);
+}
+
+.marcas-filtro.active {
+  border-color: #0647b9;
+  background: #0647b9;
+  color: #ffffff;
+}
+
+.marcas-filtro.active:hover {
+  background: #053a98;
+  color: #ffffff;
+}
+
+/* ============================
    FORMULARIO
 ============================ */
 
@@ -411,6 +492,10 @@
 ============================ */
 
 @media (max-width: 850px) {
+  .marcas-filtros {
+    grid-template-columns: 1fr;
+  }
+
   .marcas-form__content {
     grid-template-columns: 1fr;
   }
@@ -426,6 +511,19 @@
   }
 
   .marcas-toolbar .btn-add {
+    width: 100%;
+  }
+
+  .marcas-filtros {
+    padding: 15px;
+  }
+
+  .marcas-filtros__opciones {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .marcas-filtro {
     width: 100%;
   }
 

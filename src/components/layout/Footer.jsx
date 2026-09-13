@@ -40,7 +40,6 @@ function Footer() {
         <div className="footer-column">
           <h3>Métodos de pago</h3>
           <p>💳 Transbank</p>
-          <p>🏦 Trasferencia bancaria</p>
         </div>
       </div>
 
