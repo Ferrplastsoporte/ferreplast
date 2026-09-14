@@ -4,8 +4,6 @@ import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
 import TablaUsuarios from "../../components/usuarios/TablaUsuarios";
 
-import "./css/admin.css";
-
 function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);

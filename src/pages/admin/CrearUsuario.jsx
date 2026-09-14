@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
 import UsuarioInvitacionForm from "./components/UsuarioInvitacionForm";
 
-import "./css/admin.css";
+import "./css/CrearUsuario.css";
 
 function CrearUsuario() {
   const [cargando, setCargando] = useState(false);
@@ -92,29 +92,76 @@ function CrearUsuario() {
   }
 
   return (
-    <>
-      <AdminHeader titulo="Crear Nuevo Usuario" />
+    <section className="crear-usuario-page">
+      <AdminHeader
+        titulo="Crear usuario"
+        descripcion="Invita a nuevos integrantes y define su nivel de acceso al panel interno."
+      />
 
-      <div className="crear-usuario-container">
-        {mensaje && (
-          <div
-            className={`crear-usuario-mensaje crear-usuario-mensaje--${tipoMensaje}`}
-            role={
-              tipoMensaje === "error"
-                ? "alert"
-                : "status"
-            }
-          >
-            {mensaje}
+      <div className="crear-usuario-layout">
+        <div className="crear-usuario-container">
+          {mensaje && (
+            <div
+              className={`crear-usuario-mensaje crear-usuario-mensaje--${tipoMensaje}`}
+              role={tipoMensaje === "error" ? "alert" : "status"}
+            >
+              <span className="crear-usuario-mensaje__icon" aria-hidden="true">
+                {tipoMensaje === "success" ? "✓" : "!"}
+              </span>
+              <p>{mensaje}</p>
+            </div>
+          )}
+
+          <UsuarioInvitacionForm
+            onEnviar={handleCrearUsuario}
+            cargando={cargando}
+          />
+        </div>
+
+        <aside
+          className="crear-usuario-info"
+          aria-label="Información sobre el proceso de invitación"
+        >
+          <span className="crear-usuario-info__eyebrow">
+            Proceso de invitación
+          </span>
+          <h2>El acceso se activa por correo</h2>
+          <p className="crear-usuario-info__intro">
+            La cuenta quedará protegida hasta que la persona invitada complete
+            su activación.
+          </p>
+
+          <ol className="crear-usuario-pasos">
+            <li>
+              <span aria-hidden="true">1</span>
+              <div>
+                <strong>Completa los datos</strong>
+                <p>Ingresa la información laboral y selecciona el rol.</p>
+              </div>
+            </li>
+            <li>
+              <span aria-hidden="true">2</span>
+              <div>
+                <strong>Enviamos la invitación</strong>
+                <p>La persona recibirá un enlace en su correo electrónico.</p>
+              </div>
+            </li>
+            <li>
+              <span aria-hidden="true">3</span>
+              <div>
+                <strong>La cuenta se activa</strong>
+                <p>El usuario define su acceso y puede entrar al panel.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div className="crear-usuario-info__nota">
+            <strong>Asigna el rol con cuidado</strong>
+            <p>Cada perfil tendrá permisos diferentes dentro del sistema.</p>
           </div>
-        )}
-
-        <UsuarioInvitacionForm
-          onEnviar={handleCrearUsuario}
-          cargando={cargando}
-        />
+        </aside>
       </div>
-    </>
+    </section>
   );
 }
 

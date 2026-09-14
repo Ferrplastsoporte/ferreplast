@@ -4,8 +4,6 @@ import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
 import TarjetaEstadistica from "../../components/estadisticas/TarjetaEstadistica";
 
-import "./css/admin.css";
-
 function AdminDashboard() {
   const [resumen, setResumen] = useState({
     trabajadores: 0,

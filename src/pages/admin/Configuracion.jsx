@@ -1,5 +1,4 @@
 import AdminHeader from "./components/AdminHeader";
-import "./css/admin.css";
 
 function Configuracion() {
   return (

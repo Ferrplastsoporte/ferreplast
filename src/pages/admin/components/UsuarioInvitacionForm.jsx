@@ -174,11 +174,12 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
   return (
     <form className="usuario-admin-form" onSubmit={manejarEnvio} noValidate>
       <div className="usuario-admin-form__header">
+        <span className="usuario-admin-form__eyebrow">Datos del usuario</span>
         <h2>Crear usuario interno</h2>
 
         <p>
-          Registra un administrador, bodeguero o vendedor. El usuario recibirá
-          un correo para completar la activación de su cuenta.
+          Todos los campos son obligatorios. Verifica la información antes de
+          enviar la invitación.
         </p>
       </div>
 
@@ -195,11 +196,14 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             }
             maxLength={80}
             autoComplete="name"
+            placeholder="Ej: María González"
             disabled={cargando}
+            aria-invalid={Boolean(errores.nombre)}
+            aria-describedby={errores.nombre ? "adminNombreError" : undefined}
           />
 
           {errores.nombre && (
-            <small className="usuario-admin-form__error">
+            <small id="adminNombreError" className="usuario-admin-form__error">
               {errores.nombre}
             </small>
           )}
@@ -218,10 +222,14 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             placeholder="12345678-5"
             maxLength={10}
             disabled={cargando}
+            aria-invalid={Boolean(errores.rut)}
+            aria-describedby={errores.rut ? "adminRutError" : undefined}
           />
 
           {errores.rut && (
-            <small className="usuario-admin-form__error">{errores.rut}</small>
+            <small id="adminRutError" className="usuario-admin-form__error">
+              {errores.rut}
+            </small>
           )}
         </div>
 
@@ -235,11 +243,16 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             onChange={(evento) => actualizarCampo("email", evento.target.value)}
             maxLength={120}
             autoComplete="email"
+            placeholder="nombre@ferreplast.cl"
             disabled={cargando}
+            aria-invalid={Boolean(errores.email)}
+            aria-describedby={errores.email ? "adminEmailError" : undefined}
           />
 
           {errores.email && (
-            <small className="usuario-admin-form__error">{errores.email}</small>
+            <small id="adminEmailError" className="usuario-admin-form__error">
+              {errores.email}
+            </small>
           )}
         </div>
 
@@ -257,10 +270,17 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             maxLength={12}
             autoComplete="tel"
             disabled={cargando}
+            aria-invalid={Boolean(errores.telefono)}
+            aria-describedby={
+              errores.telefono ? "adminTelefonoError" : undefined
+            }
           />
 
           {errores.telefono && (
-            <small className="usuario-admin-form__error">
+            <small
+              id="adminTelefonoError"
+              className="usuario-admin-form__error"
+            >
               {errores.telefono}
             </small>
           )}
@@ -274,6 +294,8 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             value={valores.rol}
             onChange={(evento) => actualizarCampo("rol", evento.target.value)}
             disabled={cargando}
+            aria-invalid={Boolean(errores.rol)}
+            aria-describedby={errores.rol ? "adminRolError" : undefined}
           >
             <option value="">Selecciona un rol</option>
 
@@ -285,12 +307,18 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
           </select>
 
           {errores.rol && (
-            <small className="usuario-admin-form__error">{errores.rol}</small>
+            <small id="adminRolError" className="usuario-admin-form__error">
+              {errores.rol}
+            </small>
           )}
         </div>
       </div>
 
       <div className="usuario-admin-form__actions">
+        <p>
+          <span aria-hidden="true">✉</span>
+          Se enviará un correo de activación al nuevo usuario.
+        </p>
         <button type="submit" disabled={cargando}>
           {cargando ? "Enviando invitación..." : "Enviar invitación"}
         </button>

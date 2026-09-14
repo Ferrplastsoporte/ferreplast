@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-import "../css/admin.css";
+import "../css/Admin.css";
 
 const enlaces = [
   {
