@@ -66,6 +66,7 @@ app.use(express.urlencoded({ extended: true }));
 // SUPABASE
 // ======================================================
 
+// Cliente general
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.VITE_SUPABASE_ANON_KEY,
@@ -91,19 +92,44 @@ app.post("/api/webpay/create", async (req, res) => {
   try {
     const {
       userId,
+      accessToken,
       idTipoDespacho,
       idComuna,
+      direccionDespacho,
       esFactura = false,
       facturacion = null,
     } = req.body;
 
-    // -----------------------------------------------
+    // ==================================================
+    // DEBUG
+    // ==================================================
+
+    console.log("=================================");
+    console.log("DATOS RECIBIDOS DEL FRONTEND:");
+    console.log({
+      userId,
+      accessToken: accessToken ? "RECIBIDO" : "NO RECIBIDO",
+      idTipoDespacho,
+      idComuna,
+      direccionDespacho,
+      esFactura,
+      facturacion,
+    });
+    console.log("=================================");
+
+    // ==================================================
     // VALIDACIONES BÁSICAS
-    // -----------------------------------------------
+    // ==================================================
 
     if (!userId) {
       return res.status(400).json({
         error: "Usuario no informado.",
+      });
+    }
+
+    if (!accessToken) {
+      return res.status(401).json({
+        error: "Sesión de usuario no informada.",
       });
     }
 
@@ -119,26 +145,90 @@ app.post("/api/webpay/create", async (req, res) => {
       });
     }
 
+    if (
+      Number(idTipoDespacho) !== 1 &&
+      (!direccionDespacho || !direccionDespacho.trim())
+    ) {
+      return res.status(400).json({
+        error: "Dirección de despacho no informada.",
+      });
+    }
+
     if (typeof esFactura !== "boolean") {
       return res.status(400).json({
         error: "El valor de esFactura es inválido.",
       });
     }
 
-    // -----------------------------------------------
+    // ==================================================
+    // CLIENTE SUPABASE CON JWT DEL USUARIO
+    // ==================================================
+
+    const supabaseUsuario = createClient(
+      process.env.VITE_SUPABASE_URL,
+      process.env.VITE_SUPABASE_ANON_KEY,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      },
+    );
+
+    // ==================================================
+    // VERIFICAR USUARIO AUTENTICADO
+    // ==================================================
+
+    const {
+      data: {
+        user: usuarioAuth,
+      },
+      error: errorAuth,
+    } = await supabaseUsuario.auth.getUser();
+
+    if (errorAuth || !usuarioAuth) {
+      console.error("Error verificando usuario:", errorAuth);
+
+      return res.status(401).json({
+        error: "Sesión de usuario inválida o expirada.",
+      });
+    }
+
+    // ==================================================
+    // SEGURIDAD:
+    // EL USER ID DEL BODY DEBE COINCIDIR CON AUTH.UID()
+    // ==================================================
+
+    if (usuarioAuth.id !== userId) {
+      console.error("Usuario no coincide:", {
+        userIdBody: userId,
+        userIdAuth: usuarioAuth.id,
+      });
+
+      return res.status(403).json({
+        error: "El usuario no coincide con la sesión autenticada.",
+      });
+    }
+
+    console.log("Usuario autenticado correctamente:", usuarioAuth.id);
+
+    // ==================================================
     // CREAR PEDIDO + DETALLE + DESPACHO
     // + FACTURA + PAGO
-    // -----------------------------------------------
+    // ==================================================
 
     const {
       data,
       error,
-    } = await supabase.rpc(
+    } = await supabaseUsuario.rpc(
       "crear_pedido_webpay",
       {
         p_user_id: userId,
         p_id_tipo_despacho: Number(idTipoDespacho),
         p_id_comuna: Number(idComuna),
+        p_direccion_despacho:
+          direccionDespacho?.trim() || null,
         p_es_factura: esFactura,
         p_facturacion: facturacion,
       },
@@ -173,9 +263,9 @@ app.post("/api/webpay/create", async (req, res) => {
     });
     console.log("==========================================");
 
-    // -----------------------------------------------
+    // ==================================================
     // CREAR TRANSACCIÓN WEBPAY
-    // -----------------------------------------------
+    // ==================================================
 
     const response = await transaction.create(
       pedido.buy_order,
@@ -189,13 +279,13 @@ app.post("/api/webpay/create", async (req, res) => {
       url: response.url,
     });
 
-    // -----------------------------------------------
+    // ==================================================
     // INICIALIZAR PAGO
-    // -----------------------------------------------
+    // ==================================================
 
     const {
       error: errorInicializar,
-    } = await supabase.rpc(
+    } = await supabaseUsuario.rpc(
       "inicializar_pago_webpay",
       {
         p_id_pago: pedido.id_pago,
@@ -215,9 +305,9 @@ app.post("/api/webpay/create", async (req, res) => {
       });
     }
 
-    // -----------------------------------------------
+    // ==================================================
     // RESPONDER AL FRONTEND
-    // -----------------------------------------------
+    // ==================================================
 
     return res.json({
       token: response.token,
@@ -251,9 +341,9 @@ app.all(
       req.body?.token_ws ||
       req.query?.token_ws;
 
-    // -----------------------------------------------
+    // ==================================================
     // SIN TOKEN = CANCELACIÓN
-    // -----------------------------------------------
+    // ==================================================
 
     if (!token) {
       console.log(
@@ -266,9 +356,10 @@ app.all(
     }
 
     try {
-      // -----------------------------------------------
+
+      // ==================================================
       // CONFIRMAR CON TRANSBANK
-      // -----------------------------------------------
+      // ==================================================
 
       const response =
         await transaction.commit(token);
@@ -292,9 +383,9 @@ app.all(
       });
       console.log("==========================================");
 
-      // -----------------------------------------------
+      // ==================================================
       // VALIDAR BUY ORDER
-      // -----------------------------------------------
+      // ==================================================
 
       if (!response.buy_order) {
         throw new Error(
@@ -302,9 +393,9 @@ app.all(
         );
       }
 
-      // =================================================
+      // ==================================================
       // BUSCAR PAGO MEDIANTE RPC
-      // =================================================
+      // ==================================================
 
       const {
         data: pagos,
@@ -345,9 +436,9 @@ app.all(
         monto: pago.monto_pago,
       });
 
-      // -----------------------------------------------
+      // ==================================================
       // VALIDAR MONTO
-      // -----------------------------------------------
+      // ==================================================
 
       if (
         Number(response.amount) !==
@@ -366,9 +457,9 @@ app.all(
         );
       }
 
-      // =================================================
+      // ==================================================
       // PAGO AUTORIZADO
-      // =================================================
+      // ==================================================
 
       const aprobado =
         response.status === "AUTHORIZED" &&
@@ -427,9 +518,9 @@ app.all(
         );
       }
 
-      // =================================================
+      // ==================================================
       // PAGO RECHAZADO
-      // =================================================
+      // ==================================================
 
       const {
         error: errorRechazo,
@@ -470,6 +561,7 @@ app.all(
       );
 
     } catch (error) {
+
       console.error(
         "Error procesando retorno Webpay:",
         error,
@@ -487,6 +579,7 @@ app.all(
 // ======================================================
 
 app.listen(3000, () => {
+
   console.log(
     "==========================================",
   );
