@@ -1,12 +1,16 @@
 import '../css/footer.css'
-
+import logo from "../../assets/logo.png";
 function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
         {/* Marca */}
-        <div className="footer-brand">
-          <h2>FERREPLAST</h2>
+                <div className="footer-brand">
+                  <img 
+                  src={logo} 
+                  alt="Ferreplast" 
+                  className="footer-logo"
+                        />
           <p>
             Especialistas en resinas epóxicas, herramientas y materiales profesionales
             para tus proyectos.

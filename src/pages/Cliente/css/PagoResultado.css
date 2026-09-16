@@ -1,0 +1,137 @@
+
+.pago-resultado {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background: #f5f7fa;
+}
+
+.pago-card {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  padding: 50px 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
+}
+
+.pago-icono {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 25px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 50%;
+
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.pago-card h1 {
+  margin: 0 0 15px;
+  color: #172033;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.pago-card p {
+  margin: 0 auto 30px;
+  color: #5f6b7a;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* APROBADO */
+
+.pago-resultado.aprobado .pago-icono {
+  background: #e8f7ee;
+  color: #16834b;
+}
+
+/* RECHAZADO */
+
+.pago-resultado.rechazado .pago-icono {
+  background: #fdeaea;
+  color: #d62828;
+}
+
+/* CANCELADO */
+
+.pago-resultado.cancelado .pago-icono {
+  background: #fff4df;
+  color: #d88900;
+}
+
+/* ERROR */
+
+.pago-resultado.error .pago-icono {
+  background: #fdeaea;
+  color: #d62828;
+}
+
+/* ESTADO DESCONOCIDO */
+
+.pago-resultado.desconocido .pago-icono {
+  background: #eef1f5;
+  color: #667085;
+}
+
+/* BOTÓN */
+
+.pago-boton {
+  display: inline-block;
+  padding: 13px 28px;
+
+  background: #0057b8;
+  color: #ffffff;
+
+  border-radius: 10px;
+
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+
+  transition: all 0.2s ease;
+}
+
+.pago-boton:hover {
+  background: #003f87;
+  transform: translateY(-2px);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+  .pago-resultado {
+    padding: 25px 15px;
+  }
+
+  .pago-card {
+    padding: 40px 25px;
+  }
+
+  .pago-card h1 {
+    font-size: 25px;
+  }
+
+  .pago-card p {
+    font-size: 16px;
+  }
+
+  .pago-icono {
+    width: 70px;
+    height: 70px;
+    font-size: 35px;
+  }
+
+  .pago-boton {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

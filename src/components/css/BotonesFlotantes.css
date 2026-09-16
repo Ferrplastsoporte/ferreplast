@@ -1,14 +1,15 @@
+/* =========================================================
+   BOTONES FLOTANTES - FERREPLAST
+   ========================================================= */
+
 .floating-buttons {
   position: fixed;
 
   right: 30px;
-
   bottom: 30px;
 
   display: flex;
-
   flex-direction: column;
-
   align-items: flex-end;
 
   gap: 15px;
@@ -16,52 +17,65 @@
   z-index: 9999;
 }
 
-/* Botón subir */
+
+/* =========================================================
+   BOTÓN SUBIR
+   ========================================================= */
 
 .top-button {
   width: 55px;
-
   height: 55px;
 
-  border: none;
-
+  border: 1px solid rgba(0, 87, 184, 0.35);
   border-radius: 50%;
 
-  background: #0039a6;
-
-  color: white;
+  background: #0b3a70;
+  color: #ffffff;
 
   font-size: 22px;
 
   cursor: pointer;
 
   display: flex;
-
   justify-content: center;
-
   align-items: center;
 
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 10px 25px rgba(11, 58, 112, 0.25);
 
-  transition: 0.3s;
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .top-button:hover {
   transform: translateY(-5px);
 
-  background: #d52b1e;
+  background: #0057b8;
+
+  box-shadow:
+    0 14px 30px rgba(11, 58, 112, 0.32);
 }
 
-/* Cotización */
-/* Cotización */
+
+/* =========================================================
+   COTIZACIÓN
+   ========================================================= */
 
 .cotizacion-button {
   width: 65px;
   height: 65px;
 
   border-radius: 50px;
-  background: #1d4ed8;
-  color: white;
+
+  background: linear-gradient(
+    135deg,
+    #0057b8 0%,
+    #0b3a70 100%
+  );
+
+  color: #ffffff;
 
   display: flex;
   justify-content: center;
@@ -71,11 +85,17 @@
   overflow: hidden;
 
   text-decoration: none;
+
   font-size: 30px;
 
-  transition: 0.35s;
+  transition:
+    width 0.35s ease,
+    transform 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
 
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 10px 25px rgba(11, 58, 112, 0.25);
 }
 
 .cotizacion-button span {
@@ -88,17 +108,27 @@
   font-size: 16px;
   font-weight: 600;
 
-  transition: 0.35s;
+  transition:
+    width 0.35s ease,
+    opacity 0.35s ease;
 }
 
 .cotizacion-button:hover {
   width: 245px;
+
   justify-content: flex-start;
 
   padding-left: 18px;
   gap: 15px;
 
-  background: #1e40af;
+  background: linear-gradient(
+    135deg,
+    #0a6ed1 0%,
+    #0057b8 100%
+  );
+
+  box-shadow:
+    0 14px 30px rgba(11, 58, 112, 0.32);
 }
 
 .cotizacion-button:hover span {
@@ -106,23 +136,22 @@
   opacity: 1;
 }
 
-/* WhatsApp */
+
+/* =========================================================
+   WHATSAPP
+   ========================================================= */
 
 .whatsapp-button {
   width: 65px;
-
   height: 65px;
 
   border-radius: 50px;
 
   background: #25d366;
-
-  color: white;
+  color: #ffffff;
 
   display: flex;
-
   justify-content: center;
-
   align-items: center;
 
   text-decoration: none;
@@ -131,23 +160,27 @@
 
   overflow: hidden;
 
-  transition: 0.35s;
+  transition:
+    width 0.35s ease,
+    transform 0.35s ease,
+    background 0.35s ease;
 
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 10px 25px rgba(37, 211, 102, 0.25);
 }
 
 .whatsapp-button span {
   width: 0;
-
   opacity: 0;
 
   white-space: nowrap;
 
   font-size: 16px;
-
   font-weight: 600;
 
-  transition: 0.35s;
+  transition:
+    width 0.35s ease,
+    opacity 0.35s ease;
 }
 
 .whatsapp-button:hover {
@@ -158,27 +191,37 @@
   padding-left: 18px;
 
   gap: 15px;
+
+  background: #20bd5a;
+
+  box-shadow:
+    0 14px 30px rgba(37, 211, 102, 0.32);
 }
 
 .whatsapp-button:hover span {
   width: auto;
-
   opacity: 1;
 }
 
-/* Pulso */
+
+/* =========================================================
+   PULSO WHATSAPP
+   ========================================================= */
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+    box-shadow:
+      0 0 0 0 rgba(37, 211, 102, 0.5);
   }
 
   70% {
-    box-shadow: 0 0 0 20px rgba(37, 211, 102, 0);
+    box-shadow:
+      0 0 0 20px rgba(37, 211, 102, 0);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    box-shadow:
+      0 0 0 0 rgba(37, 211, 102, 0);
   }
 }
 
@@ -186,22 +229,34 @@
   animation: pulse 2.5s infinite;
 }
 
-/* Responsive */
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 768px) {
   .floating-buttons {
     right: 15px;
-
     bottom: 20px;
   }
 
   .whatsapp-button:hover {
     width: 65px;
-
     padding: 0;
   }
 
   .whatsapp-button span {
+    display: none;
+  }
+
+  .cotizacion-button:hover {
+    width: 65px;
+    padding: 0;
+
+    justify-content: center;
+  }
+
+  .cotizacion-button span {
     display: none;
   }
 }

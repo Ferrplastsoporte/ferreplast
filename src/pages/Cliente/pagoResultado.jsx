@@ -1,4 +1,5 @@
 import { useSearchParams, Link } from "react-router-dom";
+import "./CSS/PagoResultado.css";
 
 function PagoResultado() {
   const [params] = useSearchParams();
@@ -12,16 +13,28 @@ function PagoResultado() {
   };
 
   return (
-    <main className="cart-page">
-      <h1>Resultado del pago</h1>
+    <main className={`pago-resultado ${estado || "desconocido"}`}>
+      <div className="pago-card">
 
-      <p>
-        {mensajes[estado] || "Estado de pago no disponible."}
-      </p>
+        <div className="pago-icono">
+          {estado === "aprobado" && "✓"}
+          {estado === "rechazado" && "✕"}
+          {estado === "cancelado" && "!"}
+          {estado === "error" && "!"}
+          {!mensajes[estado] && "?"}
+        </div>
 
-      <Link to="/carrito">
-        Volver al carrito
-      </Link>
+        <h1>Resultado del pago</h1>
+
+        <p>
+          {mensajes[estado] || "Estado de pago no disponible."}
+        </p>
+
+        <Link to="/carrito" className="pago-boton">
+          Volver al carrito
+        </Link>
+
+      </div>
     </main>
   );
 }
