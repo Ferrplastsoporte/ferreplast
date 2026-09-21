@@ -7,7 +7,7 @@ export const LONGITUD_MAXIMA_MARCA = 80;
 
 export function limpiarNombreMarca(valor = "") {
   return String(valor)
-    .replace(/[^\p{L}\p{N}\s&.'’\-]/gu, "")
+    .replace(/[^\p{L}\p{N}\s&.'’-]/gu, "")
     .replace(/\s{2,}/g, " ");
 }
 

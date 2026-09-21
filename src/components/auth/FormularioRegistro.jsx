@@ -6,7 +6,8 @@ import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
   sanitizeRegisterField,
   validateRegisterField,
-} from "../../utils/validacionAutenticacion";
+} from "../../utils/auth/validacionAutenticacion";
+import { LONGITUD_MAXIMA_CORREO } from "../../utils/comunes/correo";
 
 import Input from "../ui/Input";
 import Select from "../ui/Select";
@@ -223,7 +224,7 @@ const FormularioRegistro = () => {
           onBlur={handleBlur}
           error={errors.email}
           autoComplete="email"
-          maxLength={120}
+          maxLength={LONGITUD_MAXIMA_CORREO}
         />
 
         <Input

@@ -11,6 +11,11 @@ import {
   FaUser,
 } from "react-icons/fa";
 import { supabase } from "../../lib/supabase";
+import {
+  LONGITUD_MAXIMA_BUSQUEDA,
+  normalizarTerminoBusqueda,
+  sanitizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 import "../css/navbar.css";
 
 // Import del logo
@@ -150,7 +155,7 @@ function Navbar() {
   function buscarProductos(event) {
     event.preventDefault();
 
-    const textoBusqueda = busqueda.trim();
+    const textoBusqueda = normalizarTerminoBusqueda(busqueda);
 
     cerrarMenuCategorias();
 
@@ -220,7 +225,10 @@ function Navbar() {
           placeholder="Buscar productos..."
           aria-label="Buscar productos"
           value={busqueda}
-          onChange={(event) => setBusqueda(event.target.value)}
+          onChange={(event) =>
+            setBusqueda(sanitizarTerminoBusqueda(event.target.value))
+          }
+          maxLength={LONGITUD_MAXIMA_BUSQUEDA}
         />
 
         <button type="submit" aria-label="Buscar">

@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import {
+  LONGITUD_MAXIMA_CORREO,
+  sanitizarCorreo,
+  validarCorreo,
+} from "../../utils/comunes/correo";
 import "./css/RecuperarPassword.css";
 
 export default function RecuperarPassword() {
@@ -15,10 +20,11 @@ export default function RecuperarPassword() {
     setMensaje("");
     setError("");
 
-    const correo = email.trim().toLowerCase();
+    const correo = sanitizarCorreo(email);
+    const errorCorreo = validarCorreo(correo);
 
-    if (!correo) {
-      setError("Ingresa tu correo electrónico.");
+    if (errorCorreo) {
+      setError(errorCorreo);
       return;
     }
 
@@ -75,10 +81,15 @@ export default function RecuperarPassword() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(sanitizarCorreo(e.target.value));
+                if (error) setError("");
+              }}
               placeholder="correo@ejemplo.cl"
               autoComplete="email"
               disabled={enviando}
+              maxLength={LONGITUD_MAXIMA_CORREO}
+              aria-invalid={Boolean(error)}
               required
             />
           </div>

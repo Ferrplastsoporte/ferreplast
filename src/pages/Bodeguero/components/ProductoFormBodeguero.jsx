@@ -12,7 +12,7 @@ import {
   validarDocumentosProducto,
   validarFormularioProducto,
   construirDatosProducto,
-} from "../../../utils/productos";
+} from "../../../utils/catalogo/productos";
 
 function ProductoFormBodeguero({
   productoInicial = null,

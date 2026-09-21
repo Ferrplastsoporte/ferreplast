@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { obtenerExtensionLogoMarca } from "../utils/marcas";
+import { obtenerExtensionLogoMarca } from "../utils/catalogo/marcas";
 
 const BUCKET_IMAGENES = "imagenes_productos";
 

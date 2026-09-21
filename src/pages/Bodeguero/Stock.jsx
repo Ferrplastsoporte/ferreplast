@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+import {
+  LONGITUD_MAXIMA_BUSQUEDA,
+  sanitizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 
 import "./css/bodeguero.css";
 import "./css/productos-bodeguero.css";
@@ -293,7 +297,10 @@ function BodegueroStock() {
             id="buscarStock"
             type="search"
             value={busqueda}
-            onChange={(evento) => setBusqueda(evento.target.value)}
+            onChange={(evento) =>
+              setBusqueda(sanitizarTerminoBusqueda(evento.target.value))
+            }
+            maxLength={LONGITUD_MAXIMA_BUSQUEDA}
             placeholder="Buscar por nombre..."
           />
         </div>

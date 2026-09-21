@@ -3,6 +3,15 @@ import { supabase } from "../../lib/supabase";
 
 import AdminHeader from "./components/AdminHeader";
 import TablaUsuarios from "../../components/usuarios/TablaUsuarios";
+import {
+  sanitizarNombreUsuario,
+  sanitizarTelefonoUsuario,
+  validarUsuarioAdministrativo,
+} from "../../utils/usuarios/validacionUsuarios";
+import {
+  LONGITUD_MAXIMA_BUSQUEDA,
+  sanitizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 
 import "./css/Usuarios.css";
 
@@ -142,23 +151,10 @@ function Usuarios() {
   }
 
   function validarFormulario() {
-    const nuevosErrores = {};
-
-    if (formulario.nombre.trim().length < 3) {
-      nuevosErrores.nombre = "Ingresa el nombre completo del trabajador.";
-    }
-
-    if (formulario.nombre.trim().length > 80) {
-      nuevosErrores.nombre = "El nombre no puede superar los 80 caracteres.";
-    }
-
-    if (!/^\+569\d{8}$/.test(formulario.telefono.trim())) {
-      nuevosErrores.telefono = "Usa el formato +56912345678.";
-    }
-
-    if (!["1", "2"].includes(formulario.rol)) {
-      nuevosErrores.rol = "Selecciona un rol válido.";
-    }
+    const nuevosErrores = validarUsuarioAdministrativo(formulario, {
+      modo: "editar",
+      rolesPermitidos: [1, 2],
+    });
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
@@ -267,7 +263,7 @@ function Usuarios() {
         <div className="usuarios-filtros">
           <label className="usuarios-buscador">
             <span>Buscar trabajador</span>
-            <input type="search" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} placeholder="Nombre, RUT o teléfono" />
+            <input type="search" value={busqueda} onChange={(evento) => setBusqueda(sanitizarTerminoBusqueda(evento.target.value))} placeholder="Nombre, RUT o teléfono" maxLength={LONGITUD_MAXIMA_BUSQUEDA} />
           </label>
           <label>
             <span>Rol</span>
@@ -309,12 +305,12 @@ function Usuarios() {
             <form className="usuarios-formulario" onSubmit={manejarGuardar} noValidate>
               <label>
                 <span>Nombre y apellidos</span>
-                <input type="text" value={formulario.nombre} maxLength={80} onChange={(evento) => actualizarFormulario("nombre", evento.target.value)} aria-invalid={Boolean(errores.nombre)} disabled={guardando} />
+                <input type="text" value={formulario.nombre} maxLength={80} onChange={(evento) => actualizarFormulario("nombre", sanitizarNombreUsuario(evento.target.value))} aria-invalid={Boolean(errores.nombre)} disabled={guardando} />
                 {errores.nombre && <small>{errores.nombre}</small>}
               </label>
               <label>
                 <span>Teléfono</span>
-                <input type="tel" value={formulario.telefono} maxLength={12} placeholder="+56912345678" onChange={(evento) => actualizarFormulario("telefono", evento.target.value)} aria-invalid={Boolean(errores.telefono)} disabled={guardando} />
+                <input type="tel" value={formulario.telefono} maxLength={12} placeholder="+56912345678" onChange={(evento) => actualizarFormulario("telefono", sanitizarTelefonoUsuario(evento.target.value))} aria-invalid={Boolean(errores.telefono)} disabled={guardando} />
                 {errores.telefono && <small>{errores.telefono}</small>}
               </label>
               <label>

@@ -1,4 +1,13 @@
 import { useState } from "react";
+import {
+  normalizarUsuarioAdministrativo,
+  sanitizarCorreoUsuario,
+  sanitizarNombreUsuario,
+  sanitizarRutUsuario,
+  sanitizarTelefonoUsuario,
+  validarUsuarioAdministrativo,
+} from "../../../utils/usuarios/validacionUsuarios";
+import { LONGITUD_MAXIMA_CORREO } from "../../../utils/comunes/correo";
 
 const VALORES_INICIALES = {
   nombre: "",
@@ -23,60 +32,6 @@ const ROLES = [
   },
 ];
 
-function limpiarTexto(valor = "") {
-  return String(valor)
-    .replace(/[<>[\]{}]/g, "")
-    .replace(/\s{2,}/g, " ");
-}
-
-function limpiarRut(valor = "") {
-  return String(valor)
-    .replace(/\./g, "")
-    .replace(/[^0-9kK-]/g, "")
-    .toUpperCase();
-}
-
-function limpiarTelefono(valor = "") {
-  let limpio = String(valor).replace(/[^\d+]/g, "");
-
-  if (limpio.length > 0 && !limpio.startsWith("+")) {
-    limpio = `+${limpio}`;
-  }
-
-  return limpio.slice(0, 12);
-}
-
-function validarRut(rut) {
-  if (!/^\d{7,8}-[\dK]$/.test(rut)) {
-    return false;
-  }
-
-  const [numero, digitoIngresado] = rut.split("-");
-
-  let suma = 0;
-  let multiplicador = 2;
-
-  for (let i = numero.length - 1; i >= 0; i -= 1) {
-    suma += Number(numero[i]) * multiplicador;
-
-    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
-  }
-
-  const resto = 11 - (suma % 11);
-
-  let digitoCalculado;
-
-  if (resto === 11) {
-    digitoCalculado = "0";
-  } else if (resto === 10) {
-    digitoCalculado = "K";
-  } else {
-    digitoCalculado = String(resto);
-  }
-
-  return digitoCalculado === digitoIngresado;
-}
-
 function UsuarioFormAdmin({ onEnviar, cargando = false }) {
   const [valores, setValores] = useState(VALORES_INICIALES);
 
@@ -95,40 +50,10 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
   }
 
   function validarFormulario() {
-    const nuevosErrores = {};
-
-    const nombre = valores.nombre.trim();
-
-    const email = valores.email.trim().toLowerCase();
-
-    const rut = valores.rut.trim();
-
-    const telefono = valores.telefono.trim();
-
-    if (nombre.length < 3) {
-      nuevosErrores.nombre = "Ingresa el nombre y apellidos.";
-    }
-
-    if (nombre.length > 80) {
-      nuevosErrores.nombre = "El nombre no puede superar los 80 caracteres.";
-    }
-
-    if (!validarRut(rut)) {
-      nuevosErrores.rut = "Ingresa un RUT válido sin puntos y con guion.";
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      nuevosErrores.email = "Ingresa un correo electrónico válido.";
-    }
-
-    if (!/^\+569\d{8}$/.test(telefono)) {
-      nuevosErrores.telefono =
-        "El teléfono debe tener el formato +56912345678.";
-    }
-
-    if (!["1", "2", "3"].includes(valores.rol)) {
-      nuevosErrores.rol = "Selecciona un rol.";
-    }
+    const nuevosErrores = validarUsuarioAdministrativo(valores, {
+      modo: "crear",
+      rolesPermitidos: [1, 2, 3],
+    });
 
     setErrores(nuevosErrores);
 
@@ -146,16 +71,13 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
       return;
     }
 
+    const valoresNormalizados = normalizarUsuarioAdministrativo(valores);
     const datos = {
-      nombre: valores.nombre.trim(),
-
-      rut: valores.rut.trim(),
-
-      email: valores.email.trim().toLowerCase(),
-
-      telefono: valores.telefono.trim(),
-
-      rol_user: Number(valores.rol),
+      nombre: valoresNormalizados.nombre,
+      rut: valoresNormalizados.rut,
+      email: valoresNormalizados.email,
+      telefono: valoresNormalizados.telefono,
+      rol_user: Number(valoresNormalizados.rol),
     };
 
     /*
@@ -192,7 +114,10 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             type="text"
             value={valores.nombre}
             onChange={(evento) =>
-              actualizarCampo("nombre", limpiarTexto(evento.target.value))
+              actualizarCampo(
+                "nombre",
+                sanitizarNombreUsuario(evento.target.value),
+              )
             }
             maxLength={80}
             autoComplete="name"
@@ -217,7 +142,7 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             type="text"
             value={valores.rut}
             onChange={(evento) =>
-              actualizarCampo("rut", limpiarRut(evento.target.value))
+              actualizarCampo("rut", sanitizarRutUsuario(evento.target.value))
             }
             placeholder="12345678-5"
             maxLength={10}
@@ -240,8 +165,13 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             id="adminEmail"
             type="email"
             value={valores.email}
-            onChange={(evento) => actualizarCampo("email", evento.target.value)}
-            maxLength={120}
+            onChange={(evento) =>
+              actualizarCampo(
+                "email",
+                sanitizarCorreoUsuario(evento.target.value),
+              )
+            }
+            maxLength={LONGITUD_MAXIMA_CORREO}
             autoComplete="email"
             placeholder="nombre@ferreplast.cl"
             disabled={cargando}
@@ -264,7 +194,10 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             type="tel"
             value={valores.telefono}
             onChange={(evento) =>
-              actualizarCampo("telefono", limpiarTelefono(evento.target.value))
+              actualizarCampo(
+                "telefono",
+                sanitizarTelefonoUsuario(evento.target.value),
+              )
             }
             placeholder="+56912345678"
             maxLength={12}

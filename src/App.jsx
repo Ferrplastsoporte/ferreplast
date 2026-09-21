@@ -8,7 +8,7 @@ import ScrollToTop from "./components/layout/ScrollToTop";
 import RutaProtegida from "./components/rutas/RutaProtegida";
 import RutaSitioCliente from "./components/rutas/RutaSitioCliente";
 import RutaSoloVisitantes from "./components/rutas/RutaSoloVisitantes";
-import { ROLES_USUARIO } from "./utils/autorizacion";
+import { ROLES_USUARIO } from "./utils/auth/autorizacion";
 
 // Layout bodeguero
 import BodegueroLayout from "./pages/Bodeguero/components/BodegueroLayout";

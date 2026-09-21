@@ -7,7 +7,7 @@ import {
   LONGITUD_MAXIMA_UNIDAD,
   limpiarNombreUnidad,
   validarNombreUnidad,
-} from "../../utils/unidadMedida";
+} from "../../utils/catalogo/unidadMedida";
 
 import "./css/bodeguero.css";
 import "./css/unidades.css";

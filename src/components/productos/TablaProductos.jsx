@@ -1,5 +1,5 @@
 import { supabase } from "../../lib/supabase";
-import { formatPrice } from "../../utils/formateadores";
+import { formatPrice } from "../../utils/comunes/formateadores";
 
 const BUCKET_IMAGENES = "imagenes_productos";
 

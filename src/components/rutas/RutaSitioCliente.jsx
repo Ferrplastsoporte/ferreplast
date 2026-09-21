@@ -5,7 +5,7 @@ import {
   estaAutorizadoPorRol,
   obtenerRutaInicialPorRol,
   ROLES_USUARIO,
-} from "../../utils/autorizacion";
+} from "../../utils/auth/autorizacion";
 import EstadoCargaRuta from "./EstadoCargaRuta";
 
 function RutaSitioCliente() {

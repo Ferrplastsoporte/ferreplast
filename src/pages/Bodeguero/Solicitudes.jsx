@@ -8,7 +8,7 @@ import {
   NOMBRES_ACCIONES,
   formatearFecha,
   obtenerDetalleCambios,
-} from "../../utils/solicitudes";
+} from "../../utils/solicitudes/solicitudes";
 
 import "./css/bodeguero.css";
 import "./css/solicitudes.css";

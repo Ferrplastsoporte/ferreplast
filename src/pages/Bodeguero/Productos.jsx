@@ -4,6 +4,10 @@ import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
 import ProductoFormBodeguero from "./components/ProductoFormBodeguero";
 import TablaProductos from "../../components/productos/TablaProductos";
+import {
+  LONGITUD_MAXIMA_BUSQUEDA,
+  sanitizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 
 import {
   obtenerUrlImagenProducto,
@@ -735,7 +739,10 @@ function BodegueroProductos() {
             id="buscarProductoBodega"
             type="search"
             value={busqueda}
-            onChange={(evento) => setBusqueda(evento.target.value)}
+            onChange={(evento) =>
+              setBusqueda(sanitizarTerminoBusqueda(evento.target.value))
+            }
+            maxLength={LONGITUD_MAXIMA_BUSQUEDA}
             placeholder="Buscar por nombre o ID..."
           />
         </div>

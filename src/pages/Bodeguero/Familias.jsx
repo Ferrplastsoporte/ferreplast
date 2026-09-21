@@ -7,7 +7,11 @@ import {
   LONGITUD_MAXIMA_FAMILIA,
   limpiarNombreFamilia,
   validarNombreFamilia,
-} from "../../utils/familias";
+} from "../../utils/catalogo/familias";
+import {
+  LONGITUD_MAXIMA_BUSQUEDA,
+  sanitizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 
 import "./css/bodeguero.css";
 import "./css/familias.css";
@@ -373,7 +377,10 @@ function Familias() {
               id="buscarClasificacion"
               type="search"
               value={busqueda}
-              onChange={(evento) => setBusqueda(evento.target.value)}
+              onChange={(evento) =>
+                setBusqueda(sanitizarTerminoBusqueda(evento.target.value))
+              }
+              maxLength={LONGITUD_MAXIMA_BUSQUEDA}
               placeholder="Buscar familia o subcategoría..."
             />
           </div>

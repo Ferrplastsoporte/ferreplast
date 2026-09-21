@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 import { useAutenticacion } from "../../hooks/useAutenticacion";
-import { obtenerRutaInicialPorRol } from "../../utils/autorizacion";
+import { obtenerRutaInicialPorRol } from "../../utils/auth/autorizacion";
 import EstadoCargaRuta from "./EstadoCargaRuta";
 
 function RutaSoloVisitantes() {

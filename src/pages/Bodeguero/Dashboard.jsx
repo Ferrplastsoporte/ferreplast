@@ -9,7 +9,7 @@ import TarjetaEstadistica from "../../components/estadisticas/TarjetaEstadistica
 import {
   obtenerResumenBodega,
   obtenerUltimosProductos,
-} from "../../utils/panelBodeguero";
+} from "../../utils/bodega/panelBodeguero";
 
 import "./css/bodeguero.css";
 import "./css/dashboard.css";

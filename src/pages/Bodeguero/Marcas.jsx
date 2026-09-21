@@ -8,7 +8,7 @@ import {
   limpiarNombreMarca,
   validarNombreMarca,
   validarLogoMarca,
-} from "../../utils/marcas";
+} from "../../utils/catalogo/marcas";
 
 import {
   obtenerUrlLogoMarca,

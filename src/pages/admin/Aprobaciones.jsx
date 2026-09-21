@@ -4,7 +4,7 @@ import {
   NOMBRES_ACCIONES,
   formatearFecha,
   obtenerDetalleCambios,
-} from "../../utils/solicitudes";
+} from "../../utils/solicitudes/solicitudes";
 import AdminHeader from "./components/AdminHeader";
 import "./css/Aprobaciones.css";
 

@@ -3,6 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import FiltrosProducto from "../../components/productos/FiltrosProducto";
 import ListaProductos from "../../components/productos/ListaProductos";
+import {
+  crearPatronBusquedaIlike,
+  normalizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 import "./css/Catalogo.css";
 
 const PRODUCTOS_POR_PAGINA = 20;
@@ -23,7 +27,9 @@ const FILTROS_INICIALES = {
 
 function Catalogo() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const busquedaUrl = searchParams.get("buscar") || "";
+  const busquedaUrl = normalizarTerminoBusqueda(
+    searchParams.get("buscar") || "",
+  );
   const familiaUrl = searchParams.get("categoria") || "";
   const marcaUrl = searchParams.get("marca") || "";
 
@@ -535,7 +541,10 @@ function Catalogo() {
       .eq("est_prod", 2);
 
     if (filtros.busqueda.trim()) {
-      consulta = consulta.ilike("nom_prod", `%${filtros.busqueda.trim()}%`);
+      consulta = consulta.ilike(
+        "nom_prod",
+        crearPatronBusquedaIlike(filtros.busqueda),
+      );
     }
 
     if (filtros.familia) {

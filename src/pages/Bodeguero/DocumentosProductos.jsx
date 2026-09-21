@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  LONGITUD_MAXIMA_BUSQUEDA,
+  sanitizarTerminoBusqueda,
+} from "../../utils/comunes/busqueda";
 
 import {
   obtenerProductosConDocumentos,
@@ -293,7 +297,10 @@ const DocumentosProductos = () => {
           type="text"
           placeholder="Buscar producto..."
           value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
+          onChange={(e) =>
+            setBusqueda(sanitizarTerminoBusqueda(e.target.value))
+          }
+          maxLength={LONGITUD_MAXIMA_BUSQUEDA}
         />
 
         <select

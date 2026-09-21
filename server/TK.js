@@ -14,6 +14,10 @@ import {
 } from "transbank-sdk";
 
 import { createClient } from "@supabase/supabase-js";
+import {
+  normalizarDatosFacturacion,
+  validarDatosFacturacion,
+} from "../src/utils/facturacion/validacionFacturacion.js";
 
 // ======================================================
 // CARGAR .ENV DE LA RAÍZ DEL PROYECTO
@@ -160,6 +164,34 @@ app.post("/api/webpay/create", async (req, res) => {
       });
     }
 
+    let facturacionNormalizada = null;
+
+    if (esFactura) {
+      if (
+        !facturacion ||
+        typeof facturacion !== "object" ||
+        Array.isArray(facturacion)
+      ) {
+        return res.status(400).json({
+          error: "Los datos de facturación no fueron informados correctamente.",
+        });
+      }
+
+      const erroresFacturacion = validarDatosFacturacion(facturacion, {
+        validarRegion: false,
+      });
+      const mensajesFacturacion = Object.values(erroresFacturacion);
+
+      if (mensajesFacturacion.length > 0) {
+        return res.status(400).json({
+          error: mensajesFacturacion[0],
+          campos: erroresFacturacion,
+        });
+      }
+
+      facturacionNormalizada = normalizarDatosFacturacion(facturacion);
+    }
+
     // ==================================================
     // CLIENTE SUPABASE CON JWT DEL USUARIO
     // ==================================================
@@ -230,7 +262,7 @@ app.post("/api/webpay/create", async (req, res) => {
         p_direccion_despacho:
           direccionDespacho?.trim() || null,
         p_es_factura: esFactura,
-        p_facturacion: facturacion,
+        p_facturacion: facturacionNormalizada,
       },
     );
 

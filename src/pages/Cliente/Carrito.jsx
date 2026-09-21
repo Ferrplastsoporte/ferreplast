@@ -3,7 +3,20 @@ import { useNavigate } from "react-router-dom";
 import useVistaCarrito from "../../hooks/useVistaCarrito";
 import useFacturacionCompra from "../../hooks/useFacturacionCompra";
 import { supabase } from "../../lib/supabase";
+import { LONGITUD_MAXIMA_CORREO } from "../../utils/comunes/correo";
+import { LIMITES_FACTURACION } from "../../utils/facturacion/validacionFacturacion";
 import "./css/Carrito.css";
+
+const CAMPOS_FACTURA_POR_ID = {
+  rut_empresa: "rutEmpresa",
+  razon_social: "razonSocial",
+  giro: "giroFactura",
+  correo: "correoFactura",
+  direccion_factura: "direccionFactura",
+  id_region: "regionFactura",
+  id_comuna: "comunaFactura",
+  telefono: "telefonoFactura",
+};
 
 function formatearPrecio(valor) {
   return new Intl.NumberFormat("es-CL", {
@@ -39,14 +52,15 @@ function Carrito() {
   const [errorPago, setErrorPago] = useState("");
   const [regiones, setRegiones] = useState([]);
   const [comunas, setComunas] = useState([]);
-  const [idRegionFactura, setIdRegionFactura] = useState("");
   const [cargandoUbicaciones, setCargandoUbicaciones] = useState(false);
 
   const {
     esFactura,
     datosFactura,
+    erroresFactura,
     seleccionarTipoDocumento,
     actualizarDatoFactura,
+    validarCampoFactura,
     validarFactura,
     obtenerDatosFacturacion,
   } = useFacturacionCompra();
@@ -152,11 +166,11 @@ function Carrito() {
     }
   }
 
-  const comunasFiltradas = idRegionFactura
+  const comunasFiltradas = datosFactura.id_region
     ? comunas.filter(
         (comuna) =>
           Number(comuna.id_reg) ===
-          Number(idRegionFactura)
+          Number(datosFactura.id_region)
       )
     : [];
 
@@ -167,7 +181,7 @@ function Carrito() {
   );
 
   function cambiarRegionFactura(valor) {
-    setIdRegionFactura(valor);
+    actualizarDatoFactura("id_region", valor);
     actualizarDatoFactura("id_comuna", "");
     setErrorPago("");
   }
@@ -176,9 +190,6 @@ function Carrito() {
     seleccionarTipoDocumento(tipo);
     setErrorPago("");
 
-    if (tipo === "boleta") {
-      setIdRegionFactura("");
-    }
   }
 
   function cambiarTipoDespacho(idTipoDespacho) {
@@ -215,17 +226,19 @@ function Carrito() {
     // VALIDAR FACTURACIÓN
     // ==================================================
 
-    const validacionFactura = validarFactura();
+    const validacionFactura = validarFactura({ comunas });
 
     if (!validacionFactura.valido) {
       setErrorPago(validacionFactura.mensaje);
-      return;
-    }
 
-    if (esFactura && !idRegionFactura) {
-      setErrorPago(
-        "Selecciona la región de facturación."
-      );
+      const primerCampoInvalido = Object.keys(
+        validacionFactura.errores ?? {},
+      )[0];
+      const idCampo = CAMPOS_FACTURA_POR_ID[primerCampoInvalido];
+
+      requestAnimationFrame(() => {
+        document.getElementById(idCampo)?.focus();
+      });
 
       return;
     }
@@ -714,9 +727,25 @@ function Carrito() {
                         e.target.value
                       )
                     }
-                    placeholder="76.123.456-7"
+                    onBlur={() =>
+                      validarCampoFactura("rut_empresa")
+                    }
+                    placeholder="76123456-7"
+                    maxLength={LIMITES_FACTURACION.rut_empresa}
+                    required
+                    aria-invalid={Boolean(erroresFactura.rut_empresa)}
+                    aria-describedby={
+                      erroresFactura.rut_empresa
+                        ? "errorRutEmpresa"
+                        : undefined
+                    }
                     disabled={iniciandoPago}
                   />
+                  {erroresFactura.rut_empresa && (
+                    <small id="errorRutEmpresa" className="cart-invoice__error">
+                      {erroresFactura.rut_empresa}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field">
@@ -736,9 +765,25 @@ function Carrito() {
                         e.target.value
                       )
                     }
+                    onBlur={() =>
+                      validarCampoFactura("razon_social")
+                    }
                     placeholder="Nombre o razón social"
+                    maxLength={LIMITES_FACTURACION.razon_social}
+                    required
+                    aria-invalid={Boolean(erroresFactura.razon_social)}
+                    aria-describedby={
+                      erroresFactura.razon_social
+                        ? "errorRazonSocial"
+                        : undefined
+                    }
                     disabled={iniciandoPago}
                   />
+                  {erroresFactura.razon_social && (
+                    <small id="errorRazonSocial" className="cart-invoice__error">
+                      {erroresFactura.razon_social}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field">
@@ -758,9 +803,21 @@ function Carrito() {
                         e.target.value
                       )
                     }
+                    onBlur={() => validarCampoFactura("giro")}
                     placeholder="Actividad comercial"
+                    maxLength={LIMITES_FACTURACION.giro}
+                    required
+                    aria-invalid={Boolean(erroresFactura.giro)}
+                    aria-describedby={
+                      erroresFactura.giro ? "errorGiroFactura" : undefined
+                    }
                     disabled={iniciandoPago}
                   />
+                  {erroresFactura.giro && (
+                    <small id="errorGiroFactura" className="cart-invoice__error">
+                      {erroresFactura.giro}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field">
@@ -780,9 +837,21 @@ function Carrito() {
                         e.target.value
                       )
                     }
+                    onBlur={() => validarCampoFactura("correo")}
                     placeholder="facturacion@empresa.cl"
+                    maxLength={LONGITUD_MAXIMA_CORREO}
+                    required
+                    aria-invalid={Boolean(erroresFactura.correo)}
+                    aria-describedby={
+                      erroresFactura.correo ? "errorCorreoFactura" : undefined
+                    }
                     disabled={iniciandoPago}
                   />
+                  {erroresFactura.correo && (
+                    <small id="errorCorreoFactura" className="cart-invoice__error">
+                      {erroresFactura.correo}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field cart-invoice__field--wide">
@@ -802,9 +871,25 @@ function Carrito() {
                         e.target.value
                       )
                     }
+                    onBlur={() =>
+                      validarCampoFactura("direccion_factura")
+                    }
                     placeholder="Ej: Av. Principal #123"
+                    maxLength={LIMITES_FACTURACION.direccion_factura}
+                    required
+                    aria-invalid={Boolean(erroresFactura.direccion_factura)}
+                    aria-describedby={
+                      erroresFactura.direccion_factura
+                        ? "errorDireccionFactura"
+                        : undefined
+                    }
                     disabled={iniciandoPago}
                   />
+                  {erroresFactura.direccion_factura && (
+                    <small id="errorDireccionFactura" className="cart-invoice__error">
+                      {erroresFactura.direccion_factura}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field">
@@ -814,11 +899,19 @@ function Carrito() {
 
                   <select
                     id="regionFactura"
-                    value={idRegionFactura}
+                    value={datosFactura.id_region}
                     onChange={(e) =>
                       cambiarRegionFactura(
                         e.target.value
                       )
+                    }
+                    onBlur={() => validarCampoFactura("id_region")}
+                    required
+                    aria-invalid={Boolean(erroresFactura.id_region)}
+                    aria-describedby={
+                      erroresFactura.id_region
+                        ? "errorRegionFactura"
+                        : undefined
                     }
                     disabled={
                       cargandoUbicaciones ||
@@ -838,6 +931,11 @@ function Carrito() {
                       </option>
                     ))}
                   </select>
+                  {erroresFactura.id_region && (
+                    <small id="errorRegionFactura" className="cart-invoice__error">
+                      {erroresFactura.id_region}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field">
@@ -856,8 +954,16 @@ function Carrito() {
                         e.target.value
                       )
                     }
+                    onBlur={() => validarCampoFactura("id_comuna")}
+                    required
+                    aria-invalid={Boolean(erroresFactura.id_comuna)}
+                    aria-describedby={
+                      erroresFactura.id_comuna
+                        ? "errorComunaFactura"
+                        : undefined
+                    }
                     disabled={
-                      !idRegionFactura ||
+                      !datosFactura.id_region ||
                       cargandoUbicaciones ||
                       iniciandoPago
                     }
@@ -881,11 +987,16 @@ function Carrito() {
                       )
                     )}
                   </select>
+                  {erroresFactura.id_comuna && (
+                    <small id="errorComunaFactura" className="cart-invoice__error">
+                      {erroresFactura.id_comuna}
+                    </small>
+                  )}
                 </div>
 
                 <div className="cart-invoice__field">
                   <label htmlFor="telefonoFactura">
-                    Teléfono
+                    Teléfono <span className="cart-invoice__optional">(opcional)</span>
                   </label>
 
                   <input
@@ -900,9 +1011,22 @@ function Carrito() {
                         e.target.value
                       )
                     }
+                    onBlur={() => validarCampoFactura("telefono")}
                     placeholder="+56912345678"
+                    maxLength={LIMITES_FACTURACION.telefono}
+                    aria-invalid={Boolean(erroresFactura.telefono)}
+                    aria-describedby={
+                      erroresFactura.telefono
+                        ? "errorTelefonoFactura"
+                        : undefined
+                    }
                     disabled={iniciandoPago}
                   />
+                  {erroresFactura.telefono && (
+                    <small id="errorTelefonoFactura" className="cart-invoice__error">
+                      {erroresFactura.telefono}
+                    </small>
+                  )}
                 </div>
               </section>
             )}

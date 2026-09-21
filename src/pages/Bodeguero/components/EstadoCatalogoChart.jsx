@@ -1,4 +1,4 @@
-import { obtenerPorcentajesEstados } from "../../../utils/panelBodeguero";
+import { obtenerPorcentajesEstados } from "../../../utils/bodega/panelBodeguero";
 
 function EstadoCatalogoChart({ resumen }) {
   const porcentajes = obtenerPorcentajesEstados(resumen);

@@ -4,7 +4,7 @@ import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
   estaAutorizadoPorRol,
   obtenerRutaInicialPorRol,
-} from "../../utils/autorizacion";
+} from "../../utils/auth/autorizacion";
 import EstadoCargaRuta from "./EstadoCargaRuta";
 
 function RutaProtegida({ rolesPermitidos = [] }) {

@@ -1,6 +1,9 @@
-export const isValidEmail = (email) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
+import {
+  esCorreoValido,
+  sanitizarCorreo,
+} from "../comunes/correo";
+
+export const isValidEmail = esCorreoValido;
 
 export const isValidRut = (rut = "") => {
   const rutLimpio = rut.replace(/\./g, "").replace(/\s/g, "").toUpperCase();
@@ -124,7 +127,7 @@ export const sanitizeRegisterField = (name, value) => {
     }
 
     case "email":
-      return value.toLowerCase().replace(/\s/g, "").slice(0, 120);
+      return sanitizarCorreo(value);
 
     case "telefono": {
       const tienePrefijo = value.startsWith("+");

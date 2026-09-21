@@ -5,8 +5,12 @@ import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
   isValidEmail,
   isValidPassword,
-} from "../../utils/validacionAutenticacion";
-import { obtenerRutaInicialPorRol } from "../../utils/autorizacion";
+} from "../../utils/auth/validacionAutenticacion";
+import { obtenerRutaInicialPorRol } from "../../utils/auth/autorizacion";
+import {
+  LONGITUD_MAXIMA_CORREO,
+  sanitizarCorreo,
+} from "../../utils/comunes/correo";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
@@ -15,6 +19,9 @@ const INITIAL_VALUES = {
   email: "",
   password: "",
 };
+
+const sanitizeField = (name, value) =>
+  name === "email" ? sanitizarCorreo(value) : value;
 
 const validateField = (name, value) => {
   const val = typeof value === "string" ? value.trim() : value;
@@ -53,6 +60,7 @@ const LoginForm = () => {
   const { values, errors, handleChange, handleBlur, validateForm } = useFormulario(
     INITIAL_VALUES,
     validateField,
+    sanitizeField,
   );
 
   const { login, loading, modal, hideModal } = useAutenticacion();
@@ -94,7 +102,7 @@ const LoginForm = () => {
         error={errors.email}
         placeholder="correo@ejemplo.cl"
         autoComplete="email"
-        maxLength={120}
+        maxLength={LONGITUD_MAXIMA_CORREO}
       />
 
       <div className="login-group">

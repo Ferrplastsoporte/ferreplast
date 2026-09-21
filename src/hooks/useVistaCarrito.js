@@ -17,7 +17,7 @@ import {
   obtenerDespachoAutomatico,
   calcularCostoDespacho,
   requiereCoordinacionDespacho,
-} from "../utils/utilidadesDespacho";
+} from "../utils/despacho/despacho";
 
 function useVistaCarrito() {
   const [productos, setProductos] = useState([]);

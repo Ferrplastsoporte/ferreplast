@@ -1320,6 +1320,31 @@
     0 0 0 3px rgba(0, 82, 164, 0.09);
 }
 
+.cart-invoice__field input[aria-invalid="true"],
+.cart-invoice__field select[aria-invalid="true"] {
+  border-color: #dc2626;
+  background: #fffafa;
+}
+
+.cart-invoice__field input[aria-invalid="true"]:focus,
+.cart-invoice__field select[aria-invalid="true"]:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.cart-invoice__error {
+  color: #b91c1c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.cart-invoice__optional {
+  color: var(--cart-muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
 .cart-invoice__field input:disabled,
 .cart-invoice__field select:disabled {
   background: #f1f5f9;
