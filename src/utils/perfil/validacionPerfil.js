@@ -1,16 +1,13 @@
 import {
   sanitizarNombreUsuario,
-  sanitizarRutUsuario,
   sanitizarTelefonoUsuario,
   validarNombreUsuario,
-  validarRutUsuario,
   validarTelefonoUsuario,
 } from "../usuarios/validacionUsuarios";
 import { sanitizarCorreo, validarCorreo } from "../comunes/correo";
 
 export const LIMITES_PERFIL = {
   nombre: 80,
-  rut: 10,
   telefono: 12,
   direccion: 120,
 };
@@ -56,8 +53,6 @@ export function sanitizarCampoPerfil(nombre, valor) {
   switch (nombre) {
     case "nombre":
       return sanitizarNombreUsuario(valor);
-    case "rut":
-      return sanitizarRutUsuario(valor);
     case "telefono":
       return sanitizarTelefonoUsuario(valor);
     case "direccion":
@@ -76,8 +71,6 @@ export function validarCampoPerfil(nombre, valor) {
   switch (nombre) {
     case "nombre":
       return validarNombreUsuario(valor);
-    case "rut":
-      return validarRutUsuario(valor);
     case "telefono":
       return validarTelefonoUsuario(valor);
     case "direccion":
@@ -93,30 +86,11 @@ export function validarCampoPerfil(nombre, valor) {
   }
 }
 
-export function validarPerfilCompleto(valores = {}) {
-  const campos = [
-    "nombre",
-    "rut",
-    "telefono",
-    "direccion",
-    "region",
-    "comuna",
-  ];
-
-  return Object.fromEntries(
-    campos
-      .map((campo) => [campo, validarCampoPerfil(campo, valores[campo])])
-      .filter(([, mensaje]) => Boolean(mensaje)),
-  );
-}
-
 export function normalizarPerfil(valores = {}) {
   return {
     nombre: sanitizarNombreUsuario(valores.nombre).trim(),
-    rut: sanitizarRutUsuario(valores.rut),
     telefono: sanitizarTelefonoUsuario(valores.telefono).trim(),
     direccion: sanitizarDireccionPerfil(valores.direccion).trim(),
     idComuna: Number(valores.comuna),
   };
 }
-

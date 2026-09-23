@@ -22,7 +22,6 @@ import "./css/Cuenta.css";
 
 const FORMULARIO_VACIO = {
   nombre: "",
-  rut: "",
   telefono: "",
   direccion: "",
   region: "",
@@ -31,7 +30,6 @@ const FORMULARIO_VACIO = {
 
 const formularioDesdeUsuario = (usuario) => ({
   nombre: usuario?.nom_user ?? "",
-  rut: usuario?.rut_user ?? "",
   telefono: usuario?.phone_user ?? "",
   direccion: usuario?.direc_user ?? "",
   region: String(usuario?.comuna?.region?.id_reg ?? ""),
@@ -54,13 +52,13 @@ function mensajeDeError(error, textoPredeterminado) {
 }
 
 function CampoPerfil({ campo, editando, formulario, errores, onChange, onBlur }) {
-  const { nombre, etiqueta, valor, ancho, opciones, placeholder, ...propiedades } = campo;
+  const { nombre, etiqueta, valor, ancho, opciones, placeholder, soloLectura, ...propiedades } = campo;
   const clase = `cuenta-field${ancho ? " cuenta-field--wide" : ""}`;
 
   return (
     <label className={clase}>
       <span>{etiqueta}</span>
-      {!editando ? (
+      {!editando || soloLectura ? (
         <strong>{valor || "No registrado"}</strong>
       ) : opciones ? (
         <select name={nombre} value={formulario[nombre]} onChange={onChange} onBlur={onBlur} aria-invalid={Boolean(errores[nombre])} {...propiedades}>
@@ -70,7 +68,7 @@ function CampoPerfil({ campo, editando, formulario, errores, onChange, onBlur })
       ) : (
         <input name={nombre} value={formulario[nombre]} onChange={onChange} onBlur={onBlur} aria-invalid={Boolean(errores[nombre])} {...propiedades} />
       )}
-      {editando && errores[nombre] && <small>{errores[nombre]}</small>}
+      {editando && !soloLectura && errores[nombre] && <small>{errores[nombre]}</small>}
     </label>
   );
 }
@@ -166,7 +164,7 @@ function Cuenta() {
 
   const camposPersonales = [
     { nombre: "nombre", etiqueta: "Nombre completo", valor: usuario?.nom_user, ancho: true, maxLength: LIMITES_PERFIL.nombre, autoComplete: "name" },
-    { nombre: "rut", etiqueta: "RUT", valor: usuario?.rut_user, maxLength: LIMITES_PERFIL.rut, placeholder: "12345678-5" },
+    { nombre: "rut", etiqueta: "RUT", valor: usuario?.rut_user, soloLectura: true },
     { nombre: "telefono", etiqueta: "Teléfono", valor: usuario?.phone_user, type: "tel", maxLength: LIMITES_PERFIL.telefono, autoComplete: "tel", placeholder: "+56912345678" },
   ];
   const camposDireccion = [
@@ -195,14 +193,6 @@ function Cuenta() {
     await cargarComunas(idRegion);
   }
 
-  async function detalleDeFuncion(error) {
-    try {
-      return await error?.context?.json();
-    } catch {
-      return null;
-    }
-  }
-
   async function guardarPerfil(evento) {
     evento.preventDefault();
     if (guardando) return;
@@ -215,14 +205,15 @@ function Cuenta() {
     setGuardando(true);
     setMensaje(null);
     const datos = normalizarPerfil(formulario);
-    const { error } = await supabase.functions.invoke("actualizar-perfil", {
-      body: { nombre: datos.nombre, rut: datos.rut, telefono: datos.telefono, direccion: datos.direccion, idComuna: datos.idComuna },
+    const { error } = await supabase.rpc("actualizar_mi_perfil", {
+      p_nombre: datos.nombre,
+      p_telefono: datos.telefono,
+      p_direccion: datos.direccion,
+      p_id_comuna: datos.idComuna,
     });
 
     if (error) {
-      const detalle = await detalleDeFuncion(error);
-      if (detalle?.fieldErrors) setErrores(detalle.fieldErrors);
-      setMensaje({ tipo: "error", texto: detalle?.error || mensajeDeError(error, "No fue posible guardar los cambios.") });
+      setMensaje({ tipo: "error", texto: mensajeDeError(error, "No fue posible guardar los cambios.") });
       setGuardando(false);
       return;
     }
@@ -232,7 +223,6 @@ function Cuenta() {
     setUsuario((actual) => ({
       ...actual,
       nom_user: datos.nombre,
-      rut_user: datos.rut,
       phone_user: datos.telefono,
       direc_user: datos.direccion,
       id_comuna: datos.idComuna,
