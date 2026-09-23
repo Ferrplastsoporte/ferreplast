@@ -332,6 +332,7 @@ function useVistaCarrito() {
     const nuevaComuna = Number(valor);
 
     if (!nuevaComuna) {
+      setIdComunaDespacho(null);
       return;
     }
 

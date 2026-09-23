@@ -31,10 +31,7 @@ function obtenerUrlImagen(rutaImagen) {
     return "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
   }
 
-  if (
-    rutaImagen.startsWith("http://") ||
-    rutaImagen.startsWith("https://")
-  ) {
+  if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
     return rutaImagen;
   }
 
@@ -52,6 +49,7 @@ function Carrito() {
   const [errorPago, setErrorPago] = useState("");
   const [regiones, setRegiones] = useState([]);
   const [comunas, setComunas] = useState([]);
+  const [idRegionDespacho, setIdRegionDespacho] = useState("");
   const [cargandoUbicaciones, setCargandoUbicaciones] = useState(false);
 
   const {
@@ -114,37 +112,35 @@ function Carrito() {
     setCargandoUbicaciones(true);
 
     try {
-      const [resultadoRegiones, resultadoComunas] =
-        await Promise.all([
-          supabase
-            .from("region")
-            .select(
-              `
+      const [resultadoRegiones, resultadoComunas] = await Promise.all([
+        supabase
+          .from("region")
+          .select(
+            `
                 id_reg,
                 nom_reg
-              `
-            )
-            .order("nom_reg", {
-              ascending: true,
-            }),
+              `,
+          )
+          .order("nom_reg", {
+            ascending: true,
+          }),
 
-          supabase
-            .from("comuna")
-            .select(
-              `
+        supabase
+          .from("comuna")
+          .select(
+            `
                 id_comuna,
                 nom_comuna,
                 id_reg
-              `
-            )
-            .order("nom_comuna", {
-              ascending: true,
-            }),
-        ]);
+              `,
+          )
+          .order("nom_comuna", {
+            ascending: true,
+          }),
+      ]);
 
       const errorUbicaciones =
-        resultadoRegiones.error ||
-        resultadoComunas.error;
+        resultadoRegiones.error || resultadoComunas.error;
 
       if (errorUbicaciones) {
         throw errorUbicaciones;
@@ -153,14 +149,9 @@ function Carrito() {
       setRegiones(resultadoRegiones.data ?? []);
       setComunas(resultadoComunas.data ?? []);
     } catch (errorCarga) {
-      console.error(
-        "Error al cargar regiones y comunas:",
-        errorCarga
-      );
+      console.error("Error al cargar regiones y comunas:", errorCarga);
 
-      setErrorPago(
-        "No fue posible cargar las regiones y comunas."
-      );
+      setErrorPago("No fue posible cargar las regiones y comunas.");
     } finally {
       setCargandoUbicaciones(false);
     }
@@ -168,17 +159,25 @@ function Carrito() {
 
   const comunasFiltradas = datosFactura.id_region
     ? comunas.filter(
-        (comuna) =>
-          Number(comuna.id_reg) ===
-          Number(datosFactura.id_region)
+        (comuna) => Number(comuna.id_reg) === Number(datosFactura.id_region),
       )
     : [];
 
   const comunaDespachoActual = comunas.find(
-    (comuna) =>
-      Number(comuna.id_comuna) ===
-      Number(idComunaDespacho)
+    (comuna) => Number(comuna.id_comuna) === Number(idComunaDespacho),
   );
+
+  const comunasDespachoFiltradas = idRegionDespacho
+    ? comunas.filter(
+        (comuna) => Number(comuna.id_reg) === Number(idRegionDespacho),
+      )
+    : [];
+
+  useEffect(() => {
+    if (comunaDespachoActual) {
+      setIdRegionDespacho(String(comunaDespachoActual.id_reg));
+    }
+  }, [comunaDespachoActual]);
 
   function cambiarRegionFactura(valor) {
     actualizarDatoFactura("id_region", valor);
@@ -186,10 +185,15 @@ function Carrito() {
     setErrorPago("");
   }
 
+  function cambiarRegionDespacho(valor) {
+    setIdRegionDespacho(valor);
+    actualizarComunaDespacho("");
+    setErrorPago("");
+  }
+
   function cambiarTipoDocumento(tipo) {
     seleccionarTipoDocumento(tipo);
     setErrorPago("");
-
   }
 
   function cambiarTipoDespacho(idTipoDespacho) {
@@ -215,9 +219,7 @@ function Carrito() {
     // ==================================================
 
     if (!despachoListo || !despachoSeleccionado) {
-      setErrorPago(
-        "Selecciona una modalidad de entrega antes de continuar."
-      );
+      setErrorPago("Selecciona una modalidad de entrega antes de continuar.");
 
       return;
     }
@@ -247,13 +249,8 @@ function Carrito() {
     // VALIDAR TOTAL
     // ==================================================
 
-    if (
-      !Number.isInteger(Math.round(total)) ||
-      total <= 0
-    ) {
-      setErrorPago(
-        "El total de la compra no es válido."
-      );
+    if (!Number.isInteger(Math.round(total)) || total <= 0) {
+      setErrorPago("El total de la compra no es válido.");
 
       return;
     }
@@ -262,28 +259,22 @@ function Carrito() {
     // PREPARAR FACTURACIÓN
     // ==================================================
 
-    const facturacion =
-      obtenerDatosFacturacion();
+    const facturacion = obtenerDatosFacturacion();
 
     // ==================================================
     // PREPARAR DESPACHO
     // ==================================================
 
     const datosDespacho = {
-      id_tipo_despacho: Number(
-        despachoSeleccionado.id_tipo_despacho
-      ),
+      id_tipo_despacho: Number(despachoSeleccionado.id_tipo_despacho),
 
-      nom_tipo_despacho:
-        despachoSeleccionado.nom_tipo_despacho,
+      nom_tipo_despacho: despachoSeleccionado.nom_tipo_despacho,
 
       costo_envio: Number(envio),
 
-      requiere_coordinacion:
-        requiereCoordinacion,
+      requiere_coordinacion: requiereCoordinacion,
 
-      direccion_despacho:
-        direccionDespacho.trim(),
+      direccion_despacho: direccionDespacho.trim(),
     };
 
     // ==================================================
@@ -292,23 +283,17 @@ function Carrito() {
 
     sessionStorage.setItem(
       "ferreplast_checkout_facturacion",
-      JSON.stringify(facturacion)
+      JSON.stringify(facturacion),
     );
 
     sessionStorage.setItem(
       "ferreplast_checkout_despacho",
-      JSON.stringify(datosDespacho)
+      JSON.stringify(datosDespacho),
     );
 
-    console.log(
-      "Facturación preparada:",
-      facturacion
-    );
+    console.log("Facturación preparada:", facturacion);
 
-    console.log(
-      "Despacho preparado:",
-      datosDespacho
-    );
+    console.log("Despacho preparado:", datosDespacho);
 
     // ==================================================
     // INICIAR PAGO
@@ -326,112 +311,78 @@ function Carrito() {
       } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        throw new Error(
-          "No se encontró una sesión válida."
-        );
+        throw new Error("No se encontró una sesión válida.");
       }
 
       // ==================================================
       // CREAR PEDIDO + DESPACHO + FACTURA + PAGO
       // ==================================================
 
-      console.log(
-        "BODY FINAL WEBPAY:",
-        {
-          userId: usuario.id,
-          accessToken: "RECIBIDO",
-          idTipoDespacho: Number(
-            despachoSeleccionado.id_tipo_despacho
-          ),
-          idComuna: Number(idComunaDespacho),
-          direccionDespacho:
-            direccionDespacho,
-          esFactura: Boolean(esFactura),
-          facturacion: esFactura
-            ? facturacion?.detalle_factura
-            : null,
-        }
-      );
+      console.log("BODY FINAL WEBPAY:", {
+        userId: usuario.id,
+        accessToken: "RECIBIDO",
+        idTipoDespacho: Number(despachoSeleccionado.id_tipo_despacho),
+        idComuna: Number(idComunaDespacho),
+        direccionDespacho: direccionDespacho,
+        esFactura: Boolean(esFactura),
+        facturacion: esFactura ? facturacion?.detalle_factura : null,
+      });
       console.log("SESSION USER:", session.user.id);
-        console.log("USUARIO CARRITO:", usuario.id);
-      const respuesta = await fetch(
-        "http://localhost:3000/api/webpay/create",
-        {
-          method: "POST",
+      console.log("USUARIO CARRITO:", usuario.id);
+      const respuesta = await fetch("http://localhost:3000/api/webpay/create", {
+        method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-          body: JSON.stringify({
-            userId: usuario.id,
+        body: JSON.stringify({
+          userId: usuario.id,
 
-            accessToken:
-              session.access_token,
+          accessToken: session.access_token,
 
-            idTipoDespacho: Number(
-              despachoSeleccionado.id_tipo_despacho
-            ),
+          idTipoDespacho: Number(despachoSeleccionado.id_tipo_despacho),
 
-            idComuna:
-              Number(idComunaDespacho),
+          idComuna: Number(idComunaDespacho),
 
-            direccionDespacho:
-              direccionDespacho,
+          direccionDespacho: direccionDespacho,
 
-            esFactura:
-              Boolean(esFactura),
+          esFactura: Boolean(esFactura),
 
-            facturacion: esFactura
-              ? facturacion?.detalle_factura
-              : null,
-          }),
-        }
-      );
+          facturacion: esFactura ? facturacion?.detalle_factura : null,
+        }),
+      });
 
-      const data =
-        await respuesta.json();
+      const data = await respuesta.json();
 
       // ==================================================
       // VALIDAR RESPUESTA DEL BACKEND
       // ==================================================
 
       if (!respuesta.ok) {
-        throw new Error(
-          data.error ||
-            "No fue posible iniciar el pago."
-        );
+        throw new Error(data.error || "No fue posible iniciar el pago.");
       }
 
-      console.log(
-        "Pago Webpay iniciado:",
-        {
-          idPedido:
-            data.idPedido,
+      console.log("Pago Webpay iniciado:", {
+        idPedido: data.idPedido,
 
-          idPago:
-            data.idPago,
+        idPago: data.idPago,
 
-          buyOrder:
-            data.buyOrder,
+        buyOrder: data.buyOrder,
 
-          monto:
-            data.monto,
-        }
-      );
+        monto: data.monto,
+      });
 
       // ==================================================
       // REDIRIGIR A WEBPAY
       // ==================================================
 
-      const formulario =
-        document.createElement("form");
+      const formulario = document.createElement("form");
 
       formulario.method = "POST";
       formulario.action = data.url;
 
-      const token =
-        document.createElement("input");
+      const token = document.createElement("input");
 
       token.type = "hidden";
       token.name = "token_ws";
@@ -439,21 +390,14 @@ function Carrito() {
 
       formulario.appendChild(token);
 
-      document.body.appendChild(
-        formulario
-      );
+      document.body.appendChild(formulario);
 
       formulario.submit();
-
     } catch (errorInicio) {
-      console.error(
-        "Error iniciando Webpay:",
-        errorInicio
-      );
+      console.error("Error iniciando Webpay:", errorInicio);
 
       setErrorPago(
-        errorInicio.message ||
-          "No fue posible conectar con Webpay."
+        errorInicio.message || "No fue posible conectar con Webpay.",
       );
 
       setIniciandoPago(false);
@@ -501,11 +445,7 @@ function Carrito() {
       return "El costo de envío a otras ciudades no está incluido en este pago. Una vez realizada la compra, Ferreplast se pondrá en contacto contigo para coordinar el transporte y su costo.";
     }
 
-    if (
-      Number(
-        despachoSeleccionado.id_tipo_despacho
-      ) === 1
-    ) {
+    if (Number(despachoSeleccionado.id_tipo_despacho) === 1) {
       return "Tu pedido quedará disponible para retiro en tienda.";
     }
 
@@ -524,16 +464,11 @@ function Carrito() {
     <main className="cart-page">
       <header className="cart-page__header">
         <div>
-          <span className="cart-page__eyebrow">
-            Tu compra
-          </span>
+          <span className="cart-page__eyebrow">Tu compra</span>
 
           <h1>Carrito de compras</h1>
 
-          <p>
-            Revisa los productos agregados antes
-            de continuar.
-          </p>
+          <p>Revisa los productos agregados antes de continuar.</p>
         </div>
 
         {productos.length > 0 && (
@@ -549,58 +484,39 @@ function Carrito() {
       </header>
 
       {(error || errorPago) && (
-        <p className="cart-page__error">
-          {errorPago || error}
-        </p>
+        <p className="cart-page__error">{errorPago || error}</p>
       )}
 
       {productos.length === 0 ? (
         <section className="cart-empty">
-          <span className="cart-empty__icon">
-            🛒
-          </span>
+          <span className="cart-empty__icon">🛒</span>
 
           <h2>Tu carrito está vacío</h2>
 
-          <p>
-            Agrega productos desde el catálogo
-            para comenzar tu compra.
-          </p>
+          <p>Agrega productos desde el catálogo para comenzar tu compra.</p>
         </section>
       ) : (
         <div className="cart-layout">
           <div className="cart-main">
             <section className="cart-products">
               {productos.map((producto) => {
-                const precioActual =
-                  Number(producto.precio_act);
+                const precioActual = Number(producto.precio_act);
 
-                const precioNormal =
-                  Number(producto.precio_prod);
+                const precioNormal = Number(producto.precio_prod);
 
                 const precio =
-                  precioActual > 0
-                    ? precioActual
-                    : precioNormal || 0;
+                  precioActual > 0 ? precioActual : precioNormal || 0;
 
-                const subtotalProducto =
-                  precio *
-                  Number(producto.cantidad);
+                const subtotalProducto = precio * Number(producto.cantidad);
 
                 return (
-                  <article
-                    key={producto.id_prod}
-                    className="cart-item"
-                  >
+                  <article key={producto.id_prod} className="cart-item">
                     <img
-                      src={obtenerUrlImagen(
-                        producto.imagen_url
-                      )}
+                      src={obtenerUrlImagen(producto.imagen_url)}
                       alt={producto.nom_prod}
                       className="cart-item__image"
                       onError={(event) => {
-                        event.currentTarget.onerror =
-                          null;
+                        event.currentTarget.onerror = null;
 
                         event.currentTarget.src =
                           "https://placehold.co/400x400/f1f5f9/9ca3af?text=Sin+imagen";
@@ -608,25 +524,16 @@ function Carrito() {
                     />
 
                     <div className="cart-item__information">
-                      <h2>
-                        {producto.nom_prod}
-                      </h2>
+                      <h2>{producto.nom_prod}</h2>
 
                       <span className="cart-item__unit-price">
-                        {formatearPrecio(
-                          precio
-                        )}{" "}
-                        c/u
+                        {formatearPrecio(precio)} c/u
                       </span>
 
                       <button
                         type="button"
                         className="cart-item__remove"
-                        onClick={() =>
-                          eliminarProducto(
-                            producto.id_prod
-                          )
-                        }
+                        onClick={() => eliminarProducto(producto.id_prod)}
                         disabled={actualizando}
                       >
                         Quitar producto
@@ -643,21 +550,15 @@ function Carrito() {
                           onClick={() =>
                             cambiarCantidad(
                               producto.id_prod,
-                              producto.cantidad -
-                                1
+                              producto.cantidad - 1,
                             )
                           }
-                          disabled={
-                            actualizando ||
-                            producto.cantidad <= 1
-                          }
+                          disabled={actualizando || producto.cantidad <= 1}
                         >
                           −
                         </button>
 
-                        <strong>
-                          {producto.cantidad}
-                        </strong>
+                        <strong>{producto.cantidad}</strong>
 
                         <button
                           type="button"
@@ -665,14 +566,12 @@ function Carrito() {
                           onClick={() =>
                             cambiarCantidad(
                               producto.id_prod,
-                              producto.cantidad +
-                                1
+                              producto.cantidad + 1,
                             )
                           }
                           disabled={
                             actualizando ||
-                            producto.cantidad >=
-                              producto.stock_prod
+                            producto.cantidad >= producto.stock_prod
                           }
                         >
                           +
@@ -681,9 +580,7 @@ function Carrito() {
                     </div>
 
                     <strong className="cart-item__subtotal">
-                      {formatearPrecio(
-                        subtotalProducto
-                      )}
+                      {formatearPrecio(subtotalProducto)}
                     </strong>
                   </article>
                 );
@@ -694,50 +591,34 @@ function Carrito() {
               <section className="cart-invoice">
                 <div className="cart-invoice__header">
                   <div>
-                    <span className="cart-invoice__eyebrow">
-                      Factura
-                    </span>
+                    <span className="cart-invoice__eyebrow">Factura</span>
 
-                    <h3>
-                      Datos de facturación
-                    </h3>
+                    <h3>Datos de facturación</h3>
 
                     <p>
-                      Ingresa los datos que se
-                      utilizarán para emitir la
+                      Ingresa los datos que se utilizarán para emitir la
                       factura.
                     </p>
                   </div>
                 </div>
 
                 <div className="cart-invoice__field">
-                  <label htmlFor="rutEmpresa">
-                    RUT empresa
-                  </label>
+                  <label htmlFor="rutEmpresa">RUT empresa</label>
 
                   <input
                     id="rutEmpresa"
                     type="text"
-                    value={
-                      datosFactura.rut_empresa
-                    }
+                    value={datosFactura.rut_empresa}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "rut_empresa",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("rut_empresa", e.target.value)
                     }
-                    onBlur={() =>
-                      validarCampoFactura("rut_empresa")
-                    }
+                    onBlur={() => validarCampoFactura("rut_empresa")}
                     placeholder="76123456-7"
                     maxLength={LIMITES_FACTURACION.rut_empresa}
                     required
                     aria-invalid={Boolean(erroresFactura.rut_empresa)}
                     aria-describedby={
-                      erroresFactura.rut_empresa
-                        ? "errorRutEmpresa"
-                        : undefined
+                      erroresFactura.rut_empresa ? "errorRutEmpresa" : undefined
                     }
                     disabled={iniciandoPago}
                   />
@@ -749,25 +630,16 @@ function Carrito() {
                 </div>
 
                 <div className="cart-invoice__field">
-                  <label htmlFor="razonSocial">
-                    Razón social
-                  </label>
+                  <label htmlFor="razonSocial">Razón social</label>
 
                   <input
                     id="razonSocial"
                     type="text"
-                    value={
-                      datosFactura.razon_social
-                    }
+                    value={datosFactura.razon_social}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "razon_social",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("razon_social", e.target.value)
                     }
-                    onBlur={() =>
-                      validarCampoFactura("razon_social")
-                    }
+                    onBlur={() => validarCampoFactura("razon_social")}
                     placeholder="Nombre o razón social"
                     maxLength={LIMITES_FACTURACION.razon_social}
                     required
@@ -780,28 +652,24 @@ function Carrito() {
                     disabled={iniciandoPago}
                   />
                   {erroresFactura.razon_social && (
-                    <small id="errorRazonSocial" className="cart-invoice__error">
+                    <small
+                      id="errorRazonSocial"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.razon_social}
                     </small>
                   )}
                 </div>
 
                 <div className="cart-invoice__field">
-                  <label htmlFor="giroFactura">
-                    Giro
-                  </label>
+                  <label htmlFor="giroFactura">Giro</label>
 
                   <input
                     id="giroFactura"
                     type="text"
-                    value={
-                      datosFactura.giro
-                    }
+                    value={datosFactura.giro}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "giro",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("giro", e.target.value)
                     }
                     onBlur={() => validarCampoFactura("giro")}
                     placeholder="Actividad comercial"
@@ -814,28 +682,24 @@ function Carrito() {
                     disabled={iniciandoPago}
                   />
                   {erroresFactura.giro && (
-                    <small id="errorGiroFactura" className="cart-invoice__error">
+                    <small
+                      id="errorGiroFactura"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.giro}
                     </small>
                   )}
                 </div>
 
                 <div className="cart-invoice__field">
-                  <label htmlFor="correoFactura">
-                    Correo
-                  </label>
+                  <label htmlFor="correoFactura">Correo</label>
 
                   <input
                     id="correoFactura"
                     type="email"
-                    value={
-                      datosFactura.correo
-                    }
+                    value={datosFactura.correo}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "correo",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("correo", e.target.value)
                     }
                     onBlur={() => validarCampoFactura("correo")}
                     placeholder="facturacion@empresa.cl"
@@ -848,7 +712,10 @@ function Carrito() {
                     disabled={iniciandoPago}
                   />
                   {erroresFactura.correo && (
-                    <small id="errorCorreoFactura" className="cart-invoice__error">
+                    <small
+                      id="errorCorreoFactura"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.correo}
                     </small>
                   )}
@@ -862,18 +729,11 @@ function Carrito() {
                   <input
                     id="direccionFactura"
                     type="text"
-                    value={
-                      datosFactura.direccion_factura
-                    }
+                    value={datosFactura.direccion_factura}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "direccion_factura",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("direccion_factura", e.target.value)
                     }
-                    onBlur={() =>
-                      validarCampoFactura("direccion_factura")
-                    }
+                    onBlur={() => validarCampoFactura("direccion_factura")}
                     placeholder="Ej: Av. Principal #123"
                     maxLength={LIMITES_FACTURACION.direccion_factura}
                     required
@@ -886,25 +746,22 @@ function Carrito() {
                     disabled={iniciandoPago}
                   />
                   {erroresFactura.direccion_factura && (
-                    <small id="errorDireccionFactura" className="cart-invoice__error">
+                    <small
+                      id="errorDireccionFactura"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.direccion_factura}
                     </small>
                   )}
                 </div>
 
                 <div className="cart-invoice__field">
-                  <label htmlFor="regionFactura">
-                    Región
-                  </label>
+                  <label htmlFor="regionFactura">Región</label>
 
                   <select
                     id="regionFactura"
                     value={datosFactura.id_region}
-                    onChange={(e) =>
-                      cambiarRegionFactura(
-                        e.target.value
-                      )
-                    }
+                    onChange={(e) => cambiarRegionFactura(e.target.value)}
                     onBlur={() => validarCampoFactura("id_region")}
                     required
                     aria-invalid={Boolean(erroresFactura.id_region)}
@@ -913,46 +770,34 @@ function Carrito() {
                         ? "errorRegionFactura"
                         : undefined
                     }
-                    disabled={
-                      cargandoUbicaciones ||
-                      iniciandoPago
-                    }
+                    disabled={cargandoUbicaciones || iniciandoPago}
                   >
-                    <option value="">
-                      Seleccionar región
-                    </option>
+                    <option value="">Seleccionar región</option>
 
                     {regiones.map((region) => (
-                      <option
-                        key={region.id_reg}
-                        value={region.id_reg}
-                      >
+                      <option key={region.id_reg} value={region.id_reg}>
                         {region.nom_reg}
                       </option>
                     ))}
                   </select>
                   {erroresFactura.id_region && (
-                    <small id="errorRegionFactura" className="cart-invoice__error">
+                    <small
+                      id="errorRegionFactura"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.id_region}
                     </small>
                   )}
                 </div>
 
                 <div className="cart-invoice__field">
-                  <label htmlFor="comunaFactura">
-                    Comuna
-                  </label>
+                  <label htmlFor="comunaFactura">Comuna</label>
 
                   <select
                     id="comunaFactura"
-                    value={
-                      datosFactura.id_comuna
-                    }
+                    value={datosFactura.id_comuna}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "id_comuna",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("id_comuna", e.target.value)
                     }
                     onBlur={() => validarCampoFactura("id_comuna")}
                     required
@@ -968,27 +813,19 @@ function Carrito() {
                       iniciandoPago
                     }
                   >
-                    <option value="">
-                      Seleccionar comuna
-                    </option>
+                    <option value="">Seleccionar comuna</option>
 
-                    {comunasFiltradas.map(
-                      (comuna) => (
-                        <option
-                          key={
-                            comuna.id_comuna
-                          }
-                          value={
-                            comuna.id_comuna
-                          }
-                        >
-                          {comuna.nom_comuna}
-                        </option>
-                      )
-                    )}
+                    {comunasFiltradas.map((comuna) => (
+                      <option key={comuna.id_comuna} value={comuna.id_comuna}>
+                        {comuna.nom_comuna}
+                      </option>
+                    ))}
                   </select>
                   {erroresFactura.id_comuna && (
-                    <small id="errorComunaFactura" className="cart-invoice__error">
+                    <small
+                      id="errorComunaFactura"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.id_comuna}
                     </small>
                   )}
@@ -996,20 +833,16 @@ function Carrito() {
 
                 <div className="cart-invoice__field">
                   <label htmlFor="telefonoFactura">
-                    Teléfono <span className="cart-invoice__optional">(opcional)</span>
+                    Teléfono{" "}
+                    <span className="cart-invoice__optional">(opcional)</span>
                   </label>
 
                   <input
                     id="telefonoFactura"
                     type="tel"
-                    value={
-                      datosFactura.telefono
-                    }
+                    value={datosFactura.telefono}
                     onChange={(e) =>
-                      actualizarDatoFactura(
-                        "telefono",
-                        e.target.value
-                      )
+                      actualizarDatoFactura("telefono", e.target.value)
                     }
                     onBlur={() => validarCampoFactura("telefono")}
                     placeholder="+56912345678"
@@ -1023,7 +856,10 @@ function Carrito() {
                     disabled={iniciandoPago}
                   />
                   {erroresFactura.telefono && (
-                    <small id="errorTelefonoFactura" className="cart-invoice__error">
+                    <small
+                      id="errorTelefonoFactura"
+                      className="cart-invoice__error"
+                    >
                       {erroresFactura.telefono}
                     </small>
                   )}
@@ -1038,17 +874,13 @@ function Carrito() {
             <div className="cart-summary__row">
               <span>Subtotal</span>
 
-              <strong>
-                {formatearPrecio(subtotal)}
-              </strong>
+              <strong>{formatearPrecio(subtotal)}</strong>
             </div>
 
             <div className="cart-summary__row">
               <span>Envío</span>
 
-              <strong>
-                {obtenerTextoEnvio()}
-              </strong>
+              <strong>{obtenerTextoEnvio()}</strong>
             </div>
 
             {/* ================================================= 
@@ -1056,283 +888,235 @@ function Carrito() {
             ================================================= */}
 
             <div className="cart-summary__shipping">
-              <h3>
-                Modalidad de entrega
-              </h3>
+              <h3>Modalidad de entrega</h3>
 
               {!usuario && (
                 <p className="cart-summary__shipping-message">
-                  Inicia sesión para conocer
-                  tus opciones y costos de
-                  despacho.
+                  Inicia sesión para conocer tus opciones y costos de despacho.
                 </p>
               )}
 
-              {usuario &&
-                opcionesDespacho.length >
-                  0 && (
-                  <div className="cart-summary__shipping-options">
-                    {opcionesDespacho.map(
-                      (tipo) => {
-                        const nombreTipo =
-                          tipo.nom_tipo_despacho?.toLowerCase() ||
-                          "";
+              {usuario && opcionesDespacho.length > 0 && (
+                <div className="cart-summary__shipping-options">
+                  {opcionesDespacho.map((tipo) => {
+                    const nombreTipo =
+                      tipo.nom_tipo_despacho?.toLowerCase() || "";
 
-                        const esRetiro =
-                          nombreTipo.includes(
-                            "retiro"
-                          );
+                    const esRetiro = nombreTipo.includes("retiro");
 
-                        const esUrbano =
-                          nombreTipo.includes(
-                            "urbano"
-                          );
+                    const esUrbano = nombreTipo.includes("urbano");
 
-                        const esAledano =
-                          nombreTipo.includes(
-                            "aledaño"
-                          );
+                    const esAledano = nombreTipo.includes("aledaño");
 
-                        const seleccionado =
-                          Number(
-                            idTipoDespachoSeleccionado
-                          ) ===
-                          Number(
-                            tipo.id_tipo_despacho
-                          );
+                    const seleccionado =
+                      Number(idTipoDespachoSeleccionado) ===
+                      Number(tipo.id_tipo_despacho);
 
-                        return (
-                          <div
-                            key={
-                              tipo.id_tipo_despacho
+                    return (
+                      <div key={tipo.id_tipo_despacho}>
+                        <label className="cart-summary__option">
+                          <input
+                            type="radio"
+                            name="tipoDespacho"
+                            value={tipo.id_tipo_despacho}
+                            checked={seleccionado}
+                            onChange={() =>
+                              cambiarTipoDespacho(tipo.id_tipo_despacho)
                             }
-                          >
-                            <label className="cart-summary__option">
-                              <input
-                                type="radio"
-                                name="tipoDespacho"
-                                value={
-                                  tipo.id_tipo_despacho
-                                }
-                                checked={
-                                  seleccionado
-                                }
-                                onChange={() =>
-                                  cambiarTipoDespacho(
-                                    tipo.id_tipo_despacho
-                                  )
-                                }
-                                disabled={
-                                  iniciandoPago
-                                }
-                              />
+                            disabled={iniciandoPago}
+                          />
 
-                              <span className="cart-summary__shipping-option-content">
-                                <strong>
-                                  {
-                                    tipo.nom_tipo_despacho
-                                  }
-                                </strong>
+                          <span className="cart-summary__shipping-option-content">
+                            <strong>{tipo.nom_tipo_despacho}</strong>
 
-                                <small>
-                                  {Number(
-                                    tipo.costo
-                                  ) === 0
-                                    ? tipo.requiere_coordinacion
-                                      ? "Costo por coordinar"
-                                      : "Gratis"
-                                    : formatearPrecio(
-                                        tipo.costo
-                                      )}
-                                </small>
-                              </span>
-                            </label>
+                            <small>
+                              {Number(tipo.costo) === 0
+                                ? tipo.requiere_coordinacion
+                                  ? "Costo por coordinar"
+                                  : "Gratis"
+                                : formatearPrecio(tipo.costo)}
+                            </small>
+                          </span>
+                        </label>
 
-                            {/* RETIRO EN TIENDA */}
+                        {/* RETIRO EN TIENDA */}
 
-                            {seleccionado &&
-                              esRetiro && (
-                                <div className="cart-summary__shipping-detail">
+                        {seleccionado && esRetiro && (
+                          <div className="cart-summary__shipping-detail">
+                            <p>
+                              Tu pedido quedará disponible para retiro en
+                              tienda.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* DESPACHO */}
+
+                        {seleccionado && !esRetiro && (
+                          <div className="cart-summary__shipping-detail">
+                            {!editandoDireccion ? (
+                              <>
+                                <div className="cart-summary__address">
+                                  <strong>Dirección de despacho</strong>
+
+                                  <p>{direccionDespacho || "Sin dirección"}</p>
+
                                   <p>
-                                    Tu pedido quedará disponible para retiro en tienda.
+                                    {comunaDespachoActual?.nom_comuna ||
+                                      "Sin comuna"}
                                   </p>
                                 </div>
-                              )}
 
-                            {/* DESPACHO */}
+                                <button
+                                  type="button"
+                                  className="cart-summary__edit-address"
+                                  onClick={iniciarEdicionDireccion}
+                                  disabled={iniciandoPago}
+                                >
+                                  Modificar dirección
+                                </button>
+                              </>
+                            ) : (
+                              <div className="cart-summary__address-edit">
+                                {/* DIRECCIÓN */}
 
-                            {seleccionado &&
-                              !esRetiro && (
-                                <div className="cart-summary__shipping-detail">
-                                  {!editandoDireccion ? (
-                                    <>
-                                      <div className="cart-summary__address">
-                                        <strong>
-                                          Dirección de despacho
-                                        </strong>
+                                <div className="cart-summary__field">
+                                  <label htmlFor="direccionDespacho">
+                                    Dirección
+                                  </label>
 
-                                        <p>
-                                          {direccionDespacho ||
-                                            "Sin dirección"}
-                                        </p>
+                                  <input
+                                    id="direccionDespacho"
+                                    type="text"
+                                    value={direccionDespacho}
+                                    onChange={(e) =>
+                                      actualizarDireccionDespacho(
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="Ingresa tu dirección"
+                                    disabled={iniciandoPago}
+                                  />
+                                </div>
 
-                                        <p>
-                                          {comunaDespachoActual?.nom_comuna ||
-                                            "Sin comuna"}
-                                        </p>
-                                      </div>
+                                {/* REGIÓN Y COMUNA */}
 
-                                      <button
-                                        type="button"
-                                        className="cart-summary__edit-address"
-                                        onClick={
-                                          iniciarEdicionDireccion
-                                        }
-                                        disabled={
-                                          iniciandoPago
-                                        }
-                                      >
-                                        Modificar dirección
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <div className="cart-summary__address-edit">
-                                      {/* DIRECCIÓN */}
+                                {esAledano && (
+                                  <div className="cart-summary__field">
+                                    <label htmlFor="regionDespacho">
+                                      Región
+                                    </label>
 
-                                      <div className="cart-summary__field">
-                                        <label htmlFor="direccionDespacho">
-                                          Dirección
-                                        </label>
+                                    <select
+                                      id="regionDespacho"
+                                      value={idRegionDespacho}
+                                      onChange={(e) =>
+                                        cambiarRegionDespacho(e.target.value)
+                                      }
+                                      disabled={
+                                        iniciandoPago || cargandoUbicaciones
+                                      }
+                                    >
+                                      <option value="">
+                                        Selecciona una región
+                                      </option>
 
-                                        <input
-                                          id="direccionDespacho"
-                                          type="text"
-                                          value={
-                                            direccionDespacho
-                                          }
-                                          onChange={(
-                                            e
-                                          ) =>
-                                            actualizarDireccionDespacho(
-                                              e.target
-                                                .value
-                                            )
-                                          }
-                                          placeholder="Ingresa tu dirección"
-                                          disabled={
-                                            iniciandoPago
-                                          }
-                                        />
-                                      </div>
+                                      {regiones.map((region) => (
+                                        <option
+                                          key={region.id_reg}
+                                          value={region.id_reg}
+                                        >
+                                          {region.nom_reg}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                )}
 
-                                      {/* COMUNA */}
+                                <div className="cart-summary__field">
+                                  <label htmlFor="comunaDespacho">Comuna</label>
 
-                                      <div className="cart-summary__field">
-                                        <label htmlFor="comunaDespacho">
-                                          Comuna
-                                        </label>
+                                  {esAledano ? (
+                                    <select
+                                      id="comunaDespacho"
+                                      value={idComunaDespacho || ""}
+                                      onChange={(e) =>
+                                        actualizarComunaDespacho(e.target.value)
+                                      }
+                                      disabled={
+                                        iniciandoPago ||
+                                        cargandoUbicaciones ||
+                                        !idRegionDespacho
+                                      }
+                                    >
+                                      <option value="">
+                                        {idRegionDespacho
+                                          ? "Selecciona una comuna"
+                                          : "Primero selecciona una región"}
+                                      </option>
 
-                                        {esAledano ? (
-                                          <select
-                                            id="comunaDespacho"
-                                            value={
-                                              idComunaDespacho ||
-                                              ""
-                                            }
-                                            onChange={(
-                                              e
-                                            ) =>
-                                              actualizarComunaDespacho(
-                                                e.target
-                                                  .value
-                                              )
-                                            }
-                                            disabled={
-                                              iniciandoPago
-                                            }
+                                      {comunasDespachoFiltradas.map(
+                                        (comuna) => (
+                                          <option
+                                            key={comuna.id_comuna}
+                                            value={comuna.id_comuna}
                                           >
-                                            <option value="">
-                                              Selecciona una comuna
-                                            </option>
-
-                                            {comunas.map(
-                                              (
-                                                comuna
-                                              ) => (
-                                                <option
-                                                  key={
-                                                    comuna.id_comuna
-                                                  }
-                                                  value={
-                                                    comuna.id_comuna
-                                                  }
-                                                >
-                                                  {
-                                                    comuna.nom_comuna
-                                                  }
-                                                </option>
-                                              )
-                                            )}
-                                          </select>
-                                        ) : (
-                                          <input
-                                            type="text"
-                                            value={
-                                              comunaDespachoActual?.nom_comuna ||
-                                              "Puerto Montt"
-                                            }
-                                            disabled
-                                          />
-                                        )}
-                                      </div>
-
-                                      {/* MENSAJE URBANO */}
-
-                                      {esUrbano && (
-                                        <small className="cart-summary__shipping-message">
-                                          El despacho urbano está disponible solamente dentro de Puerto Montt urbano.
-                                        </small>
+                                            {comuna.nom_comuna}
+                                          </option>
+                                        ),
                                       )}
-
-                                      {/* BOTONES */}
-
-                                      <div className="cart-summary__address-actions">
-                                        <button
-                                          type="button"
-                                          className="cart-summary__confirm-address"
-                                          onClick={
-                                            confirmarDireccionDespacho
-                                          }
-                                          disabled={
-                                            iniciandoPago
-                                          }
-                                        >
-                                          Confirmar dirección
-                                        </button>
-
-                                        <button
-                                          type="button"
-                                          className="cart-summary__cancel-address"
-                                          onClick={
-                                            cancelarEdicionDireccion
-                                          }
-                                          disabled={
-                                            iniciandoPago
-                                          }
-                                        >
-                                          Cancelar
-                                        </button>
-                                      </div>
-                                    </div>
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={
+                                        comunaDespachoActual?.nom_comuna ||
+                                        "Puerto Montt"
+                                      }
+                                      disabled
+                                    />
                                   )}
                                 </div>
-                              )}
+
+                                {/* MENSAJE URBANO */}
+
+                                {esUrbano && (
+                                  <small className="cart-summary__shipping-message">
+                                    El despacho urbano está disponible solamente
+                                    dentro de Puerto Montt urbano.
+                                  </small>
+                                )}
+
+                                {/* BOTONES */}
+
+                                <div className="cart-summary__address-actions">
+                                  <button
+                                    type="button"
+                                    className="cart-summary__confirm-address"
+                                    onClick={confirmarDireccionDespacho}
+                                    disabled={iniciandoPago}
+                                  >
+                                    Confirmar dirección
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="cart-summary__cancel-address"
+                                    onClick={cancelarEdicionDireccion}
+                                    disabled={iniciandoPago}
+                                  >
+                                    Cancelar
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="cart-summary__divider" />
@@ -1342,9 +1126,7 @@ function Carrito() {
             ================================================= */}
 
             <div className="cart-summary__document">
-              <h3>
-                Documento tributario
-              </h3>
+              <h3>Documento tributario</h3>
 
               <label className="cart-summary__option">
                 <input
@@ -1352,11 +1134,7 @@ function Carrito() {
                   name="tipoDocumentoTributario"
                   value="boleta"
                   checked={!esFactura}
-                  onChange={() =>
-                    cambiarTipoDocumento(
-                      "boleta"
-                    )
-                  }
+                  onChange={() => cambiarTipoDocumento("boleta")}
                 />
 
                 <span>Boleta</span>
@@ -1368,11 +1146,7 @@ function Carrito() {
                   name="tipoDocumentoTributario"
                   value="factura"
                   checked={esFactura}
-                  onChange={() =>
-                    cambiarTipoDocumento(
-                      "factura"
-                    )
-                  }
+                  onChange={() => cambiarTipoDocumento("factura")}
                 />
 
                 <span>Factura</span>
@@ -1388,9 +1162,7 @@ function Carrito() {
             <div className="cart-summary__total">
               <span>Total</span>
 
-              <strong>
-                {formatearPrecio(total)}
-              </strong>
+              <strong>{formatearPrecio(total)}</strong>
             </div>
 
             {/* ================================================= 
@@ -1409,9 +1181,7 @@ function Carrito() {
                 !despachoListo
               }
             >
-              {iniciandoPago
-                ? "Redirigiendo a Webpay..."
-                : "Pagar con Webpay"}
+              {iniciandoPago ? "Redirigiendo a Webpay..." : "Pagar con Webpay"}
             </button>
 
             {/* ================================================= 
