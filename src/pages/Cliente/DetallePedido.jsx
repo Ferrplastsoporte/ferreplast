@@ -55,83 +55,23 @@ function DetallePedido() {
       }
 
       // ==================================================
-      // OBTENER PEDIDO
+      // OBTENER DETALLE DEL PEDIDO
       // ==================================================
 
       const {
         data,
         error: errorPedido,
-      } = await supabase
-        .from("pedido")
-        .select(`
-          id_pedido,
-          fecha_predido,
-          total_pedido,
-          id_estado,
-          id_user,
-          es_factura,
-          registrado_erp,
-
-          estado_pedido (
-            id_estado,
-            nom_estado
-          ),
-
-          detalle_pedido (
-            id_detalle,
-            cantidad,
-            precio_unitario,
-            id_prod,
-
-            producto (
-              id_prod,
-              nom_prod,
-              imagen_url
-            )
-          ),
-
-          pago (
-            id_pago,
-            metodo_pago,
-            fecha_pago,
-            id_estado_pago,
-            buy_order,
-            monto_pago,
-            estado_transbank,
-            response_code,
-            authorization_code,
-            payment_type_code,
-            installments_number
-          )
-        `)
-        .eq("id_pedido", id)
-        .eq("id_user", user.id)
-        .single();
+      } = await supabase.rpc(
+        "obtener_detalle_pedido",
+        {
+          p_id_pedido: Number(id),
+        }
+      );
 
       if (errorPedido) {
         console.error(
-          "ERROR COMPLETO DEL PEDIDO:",
+          "ERROR OBTENIENDO DETALLE DEL PEDIDO:",
           errorPedido
-        );
-
-        console.error(
-          "Mensaje:",
-          errorPedido.message
-        );
-
-        console.error(
-          "Código:",
-          errorPedido.code
-        );
-
-        console.error(
-          "Detalles:",
-          errorPedido.details
-        );
-
-        console.error(
-          "Hint:",
-          errorPedido.hint
         );
 
         setError(
@@ -141,7 +81,30 @@ function DetallePedido() {
         return;
       }
 
-      setPedido(data);
+      // ==================================================
+      // LA FUNCIÓN RETORNA TABLE,
+      // POR LO QUE SUPABASE PUEDE DEVOLVER UN ARRAY
+      // ==================================================
+
+      const pedidoData = Array.isArray(data)
+        ? data[0]
+        : data;
+
+      if (!pedidoData) {
+        setError(
+          "No se encontró el pedido."
+        );
+
+        return;
+      }
+
+      console.log(
+        "DETALLE DEL PEDIDO:",
+        pedidoData
+      );
+
+      setPedido(pedidoData);
+
     } catch (errorCarga) {
       console.error(
         "Error inesperado:",
@@ -151,6 +114,7 @@ function DetallePedido() {
       setError(
         "Ocurrió un error al cargar el pedido."
       );
+
     } finally {
       setCargando(false);
     }
@@ -182,6 +146,7 @@ function DetallePedido() {
 
     // Si ya es una URL completa,
     // la utilizamos directamente.
+
     if (
       imagenUrl.startsWith("http://") ||
       imagenUrl.startsWith("https://")
@@ -232,50 +197,27 @@ function DetallePedido() {
   }
 
   // ==================================================
-  // ESTADO DEL PAGO
+  // OBTENER PAGO
   // ==================================================
 
-  function obtenerEstadoPago() {
-    const pago = Array.isArray(pedido?.pago)
-      ? pedido.pago[0]
-      : pedido?.pago;
-
-    const estado = pago?.id_estado_pago;
-
-    switch (estado) {
-      case 0:
-        return "Creado";
-
-      case 1:
-        return "Inicializado";
-
-      case 2:
-        return "Pagado";
-
-      case 3:
-        return "Rechazado";
-
-      case 4:
-        return "Abortado";
-
-      case 5:
-        return "Expirado";
-
-      case 6:
-        return "Error de confirmación";
-
-      case 7:
-        return "Reversado";
-
-      case 8:
-        return "Anulado";
-
-      case 9:
-        return "Parcialmente anulado";
-
-      default:
-        return "Sin información";
+  function obtenerPago() {
+    if (Array.isArray(pedido?.pago)) {
+      return pedido.pago[0];
     }
+
+    return pedido?.pago;
+  }
+
+  // ==================================================
+  // OBTENER DESPACHO
+  // ==================================================
+
+  function obtenerDespacho() {
+    if (Array.isArray(pedido?.despacho)) {
+      return pedido.despacho[0];
+    }
+
+    return pedido?.despacho;
   }
 
   // ==================================================
@@ -330,6 +272,9 @@ function DetallePedido() {
       </main>
     );
   }
+
+  const pago = obtenerPago();
+  const despacho = obtenerDespacho();
 
   // ==================================================
   // PEDIDO
@@ -412,9 +357,7 @@ function DetallePedido() {
 
                     <div className="detalle-pedido-producto-info">
 
-                      {/* ==================================================
-                          IMAGEN
-                      ================================================== */}
+                      {/* IMAGEN */}
 
                       <div className="detalle-pedido-producto-imagen">
 
@@ -448,9 +391,7 @@ function DetallePedido() {
                       </div>
 
 
-                      {/* ==================================================
-                          INFORMACIÓN DEL PRODUCTO
-                      ================================================== */}
+                      {/* INFORMACIÓN DEL PRODUCTO */}
 
                       <div>
 
@@ -476,9 +417,7 @@ function DetallePedido() {
                     </div>
 
 
-                    {/* ==================================================
-                        SUBTOTAL
-                    ================================================== */}
+                    {/* SUBTOTAL */}
 
                     <strong>
                       {formatearPrecio(
@@ -501,6 +440,82 @@ function DetallePedido() {
         </section>
 
 
+      {/* ==================================================
+              DESPACHO
+          ================================================== */}
+
+          <section className="detalle-pedido-card">
+
+            <h2>
+              Despacho
+            </h2>
+
+            <div className="detalle-pedido-info">
+
+              {/* TIPO DE DESPACHO */}
+
+              <div>
+
+                <span>
+                  Tipo de despacho
+                </span>
+
+                <strong>
+                  {despacho
+                    ?.tipo_despacho
+                    ?.nom_tipo_despacho ||
+                    "Sin información"}
+                </strong>
+
+              </div>
+
+
+              {/* COSTO DE DESPACHO */}
+
+              <div>
+
+                <span>
+                  Costo de despacho
+                </span>
+
+                <strong>
+                  {despacho?.costo_mostrar ||
+                    "Por definir"}
+                </strong>
+
+              </div>
+
+
+              {/* DIRECCIÓN */}
+
+              {despacho?.mostrar_direccion && (
+
+                <div>
+
+                  <span>
+                    Dirección de envío
+                  </span>
+
+                  <strong>
+                    {despacho?.direccion_despacho ||
+                      "Sin dirección registrada"}
+                  </strong>
+
+                  {despacho?.comuna_despacho && (
+
+                    <small>
+                      {despacho.comuna_despacho}
+                    </small>
+
+                  )}
+
+                </div>
+
+              )}
+
+            </div>
+
+          </section>
         {/* ==================================================
             INFORMACIÓN DE PAGO
         ================================================== */}
@@ -522,11 +537,7 @@ function DetallePedido() {
               </span>
 
               <strong>
-                {(
-                  Array.isArray(pedido?.pago)
-                    ? pedido.pago[0]
-                    : pedido?.pago
-                )?.metodo_pago === 1
+                {pago?.metodo_pago === 1
                   ? "Webpay"
                   : "Otro método"}
               </strong>
@@ -543,7 +554,12 @@ function DetallePedido() {
               </span>
 
               <strong>
-                {obtenerEstadoPago()}
+                {
+                  pago
+                    ?.estado_pago
+                    ?.nom_estado_pago ||
+                  "Sin información"
+                }
               </strong>
 
             </div>
@@ -551,11 +567,7 @@ function DetallePedido() {
 
             {/* ORDEN DE COMPRA */}
 
-            {(
-              Array.isArray(pedido?.pago)
-                ? pedido.pago[0]
-                : pedido?.pago
-            )?.buy_order && (
+            {pago?.buy_order && (
 
               <div>
 
@@ -564,11 +576,7 @@ function DetallePedido() {
                 </span>
 
                 <strong>
-                  {(
-                    Array.isArray(pedido?.pago)
-                      ? pedido.pago[0]
-                      : pedido?.pago
-                  )?.buy_order}
+                  {pago.buy_order}
                 </strong>
 
               </div>
