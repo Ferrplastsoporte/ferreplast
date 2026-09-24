@@ -318,61 +318,62 @@ function Carrito() {
       // CREAR PEDIDO + DESPACHO + FACTURA + PAGO
       // ==================================================
 
-      console.log("BODY FINAL WEBPAY:", {
-        userId: usuario.id,
-        accessToken: "RECIBIDO",
-        idTipoDespacho: Number(despachoSeleccionado.id_tipo_despacho),
-        idComuna: Number(idComunaDespacho),
-        direccionDespacho: direccionDespacho,
-        esFactura: Boolean(esFactura),
-        facturacion: esFactura ? facturacion?.detalle_factura : null,
-      });
-      console.log("SESSION USER:", session.user.id);
-      console.log("USUARIO CARRITO:", usuario.id);
-      const respuesta = await fetch("http://localhost:3000/api/webpay/create", {
-        method: "POST",
+            console.log("BODY FINAL WEBPAY:", {
+              userId: usuario.id,
+              accessToken: "RECIBIDO",
+              idTipoDespacho: Number(despachoSeleccionado.id_tipo_despacho),
+              idComuna: Number(idComunaDespacho),
+              direccionDespacho: direccionDespacho,
+              esFactura: Boolean(esFactura),
+              facturacion: esFactura ? facturacion?.detalle_factura : null,
+            });
+            console.log("SESSION USER:", session.user.id);
+            console.log("USUARIO CARRITO:", usuario.id);
+            const { data, error } = await supabase.functions.invoke(
+        "webpay-create",
+        {
+          body: {
+            idTipoDespacho: Number(
+              despachoSeleccionado.id_tipo_despacho
+            ),
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+            idComuna: Number(idComunaDespacho),
 
-        body: JSON.stringify({
-          userId: usuario.id,
+            direccionDespacho: direccionDespacho,
 
-          accessToken: session.access_token,
+            esFactura: Boolean(esFactura),
 
-          idTipoDespacho: Number(despachoSeleccionado.id_tipo_despacho),
+            facturacion: esFactura
+              ? facturacion?.detalle_factura
+              : null,
+          },
+        }
+      );
 
-          idComuna: Number(idComunaDespacho),
+      if (error) {
+        console.error(
+          "Error llamando webpay-create:",
+          error
+        );
 
-          direccionDespacho: direccionDespacho,
+        throw new Error(
+          error.message || "No se pudo iniciar Webpay"
+        );
+      }
 
-          esFactura: Boolean(esFactura),
-
-          facturacion: esFactura ? facturacion?.detalle_factura : null,
-        }),
-      });
-
-      const data = await respuesta.json();
-
-      // ==================================================
-      // VALIDAR RESPUESTA DEL BACKEND
-      // ==================================================
-
-      if (!respuesta.ok) {
-        throw new Error(data.error || "No fue posible iniciar el pago.");
+      if (!data?.ok) {
+        throw new Error(
+          data?.error ||
+            "No se pudo crear la transacción Webpay"
+        );
       }
 
       console.log("Pago Webpay iniciado:", {
         idPedido: data.idPedido,
-
         idPago: data.idPago,
-
         buyOrder: data.buyOrder,
-
         monto: data.monto,
       });
-
       // ==================================================
       // REDIRIGIR A WEBPAY
       // ==================================================
