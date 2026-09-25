@@ -149,6 +149,9 @@ function Pedidos() {
       .trim()
       .replaceAll(" ", "_");
   }
+  const pedidosConfirmados = pedidos.filter(
+    (pedido) => obtenerEstado(pedido) === "confirmado"
+  );
 
   // ==================================================
   // VER DETALLE DEL PEDIDO
@@ -236,7 +239,7 @@ function Pedidos() {
 
       {!cargando &&
         !error &&
-        pedidos.length === 0 && (
+        pedidosConfirmados.length === 0 && (
 
           <div className="pedidos-status pedidos-status--empty">
 
@@ -263,7 +266,7 @@ function Pedidos() {
 
       {!cargando &&
         !error &&
-        pedidos.length > 0 && (
+        pedidosConfirmados.length > 0 && (
 
           <section className="pedidos-content">
 
@@ -274,7 +277,7 @@ function Pedidos() {
               <div>
 
                 <strong>
-                  {pedidos.length}
+                  {pedidosConfirmados.length}
                 </strong>
 
                 <span>
@@ -296,7 +299,7 @@ function Pedidos() {
 
             <div className="pedidos-list">
 
-              {pedidos.map((pedido) => (
+              {pedidosConfirmados.map((pedido) => (
 
                 <TarjetaPedido
                   key={pedido.id_pedido}
