@@ -112,7 +112,8 @@
 }
 
 .cotizaciones-leyenda__punto--pendiente { background: #f59e0b; }
-.cotizaciones-leyenda__punto--completada { background: #22a05a; }
+.cotizaciones-leyenda__punto--completada { background: #2563eb; }
+.cotizaciones-leyenda__punto--exitosa { background: #22a05a; }
 .cotizaciones-leyenda__punto--fallida { background: #dc3b33; }
 
 /* ============================
@@ -320,7 +321,8 @@
 }
 
 .cotizaciones-estado--pendiente { background: #fff3cd; color: #8a5200; }
-.cotizaciones-estado--completada { background: #dcf5e5; color: #13733a; }
+.cotizaciones-estado--completada { background: #dbeafe; color: #1d4ed8; }
+.cotizaciones-estado--exitosa { background: #dcf5e5; color: #13733a; }
 .cotizaciones-estado--fallida { background: #ffe5e3; color: #b42318; }
 .cotizaciones-estado--sin-estado { background: #e9eef5; color: #475569; }
 
@@ -365,6 +367,132 @@
 .cotizacion-comentario strong { color: #334155; font-size: 0.82rem; }
 .cotizacion-comentario p { margin: 5px 0 0; color: #64748b; font-size: 0.86rem; line-height: 1.5; }
 .cotizacion-productos__cabecera { margin: 24px 0 12px; }
+
+/* ============================
+   VIGENCIA Y CONDICIONES COMERCIALES
+============================ */
+.cotizacion-condiciones {
+  margin: 22px 0 6px;
+  padding: 17px 18px;
+  border: 1px solid #dbe7f4;
+  border-radius: 13px;
+  background: #fbfdff;
+}
+
+.cotizacion-condiciones__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 16px;
+}
+
+.cotizacion-condiciones__icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 10px;
+  background: #e8f2ff;
+  color: #0753bd;
+}
+
+.cotizacion-condiciones__cabecera span {
+  color: var(--cotizaciones-azul);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.cotizacion-condiciones__cabecera h3 {
+  margin: 3px 0 0;
+  color: #26364a;
+  font-size: 1rem;
+}
+
+.cotizacion-condiciones__campos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cotizacion-condiciones__campos > div,
+.cotizacion-condiciones__campos > label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.cotizacion-condiciones__campos small,
+.cotizacion-condiciones__campos label > span {
+  color: #718096;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.cotizacion-condiciones__campos strong {
+  color: #27364a;
+  font-size: 0.85rem;
+}
+
+.cotizacion-condiciones__campos > div > span {
+  color: #8290a3;
+  font-size: 0.7rem;
+}
+
+.cotizacion-vigencia__entrada {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.cotizacion-vigencia__entrada:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.cotizacion-vigencia__entrada:has(input[aria-invalid="true"]) {
+  border-color: #dc3b33;
+}
+
+.cotizacion-vigencia__entrada input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #1e293b;
+  font: inherit;
+  font-weight: 800;
+}
+
+.cotizacion-vigencia__entrada input:disabled {
+  background: transparent;
+  color: #64748b;
+}
+
+.cotizacion-vigencia__entrada span {
+  color: #718096;
+  font-size: 0.78rem;
+}
+
+.cotizacion-condiciones__nota {
+  margin: 0;
+  margin-top: 13px;
+  color: #718096;
+  font-size: 0.74rem;
+}
 
 /* ============================
    PRODUCTOS Y CAPTURA DE PRECIOS
@@ -443,6 +571,15 @@
 
 .cotizacion-acciones > div { display: flex; align-items: center; gap: 10px; }
 
+.cotizacion-operacion__mensaje {
+  margin: 0 auto 0 0;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.cotizacion-operacion__mensaje--exito { color: #13733a; }
+.cotizacion-operacion__mensaje--error { color: #b42318; }
+
 .cotizacion-btn {
   min-height: 41px;
   padding: 0 14px;
@@ -453,7 +590,8 @@
 }
 
 .cotizacion-btn--secundario { border: 1px solid #efaaa5; background: #fff; color: #bd2b24; }
-.cotizacion-btn--guardar { border: 1px solid #b9c8da; background: #fff; color: #334e6f; }
+.cotizacion-btn--borrador { border: 1px solid #b9c8da; background: #fff; color: #334e6f; }
+.cotizacion-btn--exitosa { border: 1px solid #7fc89d; background: #effaf3; color: #13733a; }
 .cotizacion-btn--principal { border: 1px solid var(--cotizaciones-azul); background: var(--cotizaciones-azul); color: #fff; }
 .cotizacion-btn:disabled { cursor: not-allowed; opacity: 0.48; }
 
@@ -500,6 +638,115 @@
 .cotizaciones-mensaje button { border: 0; background: transparent; color: inherit; font: inherit; font-weight: 850; cursor: pointer; }
 
 /* ============================
+   MODAL DE CONFIRMACIÓN
+============================ */
+.modal-confirmacion__fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.modal-confirmacion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  width: min(100%, 480px);
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid #dfe6ee;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 65px rgba(15, 23, 42, 0.24);
+}
+
+.modal-confirmacion__icono {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  font-size: 1.35rem;
+}
+
+.modal-confirmacion__icono--exito {
+  background: #dcf5e5;
+  color: #13733a;
+}
+
+.modal-confirmacion__icono--peligro {
+  background: #ffe5e3;
+  color: #b42318;
+}
+
+.modal-confirmacion__contenido h2 {
+  margin: 1px 0 7px;
+  color: #172033;
+  font-size: 1.08rem;
+}
+
+.modal-confirmacion__contenido p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.modal-confirmacion__acciones {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.modal-confirmacion__acciones button {
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.modal-confirmacion__cancelar {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+}
+
+.modal-confirmacion__confirmar--exito {
+  border: 1px solid #198754;
+  background: #198754;
+  color: #fff;
+}
+
+.modal-confirmacion__confirmar--peligro {
+  border: 1px solid #c9372c;
+  background: #c9372c;
+  color: #fff;
+}
+
+.modal-confirmacion__acciones button:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.modal-confirmacion__acciones button:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.25);
+  outline-offset: 2px;
+}
+
+.modal-confirmacion__acciones button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+/* ============================
    ADAPTACIÓN RESPONSIVA
 ============================ */
 @media (max-width: 1250px) {
@@ -529,6 +776,7 @@
   .cotizacion-productos__fila { min-width: 650px; }
   .cotizacion-cierre { grid-template-columns: 1fr; }
   .cotizacion-totales { order: -1; }
+  .cotizacion-condiciones__campos { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -547,4 +795,8 @@
   .cotizacion-detalle__cabecera { align-items: flex-start; }
   .cotizacion-acciones > div:last-child { width: 100%; flex-direction: column; align-items: stretch; }
   .cotizacion-btn { width: 100%; }
+  .cotizacion-operacion__mensaje { margin-right: 0; }
+  .modal-confirmacion { grid-template-columns: 1fr; padding: 20px; }
+  .modal-confirmacion__acciones { grid-column: auto; flex-direction: column-reverse; }
+  .modal-confirmacion__acciones button { width: 100%; }
 }

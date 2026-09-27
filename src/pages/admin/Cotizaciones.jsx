@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   FiBox,
-  FiDownload,
+  FiCalendar,
   FiFileText,
   FiMail,
   FiPhone,
@@ -9,23 +9,39 @@ import {
   FiSearch,
   FiUser,
 } from "react-icons/fi";
-import { supabase } from "../../lib/supabase";
-import { TASA_IVA } from "../../utils/comunes/impuestos";
+import {
+  cargarCotizacionesAdmin,
+  completarCotizacionAdmin,
+  guardarBorradorCotizacionAdmin,
+  resolverResultadoCotizacionAdmin,
+} from "../../services/adminCotizacionesService";
 import {
   PERIODO_HISTORICO,
-  calcularTotalesCotizacion,
+  crearMapaDiasValidezCotizaciones,
   crearMapaPreciosCotizacion,
+  crearPreciosParaCompletarCotizacion,
+  crearPreciosParaGuardarBorrador,
+  esCantidadDiasValidezValida,
+  esTasaIvaValida,
   formatearFechaCotizacion,
+  formatearFechaCalendario,
   formatearFolioCotizacion,
   formatearMontoCLP,
+  formatearPorcentaje,
   formatearPeriodoCotizacion,
   obtenerEstadoCotizacion,
+  obtenerFechaActualChile,
   obtenerNombreProductoCotizado,
   obtenerPeriodoCotizacion,
   obtenerPeriodosDisponibles,
+  obtenerTotalesCotizacion,
+  normalizarConfiguracionCotizacion,
   sanitizarPrecioCotizacion,
+  sanitizarDiasValidez,
+  sumarDiasFecha,
 } from "../../utils/cotizaciones/cotizaciones";
 import AdminHeader from "./components/AdminHeader";
+import ModalConfirmacion from "./components/ModalConfirmacion";
 import "./css/Cotizaciones.css";
 
 // ============================
@@ -47,6 +63,16 @@ function Cotizaciones() {
   const [cargando, setCargando] = useState(true);
   const [mensajeError, setMensajeError] = useState("");
   const [recarga, setRecarga] = useState(0);
+  const [diasValidezPredeterminados, setDiasValidezPredeterminados] =
+    useState(null);
+  const [tasaIvaConfigurada, setTasaIvaConfigurada] = useState(null);
+  const [diasValidezPorCotizacion, setDiasValidezPorCotizacion] = useState({});
+  const [completandoCotizacion, setCompletandoCotizacion] = useState(false);
+  const [guardandoBorrador, setGuardandoBorrador] = useState(false);
+  const [cambiandoResultado, setCambiandoResultado] = useState(false);
+  const [preciosModificados, setPreciosModificados] = useState({});
+  const [mensajeOperacion, setMensajeOperacion] = useState(null);
+  const [confirmacionResultado, setConfirmacionResultado] = useState(null);
 
   // ============================
   // CARGA DE COTIZACIONES Y CLIENTES
@@ -58,76 +84,48 @@ function Cotizaciones() {
       setCargando(true);
       setMensajeError("");
 
-      const [resultadoCotizaciones, resultadoClientes] = await Promise.all([
-        supabase
-          .from("cotizacion")
-          .select(`
-            id_cotizacion,
-            id_user,
-            fecha_cot,
-            id_medio_cont,
-            comentario,
-            id_estado_cot,
-            medio_contacto (id_medio_cont, nom_medio),
-            estado_cotizacion (id_estado_cot, nom_estado),
-            detalle_cotizacion (
-              id_detalle_cot,
-              es_producto_catalogo,
-              id_prod,
-              nom_producto_solicitado,
-              cantidad,
-              observacion,
-              valor_bruto,
-              producto (id_prod, nom_prod, imagen_url)
-            )
-          `)
-          .order("fecha_cot", { ascending: false }),
-        supabase.rpc("obtener_clientes_cotizaciones_admin"),
-      ]);
+      try {
+        const { cotizaciones: nuevasCotizaciones, configuracion: datosConfig } =
+          await cargarCotizacionesAdmin();
 
-      if (!vigente) return;
+        if (!vigente) return;
 
-      if (resultadoCotizaciones.error || resultadoClientes.error) {
-        const error =
-          resultadoCotizaciones.error || resultadoClientes.error;
-        console.error("Error al cargar las cotizaciones:", {
-          cotizaciones: resultadoCotizaciones.error,
-          clientes: resultadoClientes.error,
+        const configuracion = normalizarConfiguracionCotizacion(datosConfig);
+        if (!configuracion) {
+          throw new Error(
+            "La configuración de vigencia o IVA no existe o contiene un valor inválido.",
+          );
+        }
+
+        const { diasValidez: diasPredeterminados, tasaIva } = configuracion;
+        setCotizaciones(nuevasCotizaciones);
+        setPrecios(crearMapaPreciosCotizacion(nuevasCotizaciones));
+        setPreciosModificados({});
+        setDiasValidezPredeterminados(diasPredeterminados);
+        setTasaIvaConfigurada(tasaIva);
+        setDiasValidezPorCotizacion(
+          crearMapaDiasValidezCotizaciones(
+            nuevasCotizaciones,
+            diasPredeterminados,
+          ),
+        );
+        setMensajeOperacion(null);
+        setCotizacionSeleccionada((actual) => {
+          const actualizada = nuevasCotizaciones.find(
+            (cotizacion) =>
+              cotizacion.id_cotizacion === actual?.id_cotizacion,
+          );
+          return actualizada ?? nuevasCotizaciones[0] ?? null;
         });
+      } catch (error) {
+        if (!vigente) return;
+        console.error("Error al cargar las cotizaciones:", error);
         setMensajeError(
           error.message || "No fue posible cargar las cotizaciones.",
         );
-        setCargando(false);
-        return;
+      } finally {
+        if (vigente) setCargando(false);
       }
-
-      const cotizacionesRecibidas = resultadoCotizaciones.data ?? [];
-      const clientesPorCotizacion = new Map(
-        (resultadoClientes.data ?? []).map((cliente) => [
-          cliente.id_cotizacion,
-          cliente,
-        ]),
-      );
-
-      const nuevasCotizaciones = cotizacionesRecibidas.map((cotizacion) => ({
-        ...cotizacion,
-        usuario:
-          clientesPorCotizacion.get(cotizacion.id_cotizacion) ?? null,
-      }));
-
-      setCotizaciones(nuevasCotizaciones);
-      setPrecios(crearMapaPreciosCotizacion(nuevasCotizaciones));
-      setCotizacionSeleccionada((actual) => {
-        if (actual) {
-          const actualizada = nuevasCotizaciones.find(
-            (cotizacion) =>
-              cotizacion.id_cotizacion === actual.id_cotizacion,
-          );
-          if (actualizada) return actualizada;
-        }
-        return nuevasCotizaciones[0] ?? null;
-      });
-      setCargando(false);
     }
 
     cargarCotizaciones();
@@ -148,7 +146,8 @@ function Cotizaciones() {
     if (periodo === PERIODO_HISTORICO) return cotizaciones;
 
     return cotizaciones.filter(
-      (cotizacion) => obtenerPeriodoCotizacion(cotizacion.fecha_cot) === periodo,
+      (cotizacion) =>
+        obtenerPeriodoCotizacion(cotizacion.fecha_cot) === periodo,
     );
   }, [cotizaciones, periodo]);
 
@@ -164,9 +163,16 @@ function Cotizaciones() {
           if (estado === 1) acumulado.pendientes += 1;
           if (estado === 2) acumulado.completadas += 1;
           if (estado === 3) acumulado.fallidas += 1;
+          if (estado === 4) acumulado.exitosas += 1;
           return acumulado;
         },
-        { total: 0, pendientes: 0, completadas: 0, fallidas: 0 },
+        {
+          total: 0,
+          pendientes: 0,
+          completadas: 0,
+          fallidas: 0,
+          exitosas: 0,
+        },
       ),
     [cotizacionesDelPeriodo],
   );
@@ -190,9 +196,7 @@ function Cotizaciones() {
           cotizacion.usuario?.rut_user
             ?.toLocaleLowerCase("es")
             .includes(termino) ||
-          cotizacion.usuario?.email
-            ?.toLocaleLowerCase("es")
-            .includes(termino);
+          cotizacion.usuario?.email?.toLocaleLowerCase("es").includes(termino);
         return coincideEstado && coincideBusqueda;
       })
       .sort((a, b) => {
@@ -211,22 +215,35 @@ function Cotizaciones() {
     const finPendientes = (resumen.pendientes / resumen.total) * 100;
     const finCompletadas =
       ((resumen.pendientes + resumen.completadas) / resumen.total) * 100;
+    const finExitosas =
+      ((resumen.pendientes + resumen.completadas + resumen.exitosas) /
+        resumen.total) *
+      100;
 
     return `conic-gradient(
       #f59e0b 0% ${finPendientes}%,
-      #22a05a ${finPendientes}% ${finCompletadas}%,
-      #dc3b33 ${finCompletadas}% 100%
+      #2563eb ${finPendientes}% ${finCompletadas}%,
+      #22a05a ${finCompletadas}% ${finExitosas}%,
+      #dc3b33 ${finExitosas}% 100%
     )`;
   }, [resumen]);
 
   // ============================
   // TOTALES DE LA COTIZACIÓN SELECCIONADA
   // ============================
+  const tasaIvaAplicable =
+    cotizacionSeleccionada?.tasa_iva_aplicada ?? tasaIvaConfigurada;
+
   const calculos = useMemo(() => {
-    const detallesActuales =
-      cotizacionSeleccionada?.detalle_cotizacion ?? [];
-    return calcularTotalesCotizacion(detallesActuales, precios);
-  }, [cotizacionSeleccionada, precios]);
+    const detallesActuales = cotizacionSeleccionada?.detalle_cotizacion ?? [];
+
+    return obtenerTotalesCotizacion(
+      cotizacionSeleccionada,
+      detallesActuales,
+      precios,
+      tasaIvaAplicable,
+    );
+  }, [cotizacionSeleccionada, precios, tasaIvaAplicable]);
 
   // ============================
   // EDICIÓN LOCAL DE PRECIOS
@@ -234,6 +251,189 @@ function Cotizaciones() {
   function actualizarPrecio(idDetalle, valor) {
     const limpio = sanitizarPrecioCotizacion(valor);
     setPrecios((actuales) => ({ ...actuales, [idDetalle]: limpio }));
+    if (cotizacionSeleccionada) {
+      setPreciosModificados((actuales) => ({
+        ...actuales,
+        [cotizacionSeleccionada.id_cotizacion]: true,
+      }));
+    }
+    setMensajeOperacion(null);
+  }
+
+  // ============================
+  // VIGENCIA DE LA COTIZACIÓN
+  // ============================
+  function actualizarDiasValidez(valor) {
+    if (!cotizacionSeleccionada) return;
+
+    const diasLimpios = sanitizarDiasValidez(valor);
+    setDiasValidezPorCotizacion((actuales) => ({
+      ...actuales,
+      [cotizacionSeleccionada.id_cotizacion]: diasLimpios,
+    }));
+    setMensajeOperacion(null);
+  }
+
+  function actualizarCotizacionLocal(idCotizacion, obtenerCambios) {
+    const aplicarCambios = (cotizacion) =>
+      String(cotizacion?.id_cotizacion) === String(idCotizacion)
+        ? { ...cotizacion, ...obtenerCambios(cotizacion) }
+        : cotizacion;
+
+    setCotizaciones((actuales) => actuales.map(aplicarCambios));
+    setCotizacionSeleccionada(aplicarCambios);
+  }
+
+  async function guardarBorradorCotizacion() {
+    if (!cotizacionSeleccionada) return;
+
+    const preciosBorrador = crearPreciosParaGuardarBorrador(
+      cotizacionSeleccionada.detalle_cotizacion,
+      precios,
+    );
+
+    if (!preciosBorrador) {
+      setMensajeOperacion({
+        tipo: "error",
+        texto: "Los precios ingresados deben ser números mayores que cero.",
+      });
+      return;
+    }
+
+    setGuardandoBorrador(true);
+    setMensajeOperacion(null);
+
+    try {
+      await guardarBorradorCotizacionAdmin(
+        cotizacionSeleccionada.id_cotizacion,
+        preciosBorrador,
+      );
+      setPreciosModificados((actuales) => ({
+        ...actuales,
+        [cotizacionSeleccionada.id_cotizacion]: false,
+      }));
+      setMensajeOperacion({
+        tipo: "exito",
+        texto: "Borrador guardado correctamente.",
+      });
+    } catch (error) {
+      console.error("Error al guardar el borrador:", error);
+      setMensajeOperacion({
+        tipo: "error",
+        texto: error.message || "No fue posible guardar el borrador.",
+      });
+    } finally {
+      setGuardandoBorrador(false);
+    }
+  }
+
+  async function completarCotizacion() {
+    if (!cotizacionSeleccionada) return;
+
+    const dias = Number(
+      diasValidezPorCotizacion[cotizacionSeleccionada?.id_cotizacion],
+    );
+    const preciosCotizacion = crearPreciosParaCompletarCotizacion(
+      cotizacionSeleccionada.detalle_cotizacion,
+      precios,
+    );
+
+    if (!esCantidadDiasValidezValida(dias)) {
+      setMensajeOperacion({
+        tipo: "error",
+        texto: "La vigencia debe estar entre 1 y 365 días.",
+      });
+      return;
+    }
+
+    if (!preciosCotizacion) {
+      setMensajeOperacion({
+        tipo: "error",
+        texto: "Todos los productos deben tener un precio bruto mayor que cero.",
+      });
+      return;
+    }
+
+    setCompletandoCotizacion(true);
+    setMensajeOperacion(null);
+
+    try {
+      const resultado = await completarCotizacionAdmin(
+        cotizacionSeleccionada.id_cotizacion,
+        dias,
+        preciosCotizacion,
+      );
+
+      if (!resultado) {
+        throw new Error("Supabase no devolvió la cotización completada.");
+      }
+
+      actualizarCotizacionLocal(resultado.id_cotizacion, (cotizacion) => ({
+        ...cotizacion,
+        ...resultado,
+        estado_cotizacion: {
+          id_estado_cot: 2,
+          nom_estado: "Completada",
+        },
+      }));
+      setPreciosModificados((actuales) => ({
+        ...actuales,
+        [cotizacionSeleccionada.id_cotizacion]: false,
+      }));
+      setMensajeOperacion({
+        tipo: "exito",
+        texto: "Cotización completada correctamente.",
+      });
+    } catch (error) {
+      console.error("Error al completar la cotización:", error);
+      setMensajeOperacion({
+        tipo: "error",
+        texto: error.message || "No fue posible completar la cotización.",
+      });
+    } finally {
+      setCompletandoCotizacion(false);
+    }
+  }
+
+  async function resolverResultadoCotizacion(idEstadoResultado) {
+    if (!cotizacionSeleccionada) return;
+
+    const nombreResultado = idEstadoResultado === 4 ? "exitosa" : "fallida";
+    setCambiandoResultado(true);
+    setMensajeOperacion(null);
+
+    try {
+      const resultado = await resolverResultadoCotizacionAdmin(
+        cotizacionSeleccionada.id_cotizacion,
+        idEstadoResultado,
+      );
+
+      if (!resultado) {
+        throw new Error("Supabase no devolvió el resultado actualizado.");
+      }
+
+      const idEstado = Number(resultado.id_estado_cot);
+      actualizarCotizacionLocal(resultado.id_cotizacion, () => ({
+        id_estado_cot: idEstado,
+        estado_cotizacion: {
+          id_estado_cot: idEstado,
+          nom_estado: idEstado === 4 ? "Exitosa" : "Fallida",
+        },
+      }));
+      setMensajeOperacion({
+        tipo: "exito",
+        texto: `Cotización marcada como ${nombreResultado}.`,
+      });
+    } catch (error) {
+      console.error("Error al cambiar el resultado:", error);
+      setMensajeOperacion({
+        tipo: "error",
+        texto: error.message || "No fue posible cambiar el resultado.",
+      });
+    } finally {
+      setCambiandoResultado(false);
+      setConfirmacionResultado(null);
+    }
   }
 
   // Datos derivados utilizados por el panel de detalle.
@@ -241,6 +441,42 @@ function Cotizaciones() {
   const estadoSeleccionado = obtenerEstadoCotizacion(cotizacionSeleccionada);
   const IconoContacto =
     ICONOS_CONTACTO[cotizacionSeleccionada?.id_medio_cont] ?? FiPhone;
+  const diasValidez =
+    diasValidezPorCotizacion[cotizacionSeleccionada?.id_cotizacion] ??
+    String(diasValidezPredeterminados ?? "");
+  const diasValidezNumericos = Number(diasValidez);
+  const vigenciaValida = esCantidadDiasValidezValida(diasValidezNumericos);
+  const idEstadoSeleccionado = Number(
+    cotizacionSeleccionada?.id_estado_cot,
+  );
+  const cotizacionPendiente = idEstadoSeleccionado === 1;
+  const puedeResolverResultado = [2, 3, 4].includes(idEstadoSeleccionado);
+  const operacionEnCurso =
+    completandoCotizacion || guardandoBorrador || cambiandoResultado;
+  const fechaEmision =
+    cotizacionSeleccionada?.fecha_emision || obtenerFechaActualChile();
+  const fechaValidez =
+    cotizacionSeleccionada?.fecha_validez ||
+    (vigenciaValida ? sumarDiasFecha(fechaEmision, diasValidezNumericos) : "");
+  const preciosParaCompletar = crearPreciosParaCompletarCotizacion(
+    detalles,
+    precios,
+  );
+  const preciosParaBorrador = crearPreciosParaGuardarBorrador(
+    detalles,
+    precios,
+  );
+  const puedeGuardarBorrador =
+    cotizacionPendiente &&
+    Boolean(preciosParaBorrador) &&
+    Boolean(preciosModificados[cotizacionSeleccionada?.id_cotizacion]) &&
+    !operacionEnCurso;
+  const puedeCompletar =
+    cotizacionPendiente &&
+    vigenciaValida &&
+    esTasaIvaValida(tasaIvaAplicable) &&
+    Boolean(preciosParaCompletar) &&
+    !operacionEnCurso;
 
   return (
     <section className="admin-page cotizaciones-page">
@@ -265,7 +501,7 @@ function Cotizaciones() {
             className="cotizaciones-grafico"
             style={{ background: fondoGrafico }}
             role="img"
-            aria-label={`${resumen.pendientes} pendientes, ${resumen.completadas} completadas y ${resumen.fallidas} fallidas`}
+            aria-label={`${resumen.pendientes} pendientes, ${resumen.completadas} completadas, ${resumen.exitosas} exitosas y ${resumen.fallidas} fallidas`}
           >
             <div>
               <strong>{resumen.total}</strong>
@@ -285,6 +521,11 @@ function Cotizaciones() {
               <strong>{resumen.completadas}</strong>
             </li>
             <li>
+              <span className="cotizaciones-leyenda__punto cotizaciones-leyenda__punto--exitosa" />
+              <span>Exitosas</span>
+              <strong>{resumen.exitosas}</strong>
+            </li>
+            <li>
               <span className="cotizaciones-leyenda__punto cotizaciones-leyenda__punto--fallida" />
               <span>Fallidas</span>
               <strong>{resumen.fallidas}</strong>
@@ -295,9 +536,17 @@ function Cotizaciones() {
 
       {/* Mensaje recuperable cuando falla alguna consulta. */}
       {mensajeError && (
-        <div className="cotizaciones-mensaje cotizaciones-mensaje--error" role="alert">
+        <div
+          className="cotizaciones-mensaje cotizaciones-mensaje--error"
+          role="alert"
+        >
           <span>{mensajeError}</span>
-          <button type="button" onClick={() => setRecarga((valor) => valor + 1)}>Reintentar</button>
+          <button
+            type="button"
+            onClick={() => setRecarga((valor) => valor + 1)}
+          >
+            Reintentar
+          </button>
         </div>
       )}
 
@@ -317,7 +566,10 @@ function Cotizaciones() {
         </label>
         <label>
           <span>Periodo</span>
-          <select value={periodo} onChange={(evento) => setPeriodo(evento.target.value)}>
+          <select
+            value={periodo}
+            onChange={(evento) => setPeriodo(evento.target.value)}
+          >
             {periodosDisponibles.map((periodoDisponible) => (
               <option key={periodoDisponible} value={periodoDisponible}>
                 {formatearPeriodoCotizacion(periodoDisponible)}
@@ -332,16 +584,23 @@ function Cotizaciones() {
 
         <label>
           <span>Estado</span>
-          <select value={filtroEstado} onChange={(evento) => setFiltroEstado(evento.target.value)}>
+          <select
+            value={filtroEstado}
+            onChange={(evento) => setFiltroEstado(evento.target.value)}
+          >
             <option value="todos">Todos los estados</option>
             <option value="1">Pendientes</option>
             <option value="2">Completadas</option>
             <option value="3">Fallidas</option>
+            <option value="4">Exitosas</option>
           </select>
         </label>
         <label>
           <span>Ordenar</span>
-          <select value={orden} onChange={(evento) => setOrden(evento.target.value)}>
+          <select
+            value={orden}
+            onChange={(evento) => setOrden(evento.target.value)}
+          >
             <option value="recientes">Más recientes</option>
             <option value="antiguas">Más antiguas</option>
           </select>
@@ -358,7 +617,9 @@ function Cotizaciones() {
 
       {/* Estados generales de carga, lista vacía y contenido disponible. */}
       {cargando ? (
-        <div className="cotizaciones-cargando">Cargando solicitudes de cotización…</div>
+        <div className="cotizaciones-cargando">
+          Cargando solicitudes de cotización…
+        </div>
       ) : cotizaciones.length === 0 && !mensajeError ? (
         <div className="cotizaciones-vacio">
           <FiFileText aria-hidden="true" />
@@ -368,7 +629,10 @@ function Cotizaciones() {
       ) : (
         <div className="cotizaciones-contenido">
           {/* Listado maestro de solicitudes del periodo seleccionado. */}
-          <section className="cotizaciones-listado" aria-labelledby="titulo-listado-cotizaciones">
+          <section
+            className="cotizaciones-listado"
+            aria-labelledby="titulo-listado-cotizaciones"
+          >
             <div className="cotizaciones-panel__cabecera">
               <div>
                 <span>Solicitudes</span>
@@ -378,7 +642,9 @@ function Cotizaciones() {
             </div>
 
             {cotizacionesFiltradas.length === 0 ? (
-              <div className="cotizaciones-listado__vacio">No hay resultados para los filtros seleccionados.</div>
+              <div className="cotizaciones-listado__vacio">
+                No hay resultados para los filtros seleccionados.
+              </div>
             ) : (
               <div className="cotizaciones-listado__items">
                 {cotizacionesFiltradas.map((cotizacion) => {
@@ -393,16 +659,32 @@ function Cotizaciones() {
                       type="button"
                       key={cotizacion.id_cotizacion}
                       className={`cotizacion-tarjeta ${seleccionada ? "is-selected" : ""}`}
-                      onClick={() => setCotizacionSeleccionada(cotizacion)}
+                      onClick={() => {
+                        setCotizacionSeleccionada(cotizacion);
+                        setMensajeOperacion(null);
+                      }}
                     >
                       <span className="cotizacion-tarjeta__superior">
-                        <strong>{formatearFolioCotizacion(cotizacion.id_cotizacion)}</strong>
-                        <span className={`cotizaciones-estado cotizaciones-estado--${estado.clase}`}>{estado.nombre}</span>
+                        <strong>
+                          {formatearFolioCotizacion(cotizacion.id_cotizacion)}
+                        </strong>
+                        <span
+                          className={`cotizaciones-estado cotizaciones-estado--${estado.clase}`}
+                        >
+                          {estado.nombre}
+                        </span>
                       </span>
-                      <span className="cotizacion-tarjeta__cliente">{cotizacion.usuario?.nom_user || "Cliente sin nombre"}</span>
+                      <span className="cotizacion-tarjeta__cliente">
+                        {cotizacion.usuario?.nom_user || "Cliente sin nombre"}
+                      </span>
                       <span className="cotizacion-tarjeta__datos">
-                        <span>{formatearFechaCotizacion(cotizacion.fecha_cot)}</span>
-                        <span><FiBox aria-hidden="true" /> {cantidadProductos} {cantidadProductos === 1 ? "producto" : "productos"}</span>
+                        <span>
+                          {formatearFechaCotizacion(cotizacion.fecha_cot)}
+                        </span>
+                        <span>
+                          <FiBox aria-hidden="true" /> {cantidadProductos}{" "}
+                          {cantidadProductos === 1 ? "producto" : "productos"}
+                        </span>
                       </span>
                     </button>
                   );
@@ -412,7 +694,10 @@ function Cotizaciones() {
           </section>
 
           {/* Panel de trabajo de la cotización seleccionada. */}
-          <section className="cotizacion-detalle" aria-labelledby="titulo-detalle-cotizacion">
+          <section
+            className="cotizacion-detalle"
+            aria-labelledby="titulo-detalle-cotizacion"
+          >
             {!cotizacionSeleccionada ? (
               <div className="cotizaciones-vacio cotizaciones-vacio--detalle">
                 <FiFileText aria-hidden="true" />
@@ -424,22 +709,47 @@ function Cotizaciones() {
                 {/* Identificación, fecha y estado de la solicitud. */}
                 <header className="cotizacion-detalle__cabecera">
                   <div>
-                    <span className="cotizacion-detalle__etiqueta">Cotización</span>
-                    <h2 id="titulo-detalle-cotizacion">{formatearFolioCotizacion(cotizacionSeleccionada.id_cotizacion)}</h2>
-                    <p>Recibida el {formatearFechaCotizacion(cotizacionSeleccionada.fecha_cot, true)}</p>
+                    <span className="cotizacion-detalle__etiqueta">
+                      Cotización
+                    </span>
+                    <h2 id="titulo-detalle-cotizacion">
+                      {formatearFolioCotizacion(
+                        cotizacionSeleccionada.id_cotizacion,
+                      )}
+                    </h2>
+                    <p>
+                      Recibida el{" "}
+                      {formatearFechaCotizacion(
+                        cotizacionSeleccionada.fecha_cot,
+                        true,
+                      )}
+                    </p>
                   </div>
-                  <span className={`cotizaciones-estado cotizaciones-estado--${estadoSeleccionado.clase}`}>{estadoSeleccionado.nombre}</span>
+                  <span
+                    className={`cotizaciones-estado cotizaciones-estado--${estadoSeleccionado.clase}`}
+                  >
+                    {estadoSeleccionado.nombre}
+                  </span>
                 </header>
 
                 {/* Datos públicos del cliente y correo obtenido desde Auth. */}
                 <div className="cotizacion-cliente">
-                  <div className="cotizacion-cliente__icono"><FiUser aria-hidden="true" /></div>
+                  <div className="cotizacion-cliente__icono">
+                    <FiUser aria-hidden="true" />
+                  </div>
                   <div>
                     <small>Cliente</small>
-                    <strong>{cotizacionSeleccionada.usuario?.nom_user || "Cliente sin nombre"}</strong>
-                    <span>{cotizacionSeleccionada.usuario?.rut_user || "RUT no informado"}</span>
+                    <strong>
+                      {cotizacionSeleccionada.usuario?.nom_user ||
+                        "Cliente sin nombre"}
+                    </strong>
                     <span>
-                      {cotizacionSeleccionada.usuario?.direc_user || "Dirección no informada"}
+                      {cotizacionSeleccionada.usuario?.rut_user ||
+                        "RUT no informado"}
+                    </span>
+                    <span>
+                      {cotizacionSeleccionada.usuario?.direc_user ||
+                        "Dirección no informada"}
                       {cotizacionSeleccionada.usuario?.nom_comuna
                         ? `, ${cotizacionSeleccionada.usuario.nom_comuna}`
                         : ""}
@@ -447,9 +757,19 @@ function Cotizaciones() {
                   </div>
                   <div>
                     <small>Contacto preferido</small>
-                    <strong><IconoContacto aria-hidden="true" /> {cotizacionSeleccionada.medio_contacto?.nom_medio || "No informado"}</strong>
-                    <span>{cotizacionSeleccionada.usuario?.phone_user || "Teléfono no informado"}</span>
-                    <span>{cotizacionSeleccionada.usuario?.email || "Correo no informado"}</span>
+                    <strong>
+                      <IconoContacto aria-hidden="true" />{" "}
+                      {cotizacionSeleccionada.medio_contacto?.nom_medio ||
+                        "No informado"}
+                    </strong>
+                    <span>
+                      {cotizacionSeleccionada.usuario?.phone_user ||
+                        "Teléfono no informado"}
+                    </span>
+                    <span>
+                      {cotizacionSeleccionada.usuario?.email ||
+                        "Correo no informado"}
+                    </span>
                   </div>
                 </div>
 
@@ -461,47 +781,145 @@ function Cotizaciones() {
                   </div>
                 )}
 
+                {/* Vigencia comercial configurable antes de emitir el documento. */}
+                <section
+                  className="cotizacion-condiciones"
+                  aria-labelledby="titulo-vigencia-cotizacion"
+                >
+                  <div className="cotizacion-condiciones__cabecera">
+                    <div className="cotizacion-condiciones__icono">
+                      <FiCalendar aria-hidden="true" />
+                    </div>
+                    <div>
+                      <span>Condiciones comerciales</span>
+                      <h3 id="titulo-vigencia-cotizacion">
+                        Vigencia de la cotización
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="cotizacion-condiciones__campos">
+                    <div>
+                      <small>Fecha de emisión</small>
+                      <strong>{formatearFechaCalendario(fechaEmision)}</strong>
+                      {!cotizacionSeleccionada.fecha_emision && (
+                        <span>Se confirmará al completar</span>
+                      )}
+                    </div>
+
+                    <label>
+                      <span>Días de validez</span>
+                      <div className="cotizacion-vigencia__entrada">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={diasValidez}
+                          onChange={(evento) =>
+                            actualizarDiasValidez(evento.target.value)
+                          }
+                          disabled={
+                            !cotizacionPendiente || operacionEnCurso
+                          }
+                          aria-invalid={!vigenciaValida}
+                          aria-describedby="ayuda-vigencia-cotizacion"
+                        />
+                        <span>días</span>
+                      </div>
+                    </label>
+
+                    <div>
+                      <small>Válida hasta</small>
+                      <strong>
+                        {vigenciaValida
+                          ? formatearFechaCalendario(fechaValidez)
+                          : "Revisa la cantidad de días"}
+                      </strong>
+                      <span id="ayuda-vigencia-cotizacion">
+                        Entre 1 y 365 días corridos
+                      </span>
+                    </div>
+                  </div>
+
+                  {cotizacionPendiente && (
+                    <p className="cotizacion-condiciones__nota">
+                      La vigencia se guardará al completar la cotización.
+                    </p>
+                  )}
+                </section>
+
                 {/* Encabezado y cantidad de productos solicitados. */}
                 <div className="cotizacion-productos__cabecera">
-                  <div><span>Detalle</span><h3>Productos solicitados</h3></div>
-                  <strong>{detalles.length} {detalles.length === 1 ? "ítem" : "ítems"}</strong>
+                  <div>
+                    <span>Detalle</span>
+                    <h3>Productos solicitados</h3>
+                  </div>
+                  <strong>
+                    {detalles.length} {detalles.length === 1 ? "ítem" : "ítems"}
+                  </strong>
                 </div>
 
                 {/* Productos de catálogo y solicitudes externas con precio editable. */}
                 {detalles.length === 0 ? (
-                  <div className="cotizaciones-listado__vacio">Esta cotización no tiene productos asociados.</div>
+                  <div className="cotizaciones-listado__vacio">
+                    Esta cotización no tiene productos asociados.
+                  </div>
                 ) : (
                   <div className="cotizacion-productos">
                     <div className="cotizacion-productos__fila cotizacion-productos__fila--encabezado">
-                      <span>Producto</span><span>Cant.</span><span>Precio neto unit.</span><span>Subtotal</span>
+                      <span>Producto</span>
+                      <span>Cant.</span>
+                      <span>Precio bruto unit.</span>
+                      <span>Total bruto</span>
                     </div>
                     {detalles.map((detalle) => {
                       const precio =
                         Number(precios[detalle.id_detalle_cot]) || 0;
-                      const subtotal =
-                        precio * Number(detalle.cantidad || 0);
+                      const subtotal = precio * Number(detalle.cantidad || 0);
                       return (
-                        <div className="cotizacion-productos__fila" key={detalle.id_detalle_cot}>
+                        <div
+                          className="cotizacion-productos__fila"
+                          key={detalle.id_detalle_cot}
+                        >
                           <div className="cotizacion-producto">
-                            <span className={`cotizacion-producto__tipo ${detalle.es_producto_catalogo ? "cotizacion-producto__tipo--catalogo" : "cotizacion-producto__tipo--manual"}`}>
-                              {detalle.es_producto_catalogo ? "Catálogo" : "Solicitado"}
+                            <span
+                              className={`cotizacion-producto__tipo ${detalle.es_producto_catalogo ? "cotizacion-producto__tipo--catalogo" : "cotizacion-producto__tipo--manual"}`}
+                            >
+                              {detalle.es_producto_catalogo
+                                ? "Catálogo"
+                                : "Solicitado"}
                             </span>
-                            <strong>{obtenerNombreProductoCotizado(detalle)}</strong>
-                            {detalle.observacion && <small>{detalle.observacion}</small>}
+                            <strong>
+                              {obtenerNombreProductoCotizado(detalle)}
+                            </strong>
+                            {detalle.observacion && (
+                              <small>{detalle.observacion}</small>
+                            )}
                           </div>
-                          <strong className="cotizacion-productos__cantidad">{detalle.cantidad}</strong>
+                          <strong className="cotizacion-productos__cantidad">
+                            {detalle.cantidad}
+                          </strong>
                           <label className="cotizacion-precio">
                             <span aria-hidden="true">$</span>
                             <input
                               type="text"
                               inputMode="numeric"
                               value={precios[detalle.id_detalle_cot] ?? ""}
-                              onChange={(evento) => actualizarPrecio(detalle.id_detalle_cot, evento.target.value)}
+                              onChange={(evento) =>
+                                actualizarPrecio(
+                                  detalle.id_detalle_cot,
+                                  evento.target.value,
+                                )
+                              }
+                              disabled={
+                                !cotizacionPendiente || operacionEnCurso
+                              }
                               placeholder="0"
-                              aria-label={`Precio neto unitario de ${obtenerNombreProductoCotizado(detalle)}`}
+                              aria-label={`Precio bruto unitario de ${obtenerNombreProductoCotizado(detalle)}`}
                             />
                           </label>
-                          <strong className="cotizacion-productos__subtotal">{formatearMontoCLP(subtotal)}</strong>
+                          <strong className="cotizacion-productos__subtotal">
+                            {formatearMontoCLP(subtotal)}
+                          </strong>
                         </div>
                       );
                     })}
@@ -513,23 +931,105 @@ function Cotizaciones() {
                   <div className="cotizacion-documentos">
                     <h3>Documentos de la cotización</h3>
                     <div>
-                      <button type="button" disabled><FiFileText /> Generar PDF</button>
-                      <button type="button" disabled><FiDownload /> Exportar Excel</button>
+                      <button type="button" disabled>
+                        <FiFileText /> Generar PDF
+                      </button>
                     </div>
                   </div>
-                  <aside className="cotizacion-totales" aria-label="Resumen de valores">
-                    <div><span>Subtotal neto</span><strong>{formatearMontoCLP(calculos.subtotal)}</strong></div>
-                    <div><span>IVA ({TASA_IVA * 100}%)</span><strong>{formatearMontoCLP(calculos.iva)}</strong></div>
-                    <div className="cotizacion-totales__total"><span>Total</span><strong>{formatearMontoCLP(calculos.total)}</strong></div>
+                  <aside
+                    className="cotizacion-totales"
+                    aria-label="Resumen de valores"
+                  >
+                    <div>
+                      <span>Neto</span>
+                      <strong>{formatearMontoCLP(calculos.neto)}</strong>
+                    </div>
+                    <div>
+                      <span>
+                        IVA incluido ({formatearPorcentaje(tasaIvaAplicable)}%)
+                      </span>
+                      <strong>{formatearMontoCLP(calculos.iva)}</strong>
+                    </div>
+                    <div className="cotizacion-totales__total">
+                      <span>Total</span>
+                      <strong>{formatearMontoCLP(calculos.totalBruto)}</strong>
+                    </div>
                   </aside>
                 </div>
 
-                {/* Acciones reservadas para la etapa de persistencia. */}
+                {/* Resultado de la operación y acciones disponibles. */}
                 <footer className="cotizacion-acciones">
+                  {mensajeOperacion && (
+                    <p
+                      className={`cotizacion-operacion__mensaje cotizacion-operacion__mensaje--${mensajeOperacion.tipo}`}
+                      role={
+                        mensajeOperacion.tipo === "error" ? "alert" : "status"
+                      }
+                    >
+                      {mensajeOperacion.texto}
+                    </p>
+                  )}
                   <div>
-                    <button type="button" className="cotizacion-btn cotizacion-btn--secundario" disabled>Marcar fallida</button>
-                    <button type="button" className="cotizacion-btn cotizacion-btn--guardar" disabled>Guardar precios</button>
-                    <button type="button" className="cotizacion-btn cotizacion-btn--principal" disabled>Completar cotización</button>
+                    {cotizacionPendiente && (
+                      <>
+                        <button
+                          type="button"
+                          className="cotizacion-btn cotizacion-btn--borrador"
+                          onClick={guardarBorradorCotizacion}
+                          disabled={!puedeGuardarBorrador}
+                        >
+                          {guardandoBorrador
+                            ? "Guardando…"
+                            : "Guardar borrador"}
+                        </button>
+                        <button
+                          type="button"
+                          className="cotizacion-btn cotizacion-btn--principal"
+                          onClick={completarCotizacion}
+                          disabled={!puedeCompletar}
+                        >
+                          {completandoCotizacion
+                            ? "Completando…"
+                            : "Completar cotización"}
+                        </button>
+                      </>
+                    )}
+
+                    {puedeResolverResultado && idEstadoSeleccionado !== 4 && (
+                      <button
+                        type="button"
+                        className="cotizacion-btn cotizacion-btn--exitosa"
+                        onClick={() =>
+                          setConfirmacionResultado({
+                            idEstado: 4,
+                            nombre: "exitosa",
+                          })
+                        }
+                        disabled={operacionEnCurso}
+                      >
+                        {cambiandoResultado
+                          ? "Actualizando…"
+                          : "Marcar exitosa"}
+                      </button>
+                    )}
+
+                    {puedeResolverResultado && idEstadoSeleccionado !== 3 && (
+                      <button
+                        type="button"
+                        className="cotizacion-btn cotizacion-btn--secundario"
+                        onClick={() =>
+                          setConfirmacionResultado({
+                            idEstado: 3,
+                            nombre: "fallida",
+                          })
+                        }
+                        disabled={operacionEnCurso}
+                      >
+                        {cambiandoResultado
+                          ? "Actualizando…"
+                          : "Marcar fallida"}
+                      </button>
+                    )}
                   </div>
                 </footer>
               </>
@@ -537,6 +1037,19 @@ function Cotizaciones() {
           </section>
         </div>
       )}
+
+      <ModalConfirmacion
+        abierto={Boolean(confirmacionResultado)}
+        titulo={`Marcar cotización como ${confirmacionResultado?.nombre ?? ""}`}
+        mensaje={`La cotización ${formatearFolioCotizacion(cotizacionSeleccionada?.id_cotizacion)} cambiará a ${confirmacionResultado?.nombre ?? "este estado"}. Podrás corregir el resultado posteriormente.`}
+        textoConfirmar={`Marcar ${confirmacionResultado?.nombre ?? ""}`}
+        variante={confirmacionResultado?.idEstado === 4 ? "exito" : "peligro"}
+        procesando={cambiandoResultado}
+        onConfirmar={() =>
+          resolverResultadoCotizacion(confirmacionResultado?.idEstado)
+        }
+        onCancelar={() => setConfirmacionResultado(null)}
+      />
     </section>
   );
 }
