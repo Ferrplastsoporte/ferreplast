@@ -543,7 +543,7 @@
 .cotizacion-precio input { width: 100%; min-width: 0; border: 0; outline: 0; color: #1e293b; font: inherit; font-weight: 700; text-align: right; }
 
 /* ============================
-   DOCUMENTOS Y TOTALES
+   NOTAS PARTICULARES Y TOTALES
 ============================ */
 .cotizacion-cierre {
   display: grid;
@@ -553,10 +553,11 @@
   padding-bottom: 22px;
 }
 
-.cotizacion-documentos { align-self: end; }
-.cotizacion-documentos h3 { margin: 0 0 12px; color: #334155; font-size: 0.92rem; }
-.cotizacion-documentos > div { display: flex; gap: 9px; flex-wrap: wrap; }
-.cotizacion-documentos button { display: inline-flex; align-items: center; gap: 7px; min-height: 39px; padding: 0 13px; border: 1px solid #d5dce5; border-radius: 8px; background: #f5f7fa; color: #9aa5b1; font: inherit; font-size: 0.78rem; font-weight: 800; cursor: not-allowed; }
+.cotizacion-notas { display: flex; flex-direction: column; gap: 8px; min-width: 0; color: #334155; font-size: 0.88rem; font-weight: 800; }
+.cotizacion-notas textarea { width: 100%; min-height: 125px; padding: 12px 13px; box-sizing: border-box; border: 1px solid #d5dee9; border-radius: 12px; background: #fff; color: #334155; font: inherit; font-size: 0.82rem; font-weight: 500; line-height: 1.5; resize: vertical; outline: none; }
+.cotizacion-notas textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); }
+.cotizacion-notas textarea:read-only { background: #f8fafc; color: #526174; resize: none; }
+.cotizacion-notas small { align-self: flex-end; color: #8491a3; font-size: 0.7rem; font-weight: 600; }
 .cotizacion-totales { padding: 17px 19px; border: 1px solid #dbe3ec; border-radius: 12px; background: #f8fafc; }
 .cotizacion-totales > div { display: flex; justify-content: space-between; gap: 18px; padding: 7px 0; color: #64748b; font-size: 0.84rem; }
 .cotizacion-totales strong { color: #27364a; }
@@ -576,7 +577,8 @@
 .cotizacion-acciones > div { display: flex; align-items: center; gap: 10px; }
 
 .cotizacion-operacion__mensaje {
-  margin: 0 auto 0 0;
+  flex: 1;
+  margin: 0;
   font-size: 0.78rem;
   font-weight: 750;
 }
@@ -595,6 +597,7 @@
 
 .cotizacion-btn--secundario { border: 1px solid #efaaa5; background: #fff; color: #bd2b24; }
 .cotizacion-btn--borrador { border: 1px solid #b9c8da; background: #fff; color: #334e6f; }
+.cotizacion-btn--documento { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; border: 1px solid #d5dce5; background: #f5f7fa; color: #9aa5b1; }
 .cotizacion-btn--exitosa { border: 1px solid #7fc89d; background: #effaf3; color: #13733a; }
 .cotizacion-btn--principal { border: 1px solid var(--cotizaciones-azul); background: var(--cotizaciones-azul); color: #fff; }
 .cotizacion-btn:disabled { cursor: not-allowed; opacity: 0.48; }

@@ -267,6 +267,19 @@ export function crearMapaCotizabilidadCotizacion(cotizaciones = []) {
   return cotizabilidad;
 }
 
+export function crearMapaNotasCotizaciones(cotizaciones = []) {
+  return Object.fromEntries(
+    cotizaciones.map((cotizacion) => [
+      cotizacion.id_cotizacion,
+      String(cotizacion.notas_cotizacion ?? ""),
+    ]),
+  );
+}
+
+export function normalizarNotasCotizacion(valor) {
+  return String(valor ?? "").slice(0, 1000);
+}
+
 function esDetalleCotizable(detalle, cotizabilidad = {}) {
   const valorLocal = cotizabilidad[detalle.id_detalle_cot];
   return valorLocal === undefined

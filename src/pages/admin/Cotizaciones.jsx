@@ -19,6 +19,7 @@ import {
   PERIODO_HISTORICO,
   crearMapaCotizabilidadCotizacion,
   crearMapaDiasValidezCotizaciones,
+  crearMapaNotasCotizaciones,
   crearMapaPreciosCotizacion,
   crearPreciosParaCompletarCotizacion,
   crearPreciosParaGuardarBorrador,
@@ -37,6 +38,7 @@ import {
   obtenerPeriodosDisponibles,
   obtenerTotalesCotizacion,
   normalizarConfiguracionCotizacion,
+  normalizarNotasCotizacion,
   sanitizarPrecioCotizacion,
   sanitizarDiasValidez,
   sumarDiasFecha,
@@ -58,6 +60,7 @@ function Cotizaciones() {
   const [cotizacionSeleccionada, setCotizacionSeleccionada] = useState(null);
   const [precios, setPrecios] = useState({});
   const [cotizabilidad, setCotizabilidad] = useState({});
+  const [notasPorCotizacion, setNotasPorCotizacion] = useState({});
   const [busqueda, setBusqueda] = useState("");
   const [periodo, setPeriodo] = useState(() => obtenerPeriodoCotizacion());
   const [filtroEstado, setFiltroEstado] = useState("todos");
@@ -105,6 +108,7 @@ function Cotizaciones() {
         setCotizabilidad(
           crearMapaCotizabilidadCotizacion(nuevasCotizaciones),
         );
+        setNotasPorCotizacion(crearMapaNotasCotizaciones(nuevasCotizaciones));
         setPreciosModificados({});
         setDiasValidezPredeterminados(diasPredeterminados);
         setTasaIvaConfigurada(tasaIva);
@@ -280,6 +284,21 @@ function Cotizaciones() {
     setMensajeOperacion(null);
   }
 
+  function actualizarNotasCotizacion(valor) {
+    if (!cotizacionSeleccionada) return;
+
+    setNotasPorCotizacion((actuales) => ({
+      ...actuales,
+      [cotizacionSeleccionada.id_cotizacion]:
+        normalizarNotasCotizacion(valor),
+    }));
+    setPreciosModificados((actuales) => ({
+      ...actuales,
+      [cotizacionSeleccionada.id_cotizacion]: true,
+    }));
+    setMensajeOperacion(null);
+  }
+
   // ============================
   // VIGENCIA DE LA COTIZACIÓN
   // ============================
@@ -328,6 +347,7 @@ function Cotizaciones() {
       await guardarBorradorCotizacionAdmin(
         cotizacionSeleccionada.id_cotizacion,
         preciosBorrador,
+        notasPorCotizacion[cotizacionSeleccionada.id_cotizacion] ?? "",
       );
       setPreciosModificados((actuales) => ({
         ...actuales,
@@ -385,6 +405,7 @@ function Cotizaciones() {
         cotizacionSeleccionada.id_cotizacion,
         dias,
         preciosCotizacion,
+        notasPorCotizacion[cotizacionSeleccionada.id_cotizacion] ?? "",
       );
 
       if (!resultado) {
@@ -398,6 +419,9 @@ function Cotizaciones() {
           id_estado_cot: 2,
           nom_estado: "Completada",
         },
+        notas_cotizacion:
+          notasPorCotizacion[cotizacionSeleccionada.id_cotizacion]?.trim() ||
+          null,
       }));
       setPreciosModificados((actuales) => ({
         ...actuales,
@@ -473,6 +497,8 @@ function Cotizaciones() {
     cotizacionSeleccionada?.id_estado_cot,
   );
   const cotizacionPendiente = idEstadoSeleccionado === 1;
+  const notasCotizacion =
+    notasPorCotizacion[cotizacionSeleccionada?.id_cotizacion] ?? "";
   const puedeResolverResultado = [2, 3, 4].includes(idEstadoSeleccionado);
   const operacionEnCurso =
     completandoCotizacion || guardandoBorrador || cambiandoResultado;
@@ -983,16 +1009,23 @@ function Cotizaciones() {
                   </div>
                 )}
 
-                {/* Exportaciones futuras y resumen tributario de la cotización. */}
+                {/* Notas particulares y resumen tributario de la cotización. */}
                 <div className="cotizacion-cierre">
-                  <div className="cotizacion-documentos">
-                    <h3>Documentos de la cotización</h3>
-                    <div>
-                      <button type="button" disabled>
-                        <FiFileText /> Generar PDF
-                      </button>
-                    </div>
-                  </div>
+                  <label className="cotizacion-notas">
+                    <span>Notas y observaciones</span>
+                    <textarea
+                      value={notasCotizacion}
+                      onChange={(evento) =>
+                        actualizarNotasCotizacion(evento.target.value)
+                      }
+                      placeholder="Ej: condiciones de pago, despacho o información acordada con el cliente."
+                      maxLength={1000}
+                      rows={5}
+                      readOnly={!cotizacionPendiente}
+                      disabled={operacionEnCurso}
+                    />
+                    <small>{notasCotizacion.length}/1000</small>
+                  </label>
                   <aside
                     className="cotizacion-totales"
                     aria-label="Resumen de valores"
@@ -1016,6 +1049,13 @@ function Cotizaciones() {
 
                 {/* Resultado de la operación y acciones disponibles. */}
                 <footer className="cotizacion-acciones">
+                  <button
+                    type="button"
+                    className="cotizacion-btn cotizacion-btn--documento"
+                    disabled
+                  >
+                    <FiFileText /> Generar PDF
+                  </button>
                   {mensajeOperacion && (
                     <p
                       className={`cotizacion-operacion__mensaje cotizacion-operacion__mensaje--${mensajeOperacion.tipo}`}

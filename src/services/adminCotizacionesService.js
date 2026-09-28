@@ -19,6 +19,7 @@ export async function cargarCotizacionesAdmin() {
             total_bruto,
             id_medio_cont,
             comentario,
+            notas_cotizacion,
             id_estado_cot,
             medio_contacto (id_medio_cont, nom_medio),
             estado_cotizacion (id_estado_cot, nom_estado),
@@ -72,18 +73,29 @@ async function ejecutarRpc(nombre, parametros) {
   return data?.[0] ?? null;
 }
 
-export function guardarBorradorCotizacionAdmin(idCotizacion, precios) {
+export function guardarBorradorCotizacionAdmin(
+  idCotizacion,
+  precios,
+  notasCotizacion,
+) {
   return ejecutarRpc("guardar_borrador_cotizacion_admin", {
     p_id_cotizacion: idCotizacion,
     p_precios: precios,
+    p_notas_cotizacion: notasCotizacion,
   });
 }
 
-export function completarCotizacionAdmin(idCotizacion, diasValidez, precios) {
+export function completarCotizacionAdmin(
+  idCotizacion,
+  diasValidez,
+  precios,
+  notasCotizacion,
+) {
   return ejecutarRpc("completar_cotizacion_admin", {
     p_id_cotizacion: idCotizacion,
     p_dias_validez: diasValidez,
     p_precios: precios,
+    p_notas_cotizacion: notasCotizacion,
   });
 }
 
