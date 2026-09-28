@@ -521,8 +521,12 @@
 .cotizacion-producto__tipo { padding: 3px 7px; border-radius: 5px; font-size: 0.62rem; font-weight: 850; letter-spacing: 0.035em; text-transform: uppercase; }
 .cotizacion-producto__tipo--catalogo { background: #e8f2ff; color: #0753bd; }
 .cotizacion-producto__tipo--manual { background: #f3eaff; color: #7b2cbf; }
+.cotizacion-cotizabilidad { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; color: #526174; font-size: 0.73rem; font-weight: 700; cursor: pointer; }
+.cotizacion-cotizabilidad input { width: 15px; height: 15px; margin: 0; accent-color: var(--cotizaciones-azul); }
+.cotizacion-cotizabilidad:has(input:disabled) { cursor: default; }
 .cotizacion-productos__cantidad,
 .cotizacion-productos__subtotal { color: #334155; font-size: 0.88rem; text-align: right; }
+.cotizacion-producto__no-disponible { color: #b42318; font-size: 0.78rem; font-weight: 800; text-align: right; }
 
 .cotizacion-precio {
   display: flex;

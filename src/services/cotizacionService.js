@@ -28,7 +28,12 @@ function normalizarCotizacion(valor) {
       : [],
 
     productosManuales: Array.isArray(valor?.productosManuales)
-      ? valor.productosManuales
+      ? valor.productosManuales.map((producto) => ({
+          ...producto,
+          marca_producto_solicitado: String(
+            producto?.marca_producto_solicitado ?? producto?.observacion ?? "",
+          ).slice(0, 32),
+        }))
       : [],
 
     medioContacto: String(valor?.medioContacto || ""),
@@ -147,8 +152,6 @@ export function agregarProductoCotizacion(producto) {
        */
       stock_prod: stockActual,
 
-      observacion: productoActual.observacion || producto.observacion || "",
-
       es_producto_catalogo: true,
     };
   } else {
@@ -158,8 +161,6 @@ export function agregarProductoCotizacion(producto) {
       cantidad: cantidadNueva,
 
       stock_prod: stockActual,
-
-      observacion: producto.observacion || "",
 
       es_producto_catalogo: true,
     });
@@ -241,6 +242,7 @@ export async function enviarCotizacion({
   const manualesValidos = productosManuales.filter(
     (producto) =>
       producto?.nom_producto_solicitado?.trim() !== "" &&
+      producto?.marca_producto_solicitado?.trim() !== "" &&
       Number.isInteger(Number(producto.cantidad)) &&
       Number(producto.cantidad) >= 1,
   );
@@ -282,7 +284,9 @@ export async function enviarCotizacion({
 
     cantidad: validarCantidad(producto.cantidad),
 
-    observacion: producto.observacion?.trim() || null,
+    marca_producto_solicitado: null,
+
+    es_cotizable: true,
   }));
 
   const detallesManuales = manualesValidos.map((producto) => ({
@@ -296,7 +300,10 @@ export async function enviarCotizacion({
 
     cantidad: validarCantidad(producto.cantidad),
 
-    observacion: producto.observacion?.trim() || null,
+    marca_producto_solicitado:
+      producto.marca_producto_solicitado.trim(),
+
+    es_cotizable: true,
   }));
 
   const detalles = [...detallesCatalogo, ...detallesManuales];

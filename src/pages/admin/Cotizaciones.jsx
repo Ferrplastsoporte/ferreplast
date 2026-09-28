@@ -17,6 +17,7 @@ import {
 } from "../../services/adminCotizacionesService";
 import {
   PERIODO_HISTORICO,
+  crearMapaCotizabilidadCotizacion,
   crearMapaDiasValidezCotizaciones,
   crearMapaPreciosCotizacion,
   crearPreciosParaCompletarCotizacion,
@@ -56,6 +57,7 @@ function Cotizaciones() {
   const [cotizaciones, setCotizaciones] = useState([]);
   const [cotizacionSeleccionada, setCotizacionSeleccionada] = useState(null);
   const [precios, setPrecios] = useState({});
+  const [cotizabilidad, setCotizabilidad] = useState({});
   const [busqueda, setBusqueda] = useState("");
   const [periodo, setPeriodo] = useState(() => obtenerPeriodoCotizacion());
   const [filtroEstado, setFiltroEstado] = useState("todos");
@@ -100,6 +102,9 @@ function Cotizaciones() {
         const { diasValidez: diasPredeterminados, tasaIva } = configuracion;
         setCotizaciones(nuevasCotizaciones);
         setPrecios(crearMapaPreciosCotizacion(nuevasCotizaciones));
+        setCotizabilidad(
+          crearMapaCotizabilidadCotizacion(nuevasCotizaciones),
+        );
         setPreciosModificados({});
         setDiasValidezPredeterminados(diasPredeterminados);
         setTasaIvaConfigurada(tasaIva);
@@ -242,8 +247,9 @@ function Cotizaciones() {
       detallesActuales,
       precios,
       tasaIvaAplicable,
+      cotizabilidad,
     );
-  }, [cotizacionSeleccionada, precios, tasaIvaAplicable]);
+  }, [cotizacionSeleccionada, precios, tasaIvaAplicable, cotizabilidad]);
 
   // ============================
   // EDICIÓN LOCAL DE PRECIOS
@@ -251,6 +257,20 @@ function Cotizaciones() {
   function actualizarPrecio(idDetalle, valor) {
     const limpio = sanitizarPrecioCotizacion(valor);
     setPrecios((actuales) => ({ ...actuales, [idDetalle]: limpio }));
+    if (cotizacionSeleccionada) {
+      setPreciosModificados((actuales) => ({
+        ...actuales,
+        [cotizacionSeleccionada.id_cotizacion]: true,
+      }));
+    }
+    setMensajeOperacion(null);
+  }
+
+  function actualizarCotizabilidad(idDetalle, esCotizable) {
+    setCotizabilidad((actuales) => ({
+      ...actuales,
+      [idDetalle]: esCotizable,
+    }));
     if (cotizacionSeleccionada) {
       setPreciosModificados((actuales) => ({
         ...actuales,
@@ -290,6 +310,7 @@ function Cotizaciones() {
     const preciosBorrador = crearPreciosParaGuardarBorrador(
       cotizacionSeleccionada.detalle_cotizacion,
       precios,
+      cotizabilidad,
     );
 
     if (!preciosBorrador) {
@@ -336,6 +357,7 @@ function Cotizaciones() {
     const preciosCotizacion = crearPreciosParaCompletarCotizacion(
       cotizacionSeleccionada.detalle_cotizacion,
       precios,
+      cotizabilidad,
     );
 
     if (!esCantidadDiasValidezValida(dias)) {
@@ -349,7 +371,8 @@ function Cotizaciones() {
     if (!preciosCotizacion) {
       setMensajeOperacion({
         tipo: "error",
-        texto: "Todos los productos deben tener un precio bruto mayor que cero.",
+        texto:
+          "Todos los productos disponibles deben tener un precio bruto mayor que cero.",
       });
       return;
     }
@@ -461,10 +484,12 @@ function Cotizaciones() {
   const preciosParaCompletar = crearPreciosParaCompletarCotizacion(
     detalles,
     precios,
+    cotizabilidad,
   );
   const preciosParaBorrador = crearPreciosParaGuardarBorrador(
     detalles,
     precios,
+    cotizabilidad,
   );
   const puedeGuardarBorrador =
     cotizacionPendiente &&
@@ -872,9 +897,13 @@ function Cotizaciones() {
                       <span>Total bruto</span>
                     </div>
                     {detalles.map((detalle) => {
+                      const esCotizable =
+                        cotizabilidad[detalle.id_detalle_cot] !== false;
                       const precio =
                         Number(precios[detalle.id_detalle_cot]) || 0;
-                      const subtotal = precio * Number(detalle.cantidad || 0);
+                      const subtotal = esCotizable
+                        ? precio * Number(detalle.cantidad || 0)
+                        : 0;
                       return (
                         <div
                           className="cotizacion-productos__fila"
@@ -891,34 +920,62 @@ function Cotizaciones() {
                             <strong>
                               {obtenerNombreProductoCotizado(detalle)}
                             </strong>
-                            {detalle.observacion && (
-                              <small>{detalle.observacion}</small>
+                            {detalle.marca_producto_solicitado && (
+                              <small>
+                                Marca: {detalle.marca_producto_solicitado}
+                              </small>
                             )}
+                            <label className="cotizacion-cotizabilidad">
+                              <input
+                                type="checkbox"
+                                checked={esCotizable}
+                                onChange={(evento) =>
+                                  actualizarCotizabilidad(
+                                    detalle.id_detalle_cot,
+                                    evento.target.checked,
+                                  )
+                                }
+                                disabled={
+                                  !cotizacionPendiente || operacionEnCurso
+                                }
+                              />
+                              <span>
+                                {esCotizable
+                                  ? "Disponible para cotizar"
+                                  : "No disponible"}
+                              </span>
+                            </label>
                           </div>
                           <strong className="cotizacion-productos__cantidad">
                             {detalle.cantidad}
                           </strong>
-                          <label className="cotizacion-precio">
-                            <span aria-hidden="true">$</span>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={precios[detalle.id_detalle_cot] ?? ""}
-                              onChange={(evento) =>
-                                actualizarPrecio(
-                                  detalle.id_detalle_cot,
-                                  evento.target.value,
-                                )
-                              }
-                              disabled={
-                                !cotizacionPendiente || operacionEnCurso
-                              }
-                              placeholder="0"
-                              aria-label={`Precio bruto unitario de ${obtenerNombreProductoCotizado(detalle)}`}
-                            />
-                          </label>
+                          {esCotizable ? (
+                            <label className="cotizacion-precio">
+                              <span aria-hidden="true">$</span>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={precios[detalle.id_detalle_cot] ?? ""}
+                                onChange={(evento) =>
+                                  actualizarPrecio(
+                                    detalle.id_detalle_cot,
+                                    evento.target.value,
+                                  )
+                                }
+                                disabled={
+                                  !cotizacionPendiente || operacionEnCurso
+                                }
+                                placeholder="0"
+                                aria-label={`Precio bruto unitario de ${obtenerNombreProductoCotizado(detalle)}`}
+                              />
+                            </label>
+                          ) : (
+                            <span className="cotizacion-producto__no-disponible">
+                              No disponible
+                            </span>
+                          )}
                           <strong className="cotizacion-productos__subtotal">
-                            {formatearMontoCLP(subtotal)}
+                            {esCotizable ? formatearMontoCLP(subtotal) : "—"}
                           </strong>
                         </div>
                       );

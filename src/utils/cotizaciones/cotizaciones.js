@@ -255,13 +255,42 @@ export function crearMapaPreciosCotizacion(cotizaciones = []) {
   return precios;
 }
 
+export function crearMapaCotizabilidadCotizacion(cotizaciones = []) {
+  const cotizabilidad = {};
+
+  cotizaciones.forEach((cotizacion) => {
+    (cotizacion.detalle_cotizacion ?? []).forEach((detalle) => {
+      cotizabilidad[detalle.id_detalle_cot] = detalle.es_cotizable !== false;
+    });
+  });
+
+  return cotizabilidad;
+}
+
+function esDetalleCotizable(detalle, cotizabilidad = {}) {
+  const valorLocal = cotizabilidad[detalle.id_detalle_cot];
+  return valorLocal === undefined
+    ? detalle.es_cotizable !== false
+    : Boolean(valorLocal);
+}
+
 export function crearPreciosParaCompletarCotizacion(
   detalles = [],
   precios = {},
+  cotizabilidad = {},
 ) {
   if (!Array.isArray(detalles) || detalles.length === 0) return null;
 
   const preciosNormalizados = detalles.map((detalle) => {
+    const esCotizable = esDetalleCotizable(detalle, cotizabilidad);
+    if (!esCotizable) {
+      return {
+        id_detalle_cot: detalle.id_detalle_cot,
+        valor_bruto: null,
+        es_cotizable: false,
+      };
+    }
+
     const valorBruto = Number(precios[detalle.id_detalle_cot]);
 
     if (!Number.isSafeInteger(valorBruto) || valorBruto <= 0) return null;
@@ -269,6 +298,7 @@ export function crearPreciosParaCompletarCotizacion(
     return {
       id_detalle_cot: detalle.id_detalle_cot,
       valor_bruto: valorBruto,
+      es_cotizable: true,
     };
   });
 
@@ -280,16 +310,27 @@ export function crearPreciosParaCompletarCotizacion(
 export function crearPreciosParaGuardarBorrador(
   detalles = [],
   precios = {},
+  cotizabilidad = {},
 ) {
   if (!Array.isArray(detalles) || detalles.length === 0) return null;
 
   const preciosNormalizados = detalles.map((detalle) => {
+    const esCotizable = esDetalleCotizable(detalle, cotizabilidad);
+    if (!esCotizable) {
+      return {
+        id_detalle_cot: detalle.id_detalle_cot,
+        valor_bruto: null,
+        es_cotizable: false,
+      };
+    }
+
     const valorOriginal = String(precios[detalle.id_detalle_cot] ?? "").trim();
 
     if (!valorOriginal) {
       return {
         id_detalle_cot: detalle.id_detalle_cot,
         valor_bruto: null,
+        es_cotizable: true,
       };
     }
 
@@ -299,6 +340,7 @@ export function crearPreciosParaGuardarBorrador(
     return {
       id_detalle_cot: detalle.id_detalle_cot,
       valor_bruto: valorBruto,
+      es_cotizable: true,
     };
   });
 
@@ -311,8 +353,11 @@ export function calcularTotalesCotizacion(
   detalles = [],
   precios = {},
   tasaIva,
+  cotizabilidad = {},
 ) {
   const totalBruto = detalles.reduce((total, detalle) => {
+    if (!esDetalleCotizable(detalle, cotizabilidad)) return total;
+
     const precioUnitario = Number(precios[detalle.id_detalle_cot]) || 0;
     return total + precioUnitario * Number(detalle.cantidad || 0);
   }, 0);
@@ -333,6 +378,7 @@ export function obtenerTotalesCotizacion(
   detalles = [],
   precios = {},
   tasaIva,
+  cotizabilidad = {},
 ) {
   const totalesGuardados = {
     neto: Number(cotizacion?.subtotal_neto),
@@ -352,5 +398,10 @@ export function obtenerTotalesCotizacion(
 
   return tieneTotalesGuardados
     ? totalesGuardados
-    : calcularTotalesCotizacion(detalles, precios, tasaIva);
+    : calcularTotalesCotizacion(
+        detalles,
+        precios,
+        tasaIva,
+        cotizabilidad,
+      );
 }

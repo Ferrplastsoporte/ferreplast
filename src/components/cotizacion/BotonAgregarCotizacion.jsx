@@ -59,8 +59,6 @@ function BotonAgregarCotizacion({
       precio_prod: producto.precio_prod,
       precio_act: producto.precio_act,
 
-      observacion: "",
-
       es_producto_catalogo: true,
     };
 

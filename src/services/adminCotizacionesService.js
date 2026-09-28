@@ -27,8 +27,9 @@ export async function cargarCotizacionesAdmin() {
               es_producto_catalogo,
               id_prod,
               nom_producto_solicitado,
+              marca_producto_solicitado,
               cantidad,
-              observacion,
+              es_cotizable,
               valor_bruto,
               producto (id_prod, nom_prod, imagen_url)
             )

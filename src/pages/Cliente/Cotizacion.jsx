@@ -16,6 +16,7 @@ import "./css/Cotizacion.css";
 
 const CANTIDAD_MINIMA = 1;
 const CANTIDAD_MAXIMA = 100;
+const LARGO_MAXIMO_MARCA = 32;
 
 const limpiarTexto = (valor = "") => valor.replace(/[^\p{L}\p{N}\s.,]/gu, "");
 
@@ -105,7 +106,7 @@ function Cotizacion() {
 
         cantidad: CANTIDAD_MINIMA,
 
-        observacion: "",
+        marca_producto_solicitado: "",
 
         es_producto_catalogo: false,
       },
@@ -192,6 +193,7 @@ function Cotizacion() {
 
     return (
       producto.nom_producto_solicitado.trim() !== "" &&
+      producto.marca_producto_solicitado.trim() !== "" &&
       Number.isInteger(cantidad) &&
       cantidad >= CANTIDAD_MINIMA &&
       cantidad <= CANTIDAD_MAXIMA
@@ -272,7 +274,7 @@ function Cotizacion() {
       "Las cantidades de los productos deben estar entre 1 y 100.";
   } else if (productosManuales.length > 0 && !productosManualesValidos) {
     mensajeValidacion =
-      "Completa todos los productos agregados con una cantidad entre 1 y 100.";
+      "Completa el nombre, la marca y la cantidad de cada producto solicitado.";
   } else if (!medioContacto) {
     mensajeValidacion = "Selecciona un medio de contacto.";
   }
@@ -486,28 +488,32 @@ function Cotizacion() {
                           />
                         </div>
 
-                        <div className="cotizacion-field cotizacion-field--observation">
+                        <div className="cotizacion-field cotizacion-field--brand">
                           <label
-                            htmlFor={`observacion-${producto.id_temporal}`}
+                            htmlFor={`marca-${producto.id_temporal}`}
                           >
-                            Descripción u observación
+                            Marca solicitada
                           </label>
 
-                          <textarea
-                            id={`observacion-${producto.id_temporal}`}
-                            value={producto.observacion}
+                          <input
+                            id={`marca-${producto.id_temporal}`}
+                            type="text"
+                            value={producto.marca_producto_solicitado}
                             onChange={(evento) =>
                               actualizarProductoManual(
                                 producto.id_temporal,
-                                "observacion",
+                                "marca_producto_solicitado",
                                 evento.target.value,
                               )
                             }
-                            placeholder="Indica marca, modelo, tamaño, color u otra característica."
-                            rows={3}
-                            maxLength={500}
+                            placeholder="Ej: Bosch"
+                            maxLength={LARGO_MAXIMO_MARCA}
                             disabled={enviando}
                           />
+                          <small className="cotizacion-field__help">
+                            Si no tienes una marca preferida, escribe
+                            &quot;Cualquiera&quot;.
+                          </small>
                         </div>
                       </div>
                     </article>
