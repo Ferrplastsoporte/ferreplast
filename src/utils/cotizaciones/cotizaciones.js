@@ -418,3 +418,19 @@ export function obtenerTotalesCotizacion(
         cotizabilidad,
       );
 }
+
+export function descargarArchivoDesdeUrl(url, nombreArchivo) {
+  if (!url) return false;
+
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombreArchivo || "cotizacion.pdf";
+  enlace.rel = "noopener noreferrer";
+  enlace.style.display = "none";
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+
+  return true;
+}

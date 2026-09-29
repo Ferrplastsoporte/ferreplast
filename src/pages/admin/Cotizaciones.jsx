@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   FiBox,
   FiCalendar,
+  FiDownload,
   FiFileText,
   FiMail,
   FiPhone,
@@ -12,6 +13,8 @@ import {
 import {
   cargarCotizacionesAdmin,
   completarCotizacionAdmin,
+  descargarPdfCotizacionAdmin,
+  generarPdfCotizacionAdmin,
   guardarBorradorCotizacionAdmin,
   resolverResultadoCotizacionAdmin,
 } from "../../services/adminCotizacionesService";
@@ -23,6 +26,7 @@ import {
   crearMapaPreciosCotizacion,
   crearPreciosParaCompletarCotizacion,
   crearPreciosParaGuardarBorrador,
+  descargarArchivoDesdeUrl,
   esCantidadDiasValidezValida,
   esTasaIvaValida,
   formatearFechaCotizacion,
@@ -75,6 +79,9 @@ function Cotizaciones() {
   const [completandoCotizacion, setCompletandoCotizacion] = useState(false);
   const [guardandoBorrador, setGuardandoBorrador] = useState(false);
   const [cambiandoResultado, setCambiandoResultado] = useState(false);
+  const [generandoPdf, setGenerandoPdf] = useState(false);
+  const [descargandoPdf, setDescargandoPdf] = useState(false);
+  const [documentosPdf, setDocumentosPdf] = useState({});
   const [preciosModificados, setPreciosModificados] = useState({});
   const [mensajeOperacion, setMensajeOperacion] = useState(null);
   const [confirmacionResultado, setConfirmacionResultado] = useState(null);
@@ -90,8 +97,11 @@ function Cotizaciones() {
       setMensajeError("");
 
       try {
-        const { cotizaciones: nuevasCotizaciones, configuracion: datosConfig } =
-          await cargarCotizacionesAdmin();
+        const {
+          cotizaciones: nuevasCotizaciones,
+          configuracion: datosConfig,
+          documentos,
+        } = await cargarCotizacionesAdmin();
 
         if (!vigente) return;
 
@@ -104,6 +114,14 @@ function Cotizaciones() {
 
         const { diasValidez: diasPredeterminados, tasaIva } = configuracion;
         setCotizaciones(nuevasCotizaciones);
+        setDocumentosPdf(
+          Object.fromEntries(
+            documentos.map((documento) => [
+              String(documento.id_cotizacion),
+              documento,
+            ]),
+          ),
+        );
         setPrecios(crearMapaPreciosCotizacion(nuevasCotizaciones));
         setCotizabilidad(
           crearMapaCotizabilidadCotizacion(nuevasCotizaciones),
@@ -323,6 +341,15 @@ function Cotizaciones() {
     setCotizacionSeleccionada(aplicarCambios);
   }
 
+  function registrarDocumentoLocal(documento) {
+    if (!documento?.id_cotizacion) return;
+
+    setDocumentosPdf((actuales) => ({
+      ...actuales,
+      [String(documento.id_cotizacion)]: documento,
+    }));
+  }
+
   async function guardarBorradorCotizacion() {
     if (!cotizacionSeleccionada) return;
 
@@ -427,10 +454,27 @@ function Cotizaciones() {
         ...actuales,
         [cotizacionSeleccionada.id_cotizacion]: false,
       }));
-      setMensajeOperacion({
-        tipo: "exito",
-        texto: "Cotización completada correctamente.",
-      });
+
+      setGenerandoPdf(true);
+      try {
+        const resultadoPdf = await generarPdfCotizacionAdmin(
+          cotizacionSeleccionada.id_cotizacion,
+        );
+        registrarDocumentoLocal(resultadoPdf.documento);
+        setMensajeOperacion({
+          tipo: "exito",
+          texto: "Cotización completada y PDF generado correctamente.",
+        });
+      } catch (errorPdf) {
+        console.error("Error al generar el PDF:", errorPdf);
+        setMensajeOperacion({
+          tipo: "error",
+          texto:
+            "La cotización fue completada, pero el PDF no pudo generarse. Puedes reintentarlo con el botón Generar PDF.",
+        });
+      } finally {
+        setGenerandoPdf(false);
+      }
     } catch (error) {
       console.error("Error al completar la cotización:", error);
       setMensajeOperacion({
@@ -483,6 +527,82 @@ function Cotizaciones() {
     }
   }
 
+  // ============================
+  // GENERACIÓN Y DESCARGA DEL PDF
+  // ============================
+  async function generarPdfCotizacion() {
+    if (!cotizacionSeleccionada) return;
+
+    setGenerandoPdf(true);
+    setMensajeOperacion(null);
+
+    try {
+      const resultado = await generarPdfCotizacionAdmin(
+        cotizacionSeleccionada.id_cotizacion,
+      );
+      const documento = resultado.documento;
+
+      if (!resultado.urlDescarga) {
+        throw new Error(
+          "El PDF fue guardado, pero no se pudo iniciar su descarga.",
+        );
+      }
+
+      descargarArchivoDesdeUrl(
+        resultado.urlDescarga,
+        documento.nombre_archivo,
+      );
+      registrarDocumentoLocal(documento);
+      setMensajeOperacion({
+        tipo: "exito",
+        texto: "PDF generado y descargado correctamente.",
+      });
+    } catch (error) {
+      console.error("Error al generar el PDF:", error);
+      setMensajeOperacion({
+        tipo: "error",
+        texto: error.message || "No fue posible generar el PDF.",
+      });
+    } finally {
+      setGenerandoPdf(false);
+    }
+  }
+
+  async function descargarPdfCotizacion() {
+    if (!cotizacionSeleccionada) return;
+
+    setDescargandoPdf(true);
+    setMensajeOperacion(null);
+
+    try {
+      const resultado = await descargarPdfCotizacionAdmin(
+        cotizacionSeleccionada.id_cotizacion,
+      );
+
+      if (!resultado.urlDescarga) {
+        throw new Error("No fue posible obtener el enlace de descarga.");
+      }
+
+      registrarDocumentoLocal(resultado.documento);
+      descargarArchivoDesdeUrl(
+        resultado.urlDescarga,
+        resultado.documento.nombre_archivo,
+      );
+      setMensajeOperacion({
+        tipo: "exito",
+        texto: "Descarga iniciada correctamente.",
+      });
+    } catch (error) {
+      console.error("Error al descargar el PDF:", error);
+      setMensajeOperacion({
+        tipo: "error",
+        texto: error.message || "No fue posible descargar el PDF.",
+      });
+    } finally {
+      setDescargandoPdf(false);
+    }
+  }
+
   // Datos derivados utilizados por el panel de detalle.
   const detalles = cotizacionSeleccionada?.detalle_cotizacion ?? [];
   const estadoSeleccionado = obtenerEstadoCotizacion(cotizacionSeleccionada);
@@ -501,7 +621,11 @@ function Cotizaciones() {
     notasPorCotizacion[cotizacionSeleccionada?.id_cotizacion] ?? "";
   const puedeResolverResultado = [2, 3, 4].includes(idEstadoSeleccionado);
   const operacionEnCurso =
-    completandoCotizacion || guardandoBorrador || cambiandoResultado;
+    completandoCotizacion ||
+    guardandoBorrador ||
+    cambiandoResultado ||
+    generandoPdf ||
+    descargandoPdf;
   const fechaEmision =
     cotizacionSeleccionada?.fecha_emision || obtenerFechaActualChile();
   const fechaValidez =
@@ -528,6 +652,14 @@ function Cotizaciones() {
     esTasaIvaValida(tasaIvaAplicable) &&
     Boolean(preciosParaCompletar) &&
     !operacionEnCurso;
+  const puedeGenerarPdf =
+    puedeResolverResultado &&
+    Boolean(cotizacionSeleccionada?.fecha_emision) &&
+    !documentosPdf[String(cotizacionSeleccionada?.id_cotizacion)] &&
+    !operacionEnCurso;
+  const documentoPdf =
+    documentosPdf[String(cotizacionSeleccionada?.id_cotizacion)] ?? null;
+  const puedeDescargarPdf = Boolean(documentoPdf) && !operacionEnCurso;
 
   return (
     <section className="admin-page cotizaciones-page">
@@ -1049,13 +1181,27 @@ function Cotizaciones() {
 
                 {/* Resultado de la operación y acciones disponibles. */}
                 <footer className="cotizacion-acciones">
-                  <button
-                    type="button"
-                    className="cotizacion-btn cotizacion-btn--documento"
-                    disabled
-                  >
-                    <FiFileText /> Generar PDF
-                  </button>
+                  {documentoPdf ? (
+                    <button
+                      type="button"
+                      className="cotizacion-btn cotizacion-btn--documento"
+                      onClick={descargarPdfCotizacion}
+                      disabled={!puedeDescargarPdf}
+                    >
+                      <FiDownload />
+                      {descargandoPdf ? "Descargando…" : "Descargar PDF"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="cotizacion-btn cotizacion-btn--documento"
+                      onClick={generarPdfCotizacion}
+                      disabled={!puedeGenerarPdf}
+                    >
+                      <FiFileText />
+                      {generandoPdf ? "Generando…" : "Generar PDF"}
+                    </button>
+                  )}
                   {mensajeOperacion && (
                     <p
                       className={`cotizacion-operacion__mensaje cotizacion-operacion__mensaje--${mensajeOperacion.tipo}`}

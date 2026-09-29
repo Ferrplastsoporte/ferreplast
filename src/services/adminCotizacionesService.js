@@ -1,8 +1,12 @@
 import { supabase } from "../lib/supabase";
 
 export async function cargarCotizacionesAdmin() {
-  const [resultadoCotizaciones, resultadoClientes, resultadoConfiguracion] =
-    await Promise.all([
+  const [
+    resultadoCotizaciones,
+    resultadoClientes,
+    resultadoConfiguracion,
+    resultadoDocumentos,
+  ] = await Promise.all([
       supabase
         .from("cotizacion")
         .select(
@@ -39,12 +43,14 @@ export async function cargarCotizacionesAdmin() {
         .order("fecha_cot", { ascending: false }),
       supabase.rpc("obtener_clientes_cotizaciones_admin"),
       supabase.rpc("obtener_configuracion_cotizacion_admin"),
+      supabase.rpc("obtener_documentos_cotizaciones_admin"),
     ]);
 
   const error =
     resultadoCotizaciones.error ||
     resultadoClientes.error ||
-    resultadoConfiguracion.error;
+    resultadoConfiguracion.error ||
+    resultadoDocumentos.error;
 
   if (error) throw error;
 
@@ -64,6 +70,7 @@ export async function cargarCotizacionesAdmin() {
   return {
     cotizaciones,
     configuracion: resultadoConfiguracion.data?.[0] ?? null,
+    documentos: resultadoDocumentos.data ?? [],
   };
 }
 
@@ -107,4 +114,46 @@ export function resolverResultadoCotizacionAdmin(
     p_id_cotizacion: idCotizacion,
     p_id_estado_resultado: idEstadoResultado,
   });
+}
+
+async function obtenerMensajeErrorFuncion(error) {
+  const respuesta = error?.context;
+
+  if (respuesta instanceof Response) {
+    try {
+      const contenido = await respuesta.clone().json();
+      if (contenido?.error) return contenido.error;
+    } catch {
+      // Conserva el mensaje original si la respuesta no contiene JSON.
+    }
+  }
+
+  return error?.message || "No fue posible generar el PDF.";
+}
+
+async function solicitarDocumentoCotizacion(idCotizacion, accion) {
+  const { data, error } = await supabase.functions.invoke(
+    "generar-pdf-cotizacion",
+    {
+      body: { idCotizacion, accion },
+    },
+  );
+
+  if (error) {
+    throw new Error(await obtenerMensajeErrorFuncion(error));
+  }
+
+  if (!data?.documento) {
+    throw new Error("Supabase no devolvió el documento generado.");
+  }
+
+  return data;
+}
+
+export function generarPdfCotizacionAdmin(idCotizacion) {
+  return solicitarDocumentoCotizacion(idCotizacion, "generar");
+}
+
+export function descargarPdfCotizacionAdmin(idCotizacion) {
+  return solicitarDocumentoCotizacion(idCotizacion, "descargar");
 }

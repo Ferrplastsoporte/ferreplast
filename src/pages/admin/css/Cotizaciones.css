@@ -564,7 +564,7 @@
 .cotizacion-totales__total { margin-top: 7px; padding-top: 13px !important; border-top: 1px solid #cfd8e3; color: #172033 !important; font-size: 1rem !important; font-weight: 850; }
 .cotizacion-totales__total strong { color: var(--cotizaciones-azul); font-size: 1.2rem; }
 
-/* Acciones preparadas para la etapa de persistencia. */
+/* Acciones de la cotización y generación de documentos. */
 .cotizacion-acciones {
   display: flex;
   align-items: center;
@@ -597,7 +597,7 @@
 
 .cotizacion-btn--secundario { border: 1px solid #efaaa5; background: #fff; color: #bd2b24; }
 .cotizacion-btn--borrador { border: 1px solid #b9c8da; background: #fff; color: #334e6f; }
-.cotizacion-btn--documento { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; border: 1px solid #d5dce5; background: #f5f7fa; color: #9aa5b1; }
+.cotizacion-btn--documento { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; border: 1px solid #9ebce3; background: #f1f6fd; color: #1456a0; }
 .cotizacion-btn--exitosa { border: 1px solid #7fc89d; background: #effaf3; color: #13733a; }
 .cotizacion-btn--principal { border: 1px solid var(--cotizaciones-azul); background: var(--cotizaciones-azul); color: #fff; }
 .cotizacion-btn:disabled { cursor: not-allowed; opacity: 0.48; }
