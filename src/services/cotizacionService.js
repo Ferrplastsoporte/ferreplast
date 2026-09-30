@@ -226,12 +226,6 @@ export async function enviarCotizacion({
   medioContacto,
   comentarioGeneral = "",
 }) {
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !authData?.user) {
-    throw new Error("Debes iniciar sesión para enviar una cotización.");
-  }
-
   const catalogoValidos = productosCatalogo.filter(
     (producto) =>
       producto?.id_prod &&
@@ -255,70 +249,31 @@ export async function enviarCotizacion({
     throw new Error("Debes seleccionar un medio de contacto.");
   }
 
-  const { data: cabecera, error: errorCabecera } = await supabase
-    .from("cotizacion")
-    .insert({
-      id_user: authData.user.id,
-
-      id_medio_cont: Number(medioContacto),
-
-      comentario: comentarioGeneral.trim() || null,
-
-      id_estado_cot: 1,
-    })
-    .select("id_cotizacion")
-    .single();
-
-  if (errorCabecera) {
-    throw errorCabecera;
-  }
-
   const detallesCatalogo = catalogoValidos.map((producto) => ({
-    id_cotizacion: cabecera.id_cotizacion,
-
     es_producto_catalogo: true,
-
-    id_prod: producto.id_prod,
-
-    nom_producto_solicitado: null,
-
+    id_prod: Number(producto.id_prod),
     cantidad: validarCantidad(producto.cantidad),
-
-    marca_producto_solicitado: null,
-
-    es_cotizable: true,
   }));
 
   const detallesManuales = manualesValidos.map((producto) => ({
-    id_cotizacion: cabecera.id_cotizacion,
-
     es_producto_catalogo: false,
-
-    id_prod: null,
-
     nom_producto_solicitado: producto.nom_producto_solicitado.trim(),
-
     cantidad: validarCantidad(producto.cantidad),
-
     marca_producto_solicitado:
       producto.marca_producto_solicitado.trim(),
-
-    es_cotizable: true,
   }));
 
-  const detalles = [...detallesCatalogo, ...detallesManuales];
+  const { data, error } = await supabase.rpc("crear_cotizacion_cliente", {
+    p_id_medio_cont: Number(medioContacto),
+    p_comentario: comentarioGeneral.trim() || null,
+    p_productos: [...detallesCatalogo, ...detallesManuales],
+  });
 
-  const { error: errorDetalles } = await supabase
-    .from("detalle_cotizacion")
-    .insert(detalles);
+  if (error) throw error;
 
-  if (errorDetalles) {
-    await supabase
-      .from("cotizacion")
-      .delete()
-      .eq("id_cotizacion", cabecera.id_cotizacion);
-
-    throw errorDetalles;
+  const cotizacionCreada = data?.[0];
+  if (!cotizacionCreada?.id_cotizacion) {
+    throw new Error("Supabase no devolvió la cotización creada.");
   }
 
   /* Función para enviar los correos de las cotizaciones */
@@ -326,7 +281,7 @@ export async function enviarCotizacion({
     "notificar-cotizacion",
     {
       body: {
-        idCotizacion: cabecera.id_cotizacion,
+        idCotizacion: cotizacionCreada.id_cotizacion,
       },
     },
   );
@@ -339,8 +294,7 @@ export async function enviarCotizacion({
   }
 
   return {
-    idCotizacion: cabecera.id_cotizacion,
-
-    mensaje: "Tu cotización fue ingresada y pronto será atendida.",
+    idCotizacion: cotizacionCreada.id_cotizacion,
+    mensaje: cotizacionCreada.mensaje,
   };
 }
