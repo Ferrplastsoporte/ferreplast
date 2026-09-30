@@ -1,0 +1,188 @@
+/* =========================================================
+   6. CONTACTO
+   ========================================================= */
+
+.contacto {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 110px var(--home-section-x) 115px;
+  background: #ffffff;
+  color: var(--home-text);
+}
+
+.contacto::before {
+  content: "";
+  position: absolute;
+  left: -190px;
+  bottom: -190px;
+  width: 430px;
+  height: 430px;
+  border-radius: 50%;
+  background: rgba(0, 82, 164, .045);
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.contacto-contenedor {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  align-items: center;
+  gap: clamp(45px, 6vw, 90px);
+  width: 100%;
+  max-width: var(--home-container);
+  margin: 0 auto;
+}
+
+.contacto-informacion {
+  max-width: 600px;
+}
+
+.contacto-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 15px;
+  color: var(--home-primary);
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.contacto-etiqueta::before {
+  content: "";
+  width: 28px;
+  height: 3px;
+  border-radius: 99px;
+  background: var(--home-primary);
+}
+
+.contacto-informacion h2 {
+  margin: 0 0 18px;
+  color: var(--home-dark);
+  font-size: clamp(2.5rem, 4.2vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -.05em;
+  line-height: 1.03;
+}
+
+.contacto-informacion > p {
+  max-width: 570px;
+  margin: 0 0 30px;
+  color: var(--home-muted);
+  font-size: .98rem;
+  line-height: 1.8;
+}
+
+.contacto-tarjeta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 15px 17px;
+  border: 1px solid var(--home-border);
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: transform var(--home-transition), border-color var(--home-transition), background var(--home-transition), box-shadow var(--home-transition);
+}
+
+.contacto-tarjeta:hover {
+  border-color: rgba(0,82,164,.22);
+  background: #f2f7ff;
+  box-shadow: var(--home-shadow-sm);
+  transform: translateX(5px);
+}
+
+.contacto-tarjeta > span {
+  display: grid;
+  flex-shrink: 0;
+  width: 45px;
+  height: 45px;
+  border-radius: 11px;
+  background: var(--home-primary);
+  color: var(--home-white);
+  font-size: 1.1rem;
+  place-items: center;
+}
+
+.contacto-tarjeta div {
+  min-width: 0;
+}
+
+.contacto-tarjeta h4 {
+  margin: 0 0 4px;
+  color: var(--home-dark);
+  font-size: .9rem;
+  font-weight: 900;
+}
+
+.contacto-tarjeta p {
+  margin: 0;
+  color: var(--home-muted);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.contacto-mapa {
+  position: relative;
+  min-height: 560px;
+  overflow: hidden;
+  border: 1px solid var(--home-border);
+  border-radius: var(--home-radius-lg);
+  background: var(--home-surface-alt);
+  box-shadow: var(--home-shadow-lg);
+  isolation: isolate;
+}
+
+.contacto-mapa::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.65);
+  pointer-events: none;
+}
+
+.contacto-mapa iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+  border: 0;
+  filter: saturate(.8) contrast(1.03);
+  opacity: .95;
+  transition: filter var(--home-transition), opacity var(--home-transition);
+}
+
+.contacto-mapa:hover iframe {
+  filter: saturate(1) contrast(1);
+  opacity: 1;
+}
+
+@media (max-width: 1100px) {
+  .contacto-etiqueta { justify-content: center; }
+  .contacto-informacion > p { margin-inline: auto; }
+  .contacto-contenedor { grid-template-columns: 1fr; gap: 45px; }
+  .contacto-informacion { max-width: 800px; margin-inline: auto; text-align: center; }
+}
+
+@media (max-width: 700px) {
+  .contacto { padding-top: 75px; padding-bottom: 85px; }
+  .contacto-informacion h2 { font-size: 2.7rem; }
+  .contacto-mapa { min-height: 380px; border-radius: var(--home-radius); }
+  .contacto-mapa iframe { min-height: 380px; }
+}
+
+@media (max-width: 480px) {
+  .contacto-informacion h2 { font-size: 2.3rem; }
+  .contacto-mapa,
+  .contacto-mapa iframe { min-height: 315px; }
+}
+
+

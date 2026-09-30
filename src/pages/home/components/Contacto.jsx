@@ -1,14 +1,14 @@
-import "../css/home.css";
 import SlideUp from "../../../animations/SlideUp";
-function Contact() {
+import "../css/contacto.css";
+function Contacto() {
   return (
     <SlideUp delay={0.3}>
-    <section className="contact">
-      <div className="contact-container">
+    <section className="contacto">
+      <div className="contacto-contenedor">
 
-        <div className="contact-info">
+        <div className="contacto-informacion">
 
-          <span className="contact-tag">
+          <span className="contacto-etiqueta">
             CONTACTO
           </span>
 
@@ -21,7 +21,7 @@ function Contact() {
             personalizada y ayudarte a elegir la mejor solución.
           </p>
 
-          <div className="contact-card">
+          <div className="contacto-tarjeta">
             <span>📍</span>
 
             <div>
@@ -33,7 +33,7 @@ function Contact() {
             </div>
           </div>
 
-          <div className="contact-card">
+          <div className="contacto-tarjeta">
             <span>📞</span>
 
             <div>
@@ -42,7 +42,7 @@ function Contact() {
             </div>
           </div>
 
-          <div className="contact-card">
+          <div className="contacto-tarjeta">
             <span>✉️</span>
 
             <div>
@@ -51,7 +51,7 @@ function Contact() {
             </div>
           </div>
 
-          <div className="contact-card">
+          <div className="contacto-tarjeta">
             <span>🕒</span>
 
             <div>
@@ -63,7 +63,7 @@ function Contact() {
 
         </div>
 
-        <div className="contact-map">
+        <div className="contacto-mapa">
 
           <iframe
             title="Ubicación Ferreplast"
@@ -80,4 +80,6 @@ function Contact() {
   );
 }
 
-export default Contact;
+export default Contacto;
+
+

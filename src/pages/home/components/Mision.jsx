@@ -1,4 +1,3 @@
-import "../css/home.css";
 import FadeIn from "../../../animations/FadeIn";
 import { motion } from "motion/react";
 
@@ -8,6 +7,7 @@ import { Autoplay, Pagination, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
+import "../css/mision.css";
 
 import {
   FaBullseye,
@@ -40,16 +40,16 @@ const pilares = [
   },
 ];
 
-function Mission() {
+function Mision() {
   return (
     <FadeIn>
-      <section className="mission">
-        <div className="mission__glow mission__glow--one" />
-        <div className="mission__glow mission__glow--two" />
+      <section className="mision">
+        <div className="mision__brillo mision__brillo--uno" />
+        <div className="mision__brillo mision__brillo--dos" />
 
-        <div className="mission-header">
+        <div className="mision-encabezado">
           <motion.div
-            className="mission-slider"
+            className="mision-carrusel"
             initial={{ opacity: 0, x: -35 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -61,7 +61,7 @@ function Mission() {
               loop
               autoplay={{ delay: 4000, disableOnInteraction: false }}
               pagination={{ clickable: true }}
-              className="mission-swiper"
+              className="mision-carrusel-principal"
             >
               <SwiperSlide>
                 <img src={proyecto1} alt="Proyecto realizado con productos Ferreplast" />
@@ -72,44 +72,44 @@ function Mission() {
               </SwiperSlide>
             </Swiper>
 
-            <div className="mission-slider__badge">
+            <div className="mision-carrusel__insignia">
               <FaCheck />
               <span>Calidad para proyectos reales</span>
             </div>
           </motion.div>
 
           <motion.div
-            className="mission-info"
+            className="mision-informacion"
             initial={{ opacity: 0, x: 35 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            <span className="mission-subtitle">DESDE PUERTO MONTT · CHILE</span>
+            <span className="mision-subtitulo">DESDE PUERTO MONTT · CHILE</span>
 
             <h2>
               Materiales que hacen
               <strong> durar tus proyectos.</strong>
             </h2>
 
-            <p className="mission-description">
+            <p className="mision-descripcion">
               En <strong>Ferreplast</strong> combinamos productos profesionales,
               asesoría técnica y atención cercana para acompañarte desde la idea
               hasta el resultado final.
             </p>
 
-            <div className="mission-stats">
-              <div className="stat">
+            <div className="mision-estadisticas">
+              <div className="estadistica">
                 <strong>Calidad</strong>
                 <span>Productos seleccionados</span>
               </div>
 
-              <div className="stat">
+              <div className="estadistica">
                 <strong>Asesoría</strong>
                 <span>Atención especializada</span>
               </div>
 
-              <div className="stat">
+              <div className="estadistica">
                 <strong>Confianza</strong>
                 <span>Compra segura</span>
               </div>
@@ -117,21 +117,21 @@ function Mission() {
           </motion.div>
         </div>
 
-        <div className="mission-cards">
+        <div className="mision-tarjetas">
           {pilares.map((pilar, index) => (
             <motion.article
               key={pilar.titulo}
-              className="mission-card"
+              className="mision-tarjeta"
               initial={{ opacity: 0, y: 35 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: index * 0.12 }}
               whileHover={{ y: -10 }}
             >
-              <div className="mission-icon">{pilar.icono}</div>
+              <div className="mision-icono">{pilar.icono}</div>
               <h2>{pilar.titulo}</h2>
               <p>{pilar.texto}</p>
-              <span className="mission-card__line" />
+              <span className="mision-tarjeta__linea" />
             </motion.article>
           ))}
         </div>
@@ -140,4 +140,6 @@ function Mission() {
   );
 }
 
-export default Mission;
+export default Mision;
+
+

@@ -1,10 +1,9 @@
-import "../css/home.css";
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { supabase } from "../../../lib/supabase";
 import FadeIn from "../../../animations/FadeIn";
+import "../css/hero.css";
 
 import heroFallback from "../../../assets/hero.png";
 
@@ -146,8 +145,6 @@ function Hero() {
   return (
     <FadeIn>
       <section className="hero">
-        <div className="hero__glow hero__glow--blue" />
-
         <div className="hero__content">
           <div className="hero__info">
             <span className="hero__eyebrow">

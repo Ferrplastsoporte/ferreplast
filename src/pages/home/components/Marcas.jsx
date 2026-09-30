@@ -1,5 +1,3 @@
-import "../css/home.css";
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,9 +9,10 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 
 import "swiper/css";
+import "../css/marcas.css";
 
-function Brands() {
-  const [brands, setBrands] = useState([]);
+function Marcas() {
+  const [marcas, setMarcas] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +62,7 @@ function Brands() {
     if (error) {
       console.error("Error al cargar marcas:", error);
 
-      setBrands([]);
+      setMarcas([]);
       setLoading(false);
 
       return;
@@ -74,7 +73,7 @@ function Brands() {
       logo_url: obtenerUrlLogo(marca.logo_url),
     }));
 
-    setBrands(marcasAdaptadas);
+    setMarcas(marcasAdaptadas);
 
     setLoading(false);
   }
@@ -85,7 +84,7 @@ function Brands() {
 
   return (
     <FadeIn>
-      <section className="brands">
+      <section className="marcas">
 
         <span>MARCAS EXCLUSIVAS</span>
 
@@ -98,11 +97,11 @@ function Brands() {
         </p>
 
         {loading ? (
-          <p className="brands-loading">
+          <p className="marcas-cargando">
             Cargando marcas...
           </p>
-        ) : brands.length === 0 ? (
-          <p className="brands-loading">
+        ) : marcas.length === 0 ? (
+          <p className="marcas-cargando">
             No hay marcas destacadas disponibles.
           </p>
         ) : (
@@ -130,17 +129,19 @@ function Brands() {
               },
             }}
           >
-            {brands.map((brand) => (
+            {marcas.map((brand) => (
               <SwiperSlide key={brand.id_marca}>
                 <div
-                  className="brand-card"
+                  className="tarjeta-marca"
                   onClick={() => abrirMarca(brand.id_marca)}
                 >
-                  <img
-                    src={brand.logo_url}
-                    alt={brand.nom_marca}
-                    className="brand-logo"
-                  />
+                  {brand.logo_url && (
+                    <img
+                      src={brand.logo_url}
+                      alt={brand.nom_marca}
+                      className="logo-marca"
+                    />
+                  )}
 
                   <h3>{brand.nom_marca}</h3>
                 </div>
@@ -154,4 +155,8 @@ function Brands() {
   );
 }
 
-export default Brands;
+export default Marcas;
+
+
+
+

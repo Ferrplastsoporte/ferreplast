@@ -1,18 +1,18 @@
 import Hero from './components/Hero'
-import FeaturedProducts from './components/FeaturedProducts'
-import Brands from './components/Brands'
-import Contact from './components/Contact'
-import Mission from './components/Mission'
+import ProductosDestacados from './components/ProductosDestacados'
+import Marcas from './components/Marcas'
+import Contacto from './components/Contacto'
+import Mision from './components/Mision'
 import './css/home.css'
 
 function Home() {
   return (
     <>
-      <Mission />
-      <Brands />
+      <Mision />
+      <Marcas />
       <Hero />
-      <FeaturedProducts />
-      <Contact />
+      <ProductosDestacados />
+      <Contacto />
     </>
   )
 }

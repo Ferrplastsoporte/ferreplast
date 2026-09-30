@@ -13,12 +13,12 @@ import { supabase } from "../../../lib/supabase";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import "../css/home.css";
+import "../css/productos-destacados.css";
 
 const IMAGEN_RESPALDO =
   "https://placehold.co/600x400?text=Sin+imagen";
 
-function FeaturedProducts() {
+function ProductosDestacados() {
   const navigate = useNavigate();
 
   const [productos, setProductos] = useState([]);
@@ -134,17 +134,17 @@ function FeaturedProducts() {
   }
 
   return (
-    <section className="featured-products">
+    <section className="productos-destacados">
 
       {/* =========================
           ENCABEZADO
       ========================= */}
 
-      <div className="featured-products__header">
+      <div className="productos-destacados__encabezado">
 
-        <div className="featured-products__heading">
+        <div className="productos-destacados__titulo">
 
-          <span className="featured-products__eyebrow">
+          <span className="productos-destacados__etiqueta">
             FERREPLAST · SELECCIÓN
           </span>
 
@@ -163,7 +163,7 @@ function FeaturedProducts() {
 
         <button
           type="button"
-          className="featured-products__view-all"
+          className="productos-destacados__ver-todos"
           onClick={() => navigate("/catalogo")}
         >
           Ver catálogo
@@ -178,9 +178,9 @@ function FeaturedProducts() {
       ========================= */}
 
       {cargando && (
-        <div className="featured-products__loading">
+        <div className="productos-destacados__carga">
 
-          <div className="featured-products__spinner" />
+          <div className="productos-destacados__indicador" />
 
           <span>
             Cargando productos...
@@ -195,7 +195,7 @@ function FeaturedProducts() {
       ========================= */}
 
       {!cargando && errorCarga && (
-        <div className="featured-products__error">
+        <div className="productos-destacados__error">
 
           <div>
             <strong>
@@ -225,7 +225,7 @@ function FeaturedProducts() {
       {!cargando &&
         !errorCarga &&
         productos.length === 0 && (
-          <div className="featured-products__empty">
+          <div className="productos-destacados__vacio">
 
             <span>📦</span>
 
@@ -246,7 +246,7 @@ function FeaturedProducts() {
         !errorCarga &&
         productos.length > 0 && (
 
-          <div className="featured-products__carousel">
+          <div className="productos-destacados__carrusel">
 
             <Swiper
               modules={[
@@ -322,7 +322,7 @@ function FeaturedProducts() {
                   >
 
                     <article
-                      className="featured-product-card"
+                      className="tarjeta-producto-destacado"
                       onClick={() =>
                         verDetalle(
                           producto.id_prod
@@ -341,7 +341,7 @@ function FeaturedProducts() {
 
                       {/* Imagen */}
 
-                      <div className="featured-product-card__image-wrapper">
+                      <div className="tarjeta-producto-destacado__contenedor-imagen">
 
                         <img
                           src={
@@ -350,7 +350,7 @@ function FeaturedProducts() {
                           alt={
                             producto.nom_prod
                           }
-                          className="featured-product-card__image"
+                          className="tarjeta-producto-destacado__imagen"
                           loading="lazy"
                           onError={(
                             event
@@ -363,13 +363,13 @@ function FeaturedProducts() {
                           }}
                         />
 
-                        <div className="featured-product-card__image-overlay" />
+                        <div className="tarjeta-producto-destacado__capa-imagen" />
 
 
                         {/* Oferta */}
 
                         {tieneOferta && (
-                          <span className="featured-product-card__badge">
+                          <span className="tarjeta-producto-destacado__insignia">
                             OFERTA
                           </span>
                         )}
@@ -378,10 +378,10 @@ function FeaturedProducts() {
                         {/* Stock */}
 
                         <span
-                          className={`featured-product-card__stock ${
+                          className={`tarjeta-producto-destacado__disponibilidad ${
                             tieneStock
-                              ? "featured-product-card__stock--available"
-                              : "featured-product-card__stock--unavailable"
+                              ? "tarjeta-producto-destacado__disponibilidad--available"
+                              : "tarjeta-producto-destacado__disponibilidad--no-disponible"
                           }`}
                         >
                           <i />
@@ -395,9 +395,9 @@ function FeaturedProducts() {
 
                       {/* Información */}
 
-                      <div className="featured-product-card__info">
+                      <div className="tarjeta-producto-destacado__informacion">
 
-                        <span className="featured-product-card__category">
+                        <span className="tarjeta-producto-destacado__categoria">
                           {familia}
                         </span>
 
@@ -405,19 +405,19 @@ function FeaturedProducts() {
                           {producto.nom_prod}
                         </h3>
 
-                        <div className="featured-product-card__bottom">
+                        <div className="tarjeta-producto-destacado__inferior">
 
-                          <div className="featured-product-card__prices">
+                          <div className="tarjeta-producto-destacado__precios">
 
                             {tieneOferta && (
-                              <span className="featured-product-card__old-price">
+                              <span className="tarjeta-producto-destacado__precio-anterior">
                                 {formatearPrecio(
                                   precioOriginal
                                 )}
                               </span>
                             )}
 
-                            <span className="featured-product-card__price">
+                            <span className="tarjeta-producto-destacado__precio">
                               {formatearPrecio(
                                 precioActual
                               )}
@@ -425,7 +425,7 @@ function FeaturedProducts() {
 
                           </div>
 
-                          <span className="featured-product-card__arrow">
+                          <span className="tarjeta-producto-destacado__flecha">
                             →
                           </span>
 
@@ -448,4 +448,6 @@ function FeaturedProducts() {
   );
 }
 
-export default FeaturedProducts;
+export default ProductosDestacados;
+
+
