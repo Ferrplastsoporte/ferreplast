@@ -47,6 +47,8 @@ function Carrito() {
 
   const [iniciandoPago, setIniciandoPago] = useState(false);
   const [errorPago, setErrorPago] = useState("");
+  const [metodosPago, setMetodosPago] = useState([]);
+  const [cargandoMetodosPago, setCargandoMetodosPago] = useState(true);
   const [regiones, setRegiones] = useState([]);
   const [comunas, setComunas] = useState([]);
   const [idRegionDespacho, setIdRegionDespacho] = useState("");
@@ -105,8 +107,30 @@ function Carrito() {
   } = useVistaCarrito();
 
   useEffect(() => {
-    cargarUbicaciones();
+    cargarMetodosPago();
   }, []);
+
+  async function cargarMetodosPago() {
+    setCargandoMetodosPago(true);
+
+    const { data, error } = await supabase
+      .from("metodo_pago")
+      .select("*")
+      .eq("activo", true)
+      .order("orden", { ascending: true });
+
+    console.log("MÉTODOS DE PAGO:", data);
+    console.log("ERROR MÉTODOS DE PAGO:", error);
+
+    if (error) {
+      console.error("Error cargando métodos de pago:", error);
+      setMetodosPago([]);
+    } else {
+      setMetodosPago(data ?? []);
+    }
+
+    setCargandoMetodosPago(false);
+  }
 
   async function cargarUbicaciones() {
     setCargandoUbicaciones(true);
@@ -1170,20 +1194,39 @@ function Carrito() {
                 BOTÓN WEBPAY
             ================================================= */}
 
-            <button
-              type="button"
-              className="cart-summary__pay-button"
-              onClick={continuarCompra}
-              disabled={
-                productos.length === 0 ||
-                cargando ||
-                actualizando ||
-                iniciandoPago ||
-                !despachoListo
-              }
-            >
-              {iniciandoPago ? "Redirigiendo a Webpay..." : "Pagar con Webpay"}
-            </button>
+              {cargandoMetodosPago ? (
+                <p>Cargando métodos de pago...</p>
+              ) : metodosPago.length > 0 ? (
+                metodosPago.map((metodo) => (
+                  <button
+                    key={metodo.id_metodo_pago}
+                    type="button"
+                    className="cart-summary__pay-button"
+                    disabled={
+                      productos.length === 0 ||
+                      cargando ||
+                      actualizando ||
+                      iniciandoPago ||
+                      !despachoListo
+                    }
+                    onClick={() => {
+                      if (metodo.codigo === "WEBPAY") {
+                        continuarCompra();
+                      } else {
+                        console.log(`Método seleccionado: ${metodo.codigo}`);
+                      }
+                    }}
+                  >
+                    {iniciandoPago && metodo.codigo === "WEBPAY"
+                      ? "Redirigiendo a Webpay..."
+                      : `Pagar con ${metodo.nombre}`}
+                  </button>
+                ))
+              ) : (
+                <p className="cart-summary__notice">
+                  No hay métodos de pago disponibles.
+                </p>
+              )}
 
             {/* ================================================= 
                 MENSAJE DESPACHO
