@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  FiCreditCard,
   FiFileText,
   FiImage,
   FiSave,
@@ -8,7 +9,6 @@ import {
   FiUploadCloud,
   FiUsers,
 } from "react-icons/fi";
-
 import {
   actualizarConfiguracionCotizacionAdmin,
   actualizarPlantillaCotizacionAdmin,
@@ -28,6 +28,10 @@ import {
   validarImagenPlantilla,
   validarPlantillaCotizacion,
 } from "../../utils/cotizaciones/plantillaCotizacion";
+import {
+  obtenerMetodosPago,
+  actualizarEstadoMetodoPago,
+} from "../../services/metodoPagoService";
 import AdminHeader from "./components/AdminHeader";
 import "./css/Configuracion.css";
 
@@ -109,6 +113,9 @@ function Configuracion() {
   const [guardando, setGuardando] = useState("");
   const [procesandoRecurso, setProcesandoRecurso] = useState("");
   const [mensaje, setMensaje] = useState(null);
+  const [metodosPago, setMetodosPago] = useState([]);
+  const [cargandoMetodosPago, setCargandoMetodosPago] = useState(true);
+  const [actualizandoMetodoPago, setActualizandoMetodoPago] = useState(null);
 
   useEffect(() => {
     let vigente = true;
@@ -162,6 +169,7 @@ function Configuracion() {
     }
 
     cargar();
+    cargarMetodosPago();
     return () => {
       vigente = false;
     };
@@ -300,6 +308,60 @@ function Configuracion() {
       setProcesandoRecurso("");
     }
   }
+async function cargarMetodosPago() {
+  setCargandoMetodosPago(true);
+
+  try {
+    const datos = await obtenerMetodosPago();
+    setMetodosPago(datos);
+  } catch (error) {
+    console.error("Error al cargar métodos de pago:", error);
+
+    setMensaje({
+      tipo: "error",
+      texto: "No fue posible cargar los métodos de pago.",
+    });
+  } finally {
+    setCargandoMetodosPago(false);
+  }
+}
+
+async function cambiarEstadoMetodoPago(id, activo) {
+  setActualizandoMetodoPago(id);
+  setMensaje(null);
+
+  try {
+    const metodoActualizado = await actualizarEstadoMetodoPago(
+      id,
+      activo
+    );
+
+    setMetodosPago((actuales) =>
+      actuales.map((metodo) =>
+        metodo.id_metodo_pago === id
+          ? metodoActualizado
+          : metodo
+      )
+    );
+
+    setMensaje({
+      tipo: "exito",
+      texto: `Método de pago ${
+        activo ? "activado" : "desactivado"
+      } correctamente.`,
+    });
+  } catch (error) {
+    console.error("Error al actualizar método de pago:", error);
+
+    setMensaje({
+      tipo: "error",
+      texto: "No fue posible actualizar el método de pago.",
+    });
+  } finally {
+    setActualizandoMetodoPago(null);
+  }
+
+}
 
   return (
     <section className="admin-page configuracion-page">
@@ -626,6 +688,7 @@ function Configuracion() {
                 <p>Imágenes utilizadas en la cabecera y las autorizaciones.</p>
               </div>
             </header>
+        
 
             <div className="configuracion-recursos">
               <SelectorRecursoPlantilla
@@ -669,6 +732,78 @@ function Configuracion() {
               Formatos permitidos: PNG, JPG o WebP. Máximo 2 MB por imagen.
             </p>
           </section>
+           <section className="configuracion-tarjeta">
+  <header className="configuracion-tarjeta__cabecera">
+    <FiCreditCard aria-hidden="true" />
+
+    <div>
+      <h2>Métodos de pago</h2>
+      <p>
+        Administra los métodos de pago disponibles para los clientes.
+      </p>
+    </div>
+  </header>
+
+  {cargandoMetodosPago ? (
+    <div className="admin-loading">
+      Cargando métodos de pago…
+    </div>
+  ) : metodosPago.length === 0 ? (
+    <p>No hay métodos de pago configurados.</p>
+  ) : (
+    <div className="metodos-pago-admin">
+      {metodosPago.map((metodo) => (
+        <article
+          key={metodo.id_metodo_pago}
+          className="metodo-pago-admin"
+        >
+          <div>
+            <h3>{metodo.nombre}</h3>
+
+            <p>{metodo.descripcion}</p>
+
+            <small>
+              Código: {metodo.codigo}
+            </small>
+          </div>
+
+          <div className="metodo-pago-admin__acciones">
+                        <span
+                          className={
+                            metodo.activo
+                              ? "metodo-pago-admin__estado metodo-pago-admin__estado--activo"
+                              : "metodo-pago-admin__estado"
+                          }
+                        >
+                          {metodo.activo ? "Activo" : "Inactivo"}
+                        </span>
+
+                        <button
+                          type="button"
+                          disabled={
+                            actualizandoMetodoPago ===
+                            metodo.id_metodo_pago
+                          }
+                          onClick={() =>
+                            cambiarEstadoMetodoPago(
+                              metodo.id_metodo_pago,
+                              !metodo.activo
+                            )
+                          }
+                        >
+                          {actualizandoMetodoPago ===
+                          metodo.id_metodo_pago
+                            ? "Actualizando..."
+                            : metodo.activo
+                              ? "Desactivar"
+                              : "Activar"}
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
         </div>
       )}
     </section>

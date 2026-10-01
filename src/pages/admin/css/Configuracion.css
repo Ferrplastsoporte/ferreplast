@@ -320,6 +320,138 @@
   color: #718096;
   font-size: 0.76rem;
 }
+/* ============================
+   MÉTODOS DE PAGO
+============================ */
+
+.metodos-pago-admin {
+  display: grid;
+  gap: 14px;
+}
+
+.metodo-pago-admin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 20px;
+  border: 1px solid #dfe6ee;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.metodo-pago-admin:hover {
+  border-color: #cbd8e8;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.06);
+}
+
+.metodo-pago-admin > div:first-child {
+  min-width: 0;
+}
+
+.metodo-pago-admin h3 {
+  margin: 0 0 4px;
+  color: #172033;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.metodo-pago-admin p {
+  margin: 0 0 7px;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.metodo-pago-admin small {
+  color: #718096;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.metodo-pago-admin__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.metodo-pago-admin__estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.metodo-pago-admin__estado--activo {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.metodo-pago-admin__acciones button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid #b9cce7;
+  border-radius: 8px;
+  background: #eef5ff;
+  color: #0753bd;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.metodo-pago-admin__acciones button:hover:not(:disabled) {
+  border-color: #0753bd;
+  background: #0753bd;
+  color: #fff;
+}
+
+.metodo-pago-admin__acciones button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================
+   RESPONSIVE MÉTODOS DE PAGO
+============================ */
+
+@media (max-width: 760px) {
+  .metodo-pago-admin {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .metodo-pago-admin__acciones {
+    justify-content: space-between;
+  }
+
+  .metodo-pago-admin__acciones button {
+    flex: 1;
+  }
+}
 
 /* ============================
    ADAPTACIÓN RESPONSIVE

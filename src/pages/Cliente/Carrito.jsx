@@ -106,31 +106,28 @@ function Carrito() {
     vaciarCarritoCompleto,
   } = useVistaCarrito();
 
-  useEffect(() => {
-    cargarMetodosPago();
-  }, []);
+useEffect(() => {
+  cargarMetodosPago();
+}, []);
 
-  async function cargarMetodosPago() {
-    setCargandoMetodosPago(true);
+async function cargarMetodosPago() {
+  setCargandoMetodosPago(true);
 
-    const { data, error } = await supabase
-      .from("metodo_pago")
-      .select("*")
-      .eq("activo", true)
-      .order("orden", { ascending: true });
+  const { data, error } = await supabase
+    .from("metodo_pago")
+    .select("*")
+    .eq("activo", true)
+    .order("orden", { ascending: true });
 
-    console.log("MÉTODOS DE PAGO:", data);
-    console.log("ERROR MÉTODOS DE PAGO:", error);
-
-    if (error) {
-      console.error("Error cargando métodos de pago:", error);
-      setMetodosPago([]);
-    } else {
-      setMetodosPago(data ?? []);
-    }
-
-    setCargandoMetodosPago(false);
+  if (error) {
+    console.error("Error cargando métodos de pago:", error);
+    setMetodosPago([]);
+  } else {
+    setMetodosPago(data ?? []);
   }
+
+  setCargandoMetodosPago(false);
+}
 
   async function cargarUbicaciones() {
     setCargandoUbicaciones(true);
