@@ -222,7 +222,7 @@ async function cargarMetodosPago() {
     setErrorPago("");
   }
 
-  async function continuarCompra() {
+  async function continuarCompra(metodoPago = "WEBPAY") {
     if (!usuario) {
       navigate("/login", {
         state: {
@@ -240,7 +240,9 @@ async function cargarMetodosPago() {
     // ==================================================
 
     if (!despachoListo || !despachoSeleccionado) {
-      setErrorPago("Selecciona una modalidad de entrega antes de continuar.");
+      setErrorPago(
+        "Selecciona una modalidad de entrega antes de continuar."
+      );
 
       return;
     }
@@ -257,6 +259,7 @@ async function cargarMetodosPago() {
       const primerCampoInvalido = Object.keys(
         validacionFactura.errores ?? {},
       )[0];
+
       const idCampo = CAMPOS_FACTURA_POR_ID[primerCampoInvalido];
 
       requestAnimationFrame(() => {
@@ -287,15 +290,19 @@ async function cargarMetodosPago() {
     // ==================================================
 
     const datosDespacho = {
-      id_tipo_despacho: Number(despachoSeleccionado.id_tipo_despacho),
+      id_tipo_despacho: Number(
+        despachoSeleccionado.id_tipo_despacho
+      ),
 
-      nom_tipo_despacho: despachoSeleccionado.nom_tipo_despacho,
+      nom_tipo_despacho:
+        despachoSeleccionado.nom_tipo_despacho,
 
       costo_envio: Number(envio),
 
       requiere_coordinacion: requiereCoordinacion,
 
-      direccion_despacho: direccionDespacho.trim(),
+      direccion_despacho:
+        direccionDespacho.trim(),
     };
 
     // ==================================================
@@ -313,7 +320,6 @@ async function cargarMetodosPago() {
     );
 
     console.log("Facturación preparada:", facturacion);
-
     console.log("Despacho preparado:", datosDespacho);
 
     // ==================================================
@@ -332,79 +338,161 @@ async function cargarMetodosPago() {
       } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        throw new Error("No se encontró una sesión válida.");
+        throw new Error(
+          "No se encontró una sesión válida."
+        );
       }
+
+      // ==================================================
+      // SELECCIONAR PROVEEDOR DE PAGO
+      // ==================================================
+
+      const funcionPago =
+        metodoPago === "BANCO_CHILE"
+          ? "banchile_create"
+          : "webpay-create";
+
+      console.log("Método de pago:", metodoPago);
+      console.log("Edge Function:", funcionPago);
 
       // ==================================================
       // CREAR PEDIDO + DESPACHO + FACTURA + PAGO
       // ==================================================
 
-            console.log("BODY FINAL WEBPAY:", {
-              userId: usuario.id,
-              accessToken: "RECIBIDO",
-              idTipoDespacho: Number(despachoSeleccionado.id_tipo_despacho),
+      console.log("BODY FINAL PAGO:", {
+        userId: usuario.id,
+        accessToken: "RECIBIDO",
+        idTipoDespacho: Number(
+          despachoSeleccionado.id_tipo_despacho
+        ),
+        idComuna: Number(idComunaDespacho),
+        direccionDespacho: direccionDespacho,
+        esFactura: Boolean(esFactura),
+        facturacion: esFactura
+          ? facturacion?.detalle_factura
+          : null,
+      });
+
+      console.log("SESSION USER:", session.user.id);
+      console.log("USUARIO CARRITO:", usuario.id);
+
+      const { data, error } =
+        await supabase.functions.invoke(
+          funcionPago,
+          {
+            body: {
+              idTipoDespacho: Number(
+                despachoSeleccionado.id_tipo_despacho
+              ),
+
               idComuna: Number(idComunaDespacho),
-              direccionDespacho: direccionDespacho,
+
+              direccionDespacho:
+                direccionDespacho,
+
               esFactura: Boolean(esFactura),
-              facturacion: esFactura ? facturacion?.detalle_factura : null,
-            });
-            console.log("SESSION USER:", session.user.id);
-            console.log("USUARIO CARRITO:", usuario.id);
-            const { data, error } = await supabase.functions.invoke(
-        "webpay-create",
-        {
-          body: {
-            idTipoDespacho: Number(
-              despachoSeleccionado.id_tipo_despacho
-            ),
 
-            idComuna: Number(idComunaDespacho),
+              facturacion: esFactura
+                ? facturacion?.detalle_factura
+                : null,
+            },
+          }
+        );
 
-            direccionDespacho: direccionDespacho,
-
-            esFactura: Boolean(esFactura),
-
-            facturacion: esFactura
-              ? facturacion?.detalle_factura
-              : null,
-          },
-        }
+      console.log(
+        `RESPUESTA ${metodoPago}:`,
+        data
       );
+
+      // ==================================================
+      // VALIDAR ERROR DE SUPABASE
+      // ==================================================
 
       if (error) {
         console.error(
-          "Error llamando webpay-create:",
+          `Error llamando ${funcionPago}:`,
           error
         );
 
         throw new Error(
-          error.message || "No se pudo iniciar Webpay"
+          error.message ||
+            `No se pudo iniciar el pago con ${metodoPago}.`
         );
       }
+
+      // ==================================================
+      // VALIDAR RESPUESTA DEL BACKEND
+      // ==================================================
 
       if (!data?.ok) {
         throw new Error(
           data?.error ||
-            "No se pudo crear la transacción Webpay"
+            `No se pudo crear la transacción con ${metodoPago}.`
         );
       }
 
-      console.log("Pago Webpay iniciado:", {
-        idPedido: data.idPedido,
-        idPago: data.idPago,
-        buyOrder: data.buyOrder,
-        monto: data.monto,
-      });
+      // ==================================================
+      // BANCO DE CHILE
+      // ==================================================
+
+      if (metodoPago === "BANCO_CHILE") {
+        if (!data?.processUrl) {
+          throw new Error(
+            "Banco de Chile no devolvió la URL de pago."
+          );
+        }
+
+        console.log(
+          "Pago Banco de Chile iniciado:",
+          {
+            idPedido: data.idPedido,
+            idPago: data.idPago,
+            requestId: data.requestId,
+            buyOrder: data.buyOrder,
+            monto: data.monto,
+            processUrl: data.processUrl,
+          }
+        );
+
+        // Redirigir al checkout de Banco de Chile
+        window.location.href =
+          data.processUrl;
+
+        return;
+      }
+
+      // ==================================================
+      // WEBPAY
+      // ==================================================
+
+      if (!data?.url || !data?.token) {
+        throw new Error(
+          "Webpay no devolvió los datos necesarios para iniciar el pago."
+        );
+      }
+
+      console.log(
+        "Pago Webpay iniciado:",
+        {
+          idPedido: data.idPedido,
+          idPago: data.idPago,
+          buyOrder: data.buyOrder,
+          monto: data.monto,
+        }
+      );
+
       // ==================================================
       // REDIRIGIR A WEBPAY
       // ==================================================
 
-      const formulario = document.createElement("form");
+      const formulario =
+        document.createElement("form");
 
       formulario.method = "POST";
       formulario.action = data.url;
 
-      const token = document.createElement("input");
+      const token =
+        document.createElement("input");
 
       token.type = "hidden";
       token.name = "token_ws";
@@ -415,11 +503,16 @@ async function cargarMetodosPago() {
       document.body.appendChild(formulario);
 
       formulario.submit();
+
     } catch (errorInicio) {
-      console.error("Error iniciando Webpay:", errorInicio);
+      console.error(
+        `Error iniciando ${metodoPago}:`,
+        errorInicio
+      );
 
       setErrorPago(
-        errorInicio.message || "No fue posible conectar con Webpay.",
+        errorInicio.message ||
+          `No fue posible conectar con ${metodoPago}.`
       );
 
       setIniciandoPago(false);
@@ -427,10 +520,9 @@ async function cargarMetodosPago() {
   }
 
   /* =======================================================
-     TEXTO COSTO DESPACHO
+     MENSAJE DESPACHO
   ======================================================= */
-
-  function obtenerTextoEnvio() {
+    function obtenerTextoEnvio() {
     if (!usuario) {
       return "Por calcular";
     }
@@ -448,11 +540,7 @@ async function cargarMetodosPago() {
     }
 
     return formatearPrecio(envio);
-  }
-
-  /* =======================================================
-     MENSAJE DESPACHO
-  ======================================================= */
+}
 
   function obtenerMensajeDespacho() {
     if (!usuario) {
@@ -1206,13 +1294,9 @@ async function cargarMetodosPago() {
                       iniciandoPago ||
                       !despachoListo
                     }
-                    onClick={() => {
-                      if (metodo.codigo === "WEBPAY") {
-                        continuarCompra();
-                      } else {
-                        console.log(`Método seleccionado: ${metodo.codigo}`);
-                      }
-                    }}
+                      onClick={() => {
+                        continuarCompra(metodo.codigo);
+                      }}
                   >
                     {iniciandoPago && metodo.codigo === "WEBPAY"
                       ? "Redirigiendo a Webpay..."
