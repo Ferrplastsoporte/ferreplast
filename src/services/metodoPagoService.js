@@ -36,18 +36,20 @@ export async function obtenerMetodosPagoActivos() {
 /**
  * Actualiza el estado de un método de pago.
  */
+/**
+ * Actualiza el estado de un método de pago.
+ */
 export async function actualizarEstadoMetodoPago(
   idMetodoPago,
   activo
 ) {
-  const { data, error } = await supabase
-    .from("metodo_pago")
-    .update({
-      activo: activo,
-    })
-    .eq("id_metodo_pago", idMetodoPago)
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc(
+    "cambiar_estado_metodo_pago",
+    {
+      p_id_metodo_pago: idMetodoPago,
+      p_activo: activo,
+    }
+  );
 
   if (error) {
     throw error;
