@@ -42,6 +42,10 @@ export const useAutenticacion = () => {
     const message =
       error?.message?.toLowerCase() ?? ''
 
+    if (error?.code === 'captcha_failed' || message.includes('captcha')) {
+      return 'La verificación de seguridad falló o venció. Complétala nuevamente.'
+    }
+
     if (
       message.includes(
         'invalid login credentials'
@@ -228,7 +232,8 @@ export const useAutenticacion = () => {
 
   const register = async (
     userData,
-    mode = 'client'
+    mode = 'client',
+    captchaToken
   ) => {
     if (loading) {
       return false
@@ -271,6 +276,7 @@ export const useAutenticacion = () => {
         email,
         password: userData.password,
         options: {
+          captchaToken,
           data: {
             nombre:
               userData.nombre.trim(),
@@ -328,7 +334,8 @@ export const useAutenticacion = () => {
 
   const login = async (
     email,
-    password
+    password,
+    captchaToken
   ) => {
     if (loading) {
       return false
@@ -346,7 +353,8 @@ export const useAutenticacion = () => {
             .trim()
             .toLowerCase(),
 
-          password
+          password,
+          options: { captchaToken }
         })
 
       if (error) {

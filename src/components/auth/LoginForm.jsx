@@ -15,6 +15,8 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import LoginMascot from "./LoginMascot";
+import Captcha from "./Captcha";
+import useCaptcha from "../../hooks/useCaptcha";
 const INITIAL_VALUES = {
   email: "",
   password: "",
@@ -56,6 +58,7 @@ const validateField = (name, value) => {
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const captcha = useCaptcha();
 
   const { values, errors, handleChange, handleBlur, validateForm } = useFormulario(
     INITIAL_VALUES,
@@ -70,7 +73,7 @@ const LoginForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (loading) {
+    if (loading || captcha.pendiente) {
       return;
     }
 
@@ -78,7 +81,12 @@ const LoginForm = () => {
       return;
     }
 
-    const perfilAutenticado = await login(values.email, values.password);
+    let perfilAutenticado;
+    try {
+      perfilAutenticado = await login(values.email, values.password, captcha.token);
+    } finally {
+      captcha.reiniciar();
+    }
 
     if (!perfilAutenticado) {
       return;
@@ -146,7 +154,8 @@ const LoginForm = () => {
         </div>
       </div>
 
-      <Button type="submit" loading={loading} className="login-submit">
+      <Captcha onToken={captcha.setToken} intento={captcha.intento} />
+      <Button type="submit" loading={loading} disabled={captcha.pendiente} className="login-submit">
         {loading ? "Iniciando sesión..." : "Iniciar sesión"}
       </Button>
 

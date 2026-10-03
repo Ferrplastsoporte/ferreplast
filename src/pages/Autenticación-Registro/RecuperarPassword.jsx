@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import Captcha from "../../components/auth/Captcha";
+import useCaptcha from "../../hooks/useCaptcha";
 import {
   LONGITUD_MAXIMA_CORREO,
   sanitizarCorreo,
@@ -9,6 +11,7 @@ import {
 import "./css/RecuperarPassword.css";
 
 export default function RecuperarPassword() {
+  const captcha = useCaptcha();
   const [email, setEmail] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -16,6 +19,7 @@ export default function RecuperarPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (enviando || captcha.pendiente) return;
 
     setMensaje("");
     setError("");
@@ -35,10 +39,19 @@ export default function RecuperarPassword() {
         correo,
         {
           redirectTo: `${window.location.origin}/NuevaContrasena`,
+          captchaToken: captcha.token,
         },
       );
 
       if (resetError) {
+        if (resetError.code === "captcha_failed" || /captcha/i.test(resetError.message)) {
+          setError("La verificación de seguridad falló o venció. Complétala nuevamente.");
+          return;
+        }
+        if (resetError.status === 429) {
+          setError("Has realizado demasiados intentos. Espera unos minutos.");
+          return;
+        }
         console.error(
           "Error al solicitar recuperación de contraseña:",
           resetError,
@@ -57,6 +70,7 @@ export default function RecuperarPassword() {
         "Si existe una cuenta asociada a ese correo, recibirás un enlace para restablecer tu contraseña.",
       );
     } finally {
+      captcha.reiniciar();
       setEnviando(false);
     }
   };
@@ -112,10 +126,11 @@ export default function RecuperarPassword() {
             </div>
           )}
 
+          <Captcha onToken={captcha.setToken} intento={captcha.intento} />
           <button
             className="recuperar-password-button"
             type="submit"
-            disabled={enviando}
+            disabled={enviando || captcha.pendiente}
           >
             {enviando ? "Enviando..." : "Enviar enlace de recuperación"}
           </button>

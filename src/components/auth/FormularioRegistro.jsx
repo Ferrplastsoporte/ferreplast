@@ -13,6 +13,8 @@ import Input from "../ui/Input";
 import Select from "../ui/Select";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
+import Captcha from "./Captcha";
+import useCaptcha from "../../hooks/useCaptcha";
 
 const INITIAL_VALUES = {
   nombre: "",
@@ -28,6 +30,7 @@ const INITIAL_VALUES = {
 
 const FormularioRegistro = () => {
   const navigate = useNavigate();
+  const captcha = useCaptcha();
 
   const {
     values,
@@ -150,7 +153,7 @@ const FormularioRegistro = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (loading) {
+    if (loading || captcha.pendiente) {
       return;
     }
 
@@ -165,7 +168,12 @@ const FormularioRegistro = () => {
      * exclusivamente al registro
      * público de clientes.
      */
-    const resultado = await register(values, "client");
+    let resultado;
+    try {
+      resultado = await register(values, "client", captcha.token);
+    } finally {
+      captcha.reiniciar();
+    }
 
     if (resultado === true) {
       resetForm();
@@ -313,10 +321,11 @@ const FormularioRegistro = () => {
           }
         />
 
+        <Captcha onToken={captcha.setToken} intento={captcha.intento} />
         <Button
           type="submit"
           loading={loading}
-          disabled={loading || loadingRegiones || loadingComunas}
+          disabled={loading || loadingRegiones || loadingComunas || captcha.pendiente}
           className="registro-boton"
         >
           Registrarse
