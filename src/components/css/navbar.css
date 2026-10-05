@@ -1,891 +1,328 @@
-/* =========================================================
-   NAVBAR - FERREPLAST
-   ========================================================= */
-
+/* 1. BARRA PRINCIPAL: posición, espacio interior y curvas inferiores. */
 .navbar {
+  /* Mantener la barra arriba al desplazarse, por encima del contenido. */
   position: sticky;
   top: 0;
   z-index: 1000;
 
-  display: flex;
-  align-items: center;
+  /* Espacio vertical, sin margen interior a los lados. */
+  padding-block: 14px;
+  padding-inline: 0;
 
-  gap: 22px;
+  /* Redondear únicamente las dos esquinas inferiores. */
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  color: #fff;
 
-  min-height: 76px;
-
-  padding: 10px 32px;
-
-  box-sizing: border-box;
-
-  background:
-    linear-gradient(
-      90deg,
-      #277ce0 0%,
-      #2476d7 55%,
-      #1f6fcb 100%
-    );
-
-  color: #ffffff;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
-  box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.16);
+  /* El fondo blanco y el degradado se dibujan en ::before y ::after. */
+  isolation: isolate;
+  background: transparent;
 }
+/* 2. FONDO: blanco de las esquinas, degradado azul y sombra. */
+.navbar::before, .navbar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.navbar::before {
+  z-index: -2;
+  background: #fff;
+}
+.navbar::after {
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(100deg, #277ce0 0%, #2476d7 60%, #1f6fcb 100%);
+  box-shadow: 0 3px 10px rgb(15 42 74 / 8%);
+}
+/* 3. REGLAS COMUNES: enlaces, botones y contorno de foco con teclado. */
+.navbar, .navbar * { box-sizing: border-box; }
+.navbar button, .navbar input { font: inherit; }
+.navbar button, .navbar summary { cursor: pointer; }
+.navbar a { color: inherit; text-decoration: none; }
+.navbar button { border: 0; }
+.navbar :is(a, button, summary, input):focus-visible {
+  outline: 3px solid #ffd66b;
+  outline-offset: 3px;
+}
+.navbar summary { list-style: none; }
+.navbar summary::-webkit-details-marker { display: none; }
 
-
-/* =========================================================
-   LOGO
-   ========================================================= */
-
+/* 4. DISTRIBUCIÓN DE ESCRITORIO: logo 25%, buscador 50%, acciones 25%. */
+.navbar__contenido {
+  display: grid;
+  grid-template-columns: 25% 50% 25%;
+  align-items: center;
+  width: 100%;
+}
+/* 5. LOGO: alineación, márgenes y tamaño de la imagen. */
 .navbar__logo {
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 0;
 
-  flex-shrink: 0;
-
-  min-width: 190px;
-
-  color: #ffffff;
-
-  text-decoration: none;
 }
-
-.navbar__logo-image {
+.navbar__logo-imagen {
   display: block;
-
   width: auto;
-  height: 55px;
-
+  max-width: 100%;
+  height: clamp(56px, 3.2vw, 54px);
   object-fit: contain;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
+.navbar__logo-imagen:hover {
+  transform: scale(1.03); /* Incrementa un 5% el tamaño */
+  cursor: pointer;
+}
 
-/* =========================================================
-   BUSCADOR
-   ========================================================= */
-
-.navbar__search {
+/* 6. BUSCADOR: tamaño, campo de texto y botón de búsqueda. */
+.navbar__buscador {
   display: flex;
   align-items: center;
-
-  flex: 1;
-
-  height: 46px;
-
-  min-width: 180px;
-
-  overflow: hidden;
-
-  border-radius: 25px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 4px 15px rgba(0, 0, 0, 0.10);
-
-  transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.navbar__search:focus-within {
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.20),
-    0 6px 20px rgba(0, 0, 0, 0.14);
-}
-
-.navbar__search input,
-.navbar__search button {
-  border: none;
-
-  background: #ffffff;
-
-  font-family: inherit;
-}
-
-.navbar__search input {
-  flex: 1;
-
   min-width: 0;
-
+  height: clamp(44px, 3.4vw, 48px);
+  overflow: hidden;
+  background: #fff;
+  border-radius: 28px;
+  color: #155fac;
+}
+.navbar__buscador:focus-within { box-shadow: 0 0 0 3px rgb(255 255 255 / 35%); }
+.navbar__buscador input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
   height: 100%;
-
-  padding: 0 18px;
-
+  border: 0;
   outline: none;
-
-  color: #172033;
-
-  font-size: 0.95rem;
-}
-
-.navbar__search input::placeholder {
-  color: #7b8491;
-}
-
-.navbar__search button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 56px;
-  height: 100%;
-
-  color: #075fbd;
-
-  font-size: 1.05rem;
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-.navbar__search button:hover {
-  background: #f1f6fc;
-
-  color: #004c9e;
-}
-
-
-/* =========================================================
-   CATEGORÍAS
-   ========================================================= */
-
-.navbar__categories {
-  position: relative;
-
-  flex-shrink: 0;
-}
-
-.navbar__categories summary {
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  padding: 11px 12px;
-
-  border-radius: 10px;
-
-  color: #ffffff;
-
-  font-weight: 700;
-
-  list-style: none;
-
-  cursor: pointer;
-
-  user-select: none;
-
-  transition:
-    background 0.2s ease;
-}
-
-.navbar__categories summary:hover {
-  background: rgba(255, 255, 255, 0.10);
-}
-
-.navbar__categories summary::-webkit-details-marker {
-  display: none;
-}
-
-
-/* =========================================================
-   MENÚ CATEGORÍAS
-   ========================================================= */
-
-.navbar__categories-menu {
-  position: absolute;
-
-  top: calc(100% + 12px);
-
-  right: 0;
-
-  z-index: 1100;
-
-  width: 250px;
-
-  overflow: hidden;
-
-  border: 1px solid rgba(10, 30, 60, 0.08);
-
-  border-radius: 14px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 18px 45px rgba(15, 23, 42, 0.25);
-}
-
-.navbar__categories-menu a,
-.navbar__categories-menu button {
-  display: block;
-
-  width: 100%;
-
-  padding: 14px 18px;
-
-  box-sizing: border-box;
-
-  border: none;
-
-  border-bottom: 1px solid #edf0f4;
-
+  padding: 0 clamp(16px, 1.4vw, 20px);
   background: transparent;
-
-  color: #28313d;
-
-  font: inherit;
-
-  font-size: 0.94rem;
-
-  text-align: left;
-
-  text-decoration: none;
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    padding-left 0.2s ease;
+  color: #24364b;
+  font-size: 16px;
 }
-
-.navbar__categories-menu a:hover,
-.navbar__categories-menu button:hover {
-  padding-left: 22px;
-
-  background: #f3f7fc;
-
-  color: #075fbd;
-}
-
-.navbar__categories-status {
-  display: block;
-
-  padding: 14px 18px;
-
-  color: #707985;
-
-  font-size: 0.9rem;
-}
-
-
-/* =========================================================
-   LOGIN
-   ========================================================= */
-
-.navbar__login {
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  flex-shrink: 0;
-
-  color: #ffffff;
-
-  font-weight: 700;
-
-  text-decoration: none;
-
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   CUENTA
-   ========================================================= */
-
-.navbar__account-wrapper {
-  position: relative;
-
-  flex-shrink: 0;
-}
-
-.navbar__account-button {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  min-width: 190px;
-
-  padding: 9px 14px;
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  border-radius: 32px;
-
-  background:
-    rgba(0, 55, 120, 0.45);
-
-  color: #ffffff;
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.navbar__account-button:hover {
-  background:
-    rgba(0, 45, 105, 0.65);
-
-  border-color:
-    rgba(255, 255, 255, 0.15);
-
-  transform: translateY(-1px);
-}
-
-
-/* =========================================================
-   ICONO CUENTA
-   ========================================================= */
-
-.navbar__account-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  width: 32px;
-  height: 32px;
-
+.navbar__buscador input::placeholder { color: #778397; }
+.navbar__buscador button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  height: 84%;
+  margin-right: 4px;
   border-radius: 50%;
-
-  background:
-    rgba(255, 255, 255, 0.12);
-
-  font-size: 1.15rem;
+  background: transparent;
+  color: #1263bd;
+  font-size: 20px;
 }
+.navbar__buscador button:hover { background: #edf5ff; }
 
-
-/* =========================================================
-   TEXTO CUENTA
-   ========================================================= */
-
-.navbar__account-text {
+/* 7. ACCIONES DE ESCRITORIO: separación, textos e iconos. */
+.navbar__acciones {
   display: flex;
-
-  flex: 1;
-
-  flex-direction: column;
-
-  align-items: flex-start;
-
+  justify-content: center;
+  align-items: center;
   min-width: 0;
-
-  line-height: 1.15;
+  padding-left: 0;
+  gap: clamp(4px, 0.65vw, 12px);
 }
-
-.navbar__greeting {
-  width: 100%;
-  max-width: 125px;
-
-  overflow: hidden;
-
-  color: rgba(255, 255, 255, 0.75);
-
-  font-size: 0.78rem;
-
+.navbar__categorias, .navbar__cuenta { position: relative; min-width: 0; }
+.navbar .navbar__accion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-height: 48px;
+  padding: 6px clamp(4px, 0.4vw, 8px);
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font-size: clamp(12px, 0.85vw, 14px);
   font-weight: 500;
-
-  text-overflow: ellipsis;
-
+  line-height: 1.2;
+  text-align: center;
   white-space: nowrap;
+  transition: background 160ms ease;
 }
-
-.navbar__account-text strong {
-  margin-top: 3px;
-
-  color: #ffffff;
-
-  font-size: 0.98rem;
-}
-
-
-/* =========================================================
-   FLECHA CUENTA
-   ========================================================= */
-
-.navbar__account-arrow {
-  flex-shrink: 0;
-
-  font-size: 0.72rem;
-
-  transition:
-    transform 0.2s ease;
-}
-
-.navbar__account-arrow--open {
-  transform: rotate(180deg);
-}
-
-
-/* =========================================================
-   MENÚ CUENTA
-   ========================================================= */
-
-.navbar__account-menu {
+.navbar__accion svg { font-size: 22px; }
+.navbar__accion:hover, .navbar__categorias[open] > summary,
+.navbar__accion[aria-expanded="true"] { background: rgb(0 39 89 / 18%); }
+/* 8. DESPLEGABLES: catálogo y cuenta comparten ancho, posición y espaciado. */
+.navbar__categorias-menu, .navbar__cuenta-menu {
   position: absolute;
-
-  top: calc(100% + 12px);
-
-  right: 0;
-
-  z-index: 1100;
-
-  width: 270px;
-
-  padding: 12px 0;
-
-  box-sizing: border-box;
-
-  border: 1px solid rgba(15, 23, 42, 0.08);
-
-  border-radius: 14px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 18px 45px rgba(15, 23, 42, 0.25);
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  max-width: calc(100vw - 32px);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: clamp(6px, 0.6vw, 8px);
+  border: 1px solid #dfe8f3;
+  border-radius: 12px;
+  background: #fff;
+  color: #23364d;
+  box-shadow: 0 8px 20px rgb(13 35 61 / 14%);
 }
-
-
-/* Triángulo */
-
-.navbar__account-menu::before {
-  position: absolute;
-
-  top: -8px;
-  right: 30px;
-
-  width: 16px;
-  height: 16px;
-
-  background: #ffffff;
-
-  content: "";
-
-  transform: rotate(45deg);
-}
-
-
-/* =========================================================
-   OPCIONES CUENTA
-   ========================================================= */
-
-.navbar__account-menu button {
-  position: relative;
-
-  z-index: 1;
-
+.navbar__categorias-menu button, .navbar__cuenta-menu button {
   display: flex;
   align-items: center;
-
-  gap: 16px;
-
+  gap: 12px;
   width: 100%;
-
-  padding: 15px 24px;
-
-  border: none;
-
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 8px;
   background: transparent;
-
-  color: #343b45;
-
-  font-family: inherit;
-
-  font-size: 0.95rem;
-
+  color: inherit;
   text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
-
-.navbar__account-menu button:hover {
-  background: #f2f6fa;
-
-  color: #075fbd;
+.navbar__categorias-menu button:hover, .navbar__cuenta-menu button:hover {
+  background: #edf5ff;
+  color: #1769c3;
 }
+.navbar__cuenta-menu .navbar__cerrar-sesion { border-top: 1px solid #dfe8f3; border-radius: 0 0 8px 8px; }
+.navbar__cuenta-menu .navbar__saludo { padding: 8px 10px; border-bottom: 1px solid #dfe8f3; }
+.navbar__saludo { margin: 0; padding: 12px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.navbar__estado { display: block; padding: 14px 12px; font-size: 14px; }
+.navbar__abrir-menu { display: none; }
 
-.navbar__account-menu button svg {
-  width: 20px;
-  height: 20px;
-
-  flex-shrink: 0;
-
-  color: #505966;
-
-  transition:
-    color 0.2s ease;
+/* 9. MENÚ LATERAL: ancho, altura y fondo. Se desplaza todo el panel. */
+.navbar__menu-lateral {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(88vw, 400px);
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #11243b;
+  color: #fff;
+  box-shadow: -12px 0 40px rgb(0 0 0 / 25%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
-
-.navbar__account-menu button:hover svg {
-  color: #075fbd;
-}
-
-
-/* =========================================================
-   DIVISOR
-   ========================================================= */
-
-.navbar__account-divider {
-  height: 1px;
-
-  margin: 8px 22px;
-
-  background: #e1e5ea;
-}
-
-
-/* =========================================================
-   CERRAR SESIÓN
-   ========================================================= */
-
-.navbar__logout:hover,
-.navbar__logout:hover svg {
-  color: #c62828 !important;
-}
-
-.navbar__account-menu .navbar__logout:hover {
-  background: #fff2f2;
-}
-
-
-/* =========================================================
-   CARRITO
-   ========================================================= */
-
-.navbar__cart {
+.navbar__menu-lateral::backdrop { background: rgb(5 17 32 / 58%); }
+.navbar__menu-lateral[open] { animation: navbar-entrada 200ms ease-out; }
+/* 10. INTERIOR DEL MENÚ: cabecera, cierre, opciones y zona de usuario. */
+.navbar__menu-contenido {
   display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vw, 22px);
+  min-height: 100%;
+  padding: max(24px, env(safe-area-inset-top)) clamp(16px, 4vw, 22px) max(24px, env(safe-area-inset-bottom));
+}
+.navbar__menu-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 13%);
+}
+.navbar__menu-cabecera h2 { margin: 0; font-size: 26px; color: #fff; }
+.navbar__cerrar-menu, .navbar__abrir-menu {
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: #fff;
+  background: transparent;
+  font-size: 24px;
+}
+.navbar__cerrar-menu { display: flex; }
+.navbar__cerrar-menu:hover, .navbar__abrir-menu:hover { background: rgb(255 255 255 / 12%); }
+.navbar__menu-navegacion, .navbar__menu-usuario { display: flex; flex-direction: column; gap: 12px; }
+.navbar__menu-usuario {
+  margin-top: auto;
+  padding-top: clamp(16px, 3vw, 20px);
+  border-top: 1px solid rgb(255 255 255 / 13%);
+}
+.navbar__opcion {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #1b3452;
+  color: #fff;
+  font-size: 16px;
+  text-align: left;
+  transition: background 160ms ease;
+}
+.navbar__opcion svg { flex-shrink: 0; font-size: 20px; }
+.navbar__opcion span { overflow-wrap: anywhere; }
+.navbar__opcion:hover, .navbar__catalogo-lateral[open] > summary { background: #277ce0; }
+.navbar__flecha { margin-left: auto; transition: transform 160ms ease; }
+.navbar__catalogo-lateral[open] .navbar__flecha { transform: rotate(180deg); }
+/* 11. CATÁLOGO LATERAL: categorías desplegadas dentro del menú hamburguesa. */
+.navbar__categorias-lista {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0 0 12px;
+  padding: 6px;
+  border-left: 3px solid #277ce0;
+  border-radius: 0 10px 10px 0;
+  background: #0d1e32;
+}
+.navbar__categorias-lista button {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  border-radius: 6px;
+  background: transparent;
+  color: #edf5ff;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.navbar__categorias-lista button:hover { background: #1b3452; }
+.navbar__menu-usuario .navbar__saludo { padding: 0 4px 4px; color: #c6dcf5; }
 
-  width: 42px;
-  height: 42px;
-
-  border-radius: 50%;
-
-  color: #ffffff;
-
-  font-size: 1.35rem;
-
-  text-decoration: none;
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+/* 12. ANIMACIÓN: entrada del panel desde la derecha. */
+@keyframes navbar-entrada {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
-.navbar__cart:hover {
-  background: rgba(255, 255, 255, 0.10);
-
-  transform: translateY(-1px);
+/* 13. TABLET (hasta 992px): sustituir las acciones por el menú hamburguesa. */
+@media (max-width: 992px) {
+  .navbar { padding: 12px 2.5%; }
+  .navbar__contenido { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 44px; gap: 2vw; }
+  .navbar__acciones { display: none; }
+  .navbar__abrir-menu { display: flex; }
+  .navbar__logo { padding-inline: 0; }
+  .navbar__logo-imagen { height: 52px; }
 }
 
-
-/* =========================================================
-   NOTEBOOK
-   ========================================================= */
-
-@media (max-width: 1200px) {
-
-  .navbar {
-    gap: 15px;
-
-    padding:
-      10px 22px;
-  }
-
-  .navbar__logo {
-    min-width: 165px;
-  }
-
-  .navbar__logo-image {
-    height: 50px;
-  }
-
-  .navbar__account-button {
-    min-width: 170px;
-  }
-
+/* 14. MÓVIL (hasta 640px): logo y menú arriba; buscador a todo el ancho abajo. */
+@media (max-width: 640px) {
+  .navbar { padding: 10px 4% 12px; }
+  .navbar__contenido { grid-template-columns: minmax(0, 1fr) 44px; gap: 10px 4vw; }
+  .navbar__logo-imagen { height: 46px; }
+  .navbar__abrir-menu { grid-column: 2; grid-row: 1; }
+  .navbar__buscador { grid-column: 1 / -1; grid-row: 2; height: 44px; }
+  .navbar__buscador input { padding-left: 16px; font-size: 16px; }
 }
-
-
-/* =========================================================
-   TABLET
-   ========================================================= */
-
-@media (max-width: 1000px) {
-
-  .navbar {
-    gap: 12px;
-
-    padding:
-      10px 18px;
-  }
-
-  .navbar__logo {
-    min-width: auto;
-  }
-
-  .navbar__logo-image {
-    height: 48px;
-  }
-
-  /* Catálogo visible en tablet */
-  .navbar__categories {
-    display: block;
-  }
-
-  .navbar__categories details {
-    display: block;
-  }
-
-  .navbar__categories summary {
-    display: flex;
-    align-items: center;
-
-    gap: 8px;
-
-    cursor: pointer;
-  }
-
-  .navbar__account-button {
-    min-width: 155px;
-  }
-
-}
-
-
-/* =========================================================
-   TABLET PEQUEÑA
-   ========================================================= */
-
-@media (max-width: 760px) {
-
-  .navbar {
-    flex-wrap: wrap;
-
-    min-height: auto;
-
-    padding:
-      9px 16px
-      12px;
-  }
-
-  /* Logo */
-  .navbar__logo {
-    order: 1;
-  }
-
-  /* Catálogo hacia la derecha */
-  .navbar__categories {
-    order: 2;
-
-    display: block;
-
-    margin-left: auto;
-  }
-
-  /* Cuenta después del catálogo */
-  .navbar__account-wrapper {
-    order: 3;
-
-    margin-left: 0;
-  }
-
-  /* Carrito */
-  .navbar__cart {
-    order: 4;
-  }
-
-  /* Buscador debajo */
-  .navbar__search {
-    order: 5;
-
-    flex-basis: 100%;
-
-    width: 100%;
-
-    height: 44px;
-  }
-
-  .navbar__account-button {
-    min-width: auto;
-
-    padding:
-      8px 12px;
-  }
-
-  .navbar__greeting {
-    display: none;
-  }
-
-  .navbar__account-text strong {
-    margin: 0;
-  }
-
-  .navbar__account-menu {
-    right: -35px;
-
-    width: 250px;
-  }
-
-  .navbar__categories-menu {
-    right: 0;
-
-    left: auto;
-  }
-
-}
-
-
-/* =========================================================
-   MÓVIL
-   ========================================================= */
-
-@media (max-width: 520px) {
-
-  .navbar {
-    gap: 9px;
-
-    padding:
-      8px 12px
-      11px;
-  }
-
-  .navbar__logo-image {
-    height: 44px;
-  }
-
-  .navbar__account-text,
-  .navbar__account-arrow {
-    display: none;
-  }
-
-  .navbar__account-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    min-width: 42px;
-
-    width: 42px;
-    height: 42px;
-
-    padding: 8px;
-
-    border-radius: 50%;
-  }
-
-  .navbar__account-icon {
-    width: 28px;
-    height: 28px;
-
-    font-size: 1rem;
-  }
-
-  .navbar__cart {
-    width: 42px;
-    height: 42px;
-
-    font-size: 1.25rem;
-  }
-
-  .navbar__search {
-    height: 43px;
-
-    border-radius: 22px;
-  }
-
-  .navbar__search input {
-    padding:
-      0 14px;
-
-    font-size: 0.9rem;
-  }
-
-  .navbar__search button {
-    width: 48px;
-  }
-
-  .navbar__account-menu {
-    right: -45px;
-
-    width: 245px;
-  }
-
-  /* Catálogo en móvil */
-  .navbar__categories summary {
-    padding:
-      9px 10px;
-
-    font-size: 0.9rem;
-  }
-
-  .navbar__categories-menu {
-    width: 235px;
-
-    right: 0;
-    left: auto;
-  }
-
-}
-
-
-/* =========================================================
-   MÓVIL MUY PEQUEÑO
-   ========================================================= */
-
+/* 15. MÓVIL PEQUEÑO (hasta 360px): reducir el espacio interior del panel. */
 @media (max-width: 360px) {
-
-  .navbar {
-    padding:
-      7px 10px
-      10px;
-  }
-
-  .navbar__logo-image {
-    height: 40px;
-  }
-
-  .navbar__account-button,
-  .navbar__cart {
-    width: 38px;
-    height: 38px;
-  }
-
-  .navbar__account-icon {
-    width: 25px;
-    height: 25px;
-  }
-
-  .navbar__search {
-    height: 40px;
-  }
-
-  .navbar__categories summary {
-    padding: 8px;
-
-    font-size: 0.85rem;
-  }
-
+  .navbar { padding-inline: 4%; }
+  .navbar__menu-contenido { padding-inline: 16px; }
+  .navbar__opcion { padding: 14px 12px; gap: 10px; }
+}
+/* 16. ACCESIBILIDAD: desactivar movimiento si el usuario lo solicita. */
+@media (prefers-reduced-motion: reduce) {
+  .navbar__menu-lateral[open] { animation: none; }
+  .navbar__accion, .navbar__opcion, .navbar__flecha { transition: none; }
 }

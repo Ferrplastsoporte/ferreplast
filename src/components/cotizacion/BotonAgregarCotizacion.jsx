@@ -9,9 +9,14 @@ function BotonAgregarCotizacion({
   producto,
   stockDisponible = 0,
   onAgregar,
+  mostrarCantidad: selectorAbierto,
+  onMostrarCantidadChange,
 }) {
-  const [mostrarCantidad, setMostrarCantidad] =
+  const [mostrarCantidadLocal, setMostrarCantidadLocal] =
     useState(false);
+
+  const mostrarCantidad = selectorAbierto ?? mostrarCantidadLocal;
+  const setMostrarCantidad = onMostrarCantidadChange ?? setMostrarCantidadLocal;
 
   const [cantidad, setCantidad] = useState(1);
 

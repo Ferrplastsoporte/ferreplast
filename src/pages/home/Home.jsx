@@ -1,4 +1,3 @@
-import Hero from './components/Hero'
 import ProductosDestacados from './components/ProductosDestacados'
 import Marcas from './components/Marcas'
 import Contacto from './components/Contacto'
@@ -10,7 +9,6 @@ function Home() {
     <>
       <Mision />
       <Marcas />
-      <Hero />
       <ProductosDestacados />
       <Contacto />
     </>

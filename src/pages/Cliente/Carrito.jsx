@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useVistaCarrito from "../../hooks/useVistaCarrito";
 import useFacturacionCompra from "../../hooks/useFacturacionCompra";
@@ -129,7 +129,7 @@ async function cargarMetodosPago() {
   setCargandoMetodosPago(false);
 }
 
-  async function cargarUbicaciones() {
+  const cargarUbicaciones = useCallback(async () => {
     setCargandoUbicaciones(true);
 
     try {
@@ -176,7 +176,12 @@ async function cargarMetodosPago() {
     } finally {
       setCargandoUbicaciones(false);
     }
-  }
+  }, []);
+
+  // Despacho y facturación comparten las mismas regiones y comunas.
+  useEffect(() => {
+    cargarUbicaciones();
+  }, [cargarUbicaciones]);
 
   const comunasFiltradas = datosFactura.id_region
     ? comunas.filter(

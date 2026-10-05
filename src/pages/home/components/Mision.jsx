@@ -1,4 +1,3 @@
-import FadeIn from "../../../animations/FadeIn";
 import { motion } from "motion/react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -9,31 +8,29 @@ import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 import "../css/mision.css";
 
-import {
-  FaBullseye,
-  FaEye,
-  FaHandshake,
-  FaCheck,
-} from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
+import iconoMision from "../../../assets/iconos/home_mision/mision_logo_contacto.png";
+import iconoVision from "../../../assets/iconos/home_mision/vision_logo_contacto.png";
+import iconoValores from "../../../assets/iconos/home_mision/valores_logo_contacto.png";
 
 import proyecto1 from "../../../assets/proyectos/proyecto1.png";
 import proyecto2 from "../../../assets/proyectos/proyecto2.png";
 
 const pilares = [
   {
-    icono: <FaBullseye />,
+    icono: iconoMision,
     titulo: "Misión",
     texto:
       "Brindar soluciones confiables mediante productos de alta calidad y atención personalizada.",
   },
   {
-    icono: <FaEye />,
+    icono: iconoVision,
     titulo: "Visión",
     texto:
       "Ser un referente nacional en resinas, herramientas y productos para la construcción.",
   },
   {
-    icono: <FaHandshake />,
+    icono: iconoValores,
     titulo: "Valores",
     texto:
       "Calidad, compromiso, honestidad, innovación y cercanía en cada compra.",
@@ -42,7 +39,6 @@ const pilares = [
 
 function Mision() {
   return (
-    <FadeIn>
       <section className="mision">
         <div className="mision__brillo mision__brillo--uno" />
         <div className="mision__brillo mision__brillo--dos" />
@@ -87,15 +83,14 @@ function Mision() {
           >
             <span className="mision-subtitulo">DESDE PUERTO MONTT · CHILE</span>
 
-            <h2>
-              Materiales que hacen
-              <strong> durar tus proyectos.</strong>
-            </h2>
+            <h1>
+              Insumos para <strong>plásticos reforzados (FRP)</strong> y ferretería
+            </h1>
 
             <p className="mision-descripcion">
-              En <strong>Ferreplast</strong> combinamos productos profesionales,
-              asesoría técnica y atención cercana para acompañarte desde la idea
-              hasta el resultado final.
+              Fibra de vidrio, resinas y herramientas para tus proyectos.
+              En <strong>Ferreplast</strong> combinamos materiales profesionales,
+              asesoría técnica y atención cercana desde Puerto Montt.
             </p>
 
             <div className="mision-estadisticas">
@@ -126,9 +121,9 @@ function Mision() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: index * 0.12 }}
-              whileHover={{ y: -10 }}
+              whileHover={{ y: -5 }}
             >
-              <div className="mision-icono">{pilar.icono}</div>
+              <div className="mision-icono"><img src={pilar.icono} alt="" /></div>
               <h2>{pilar.titulo}</h2>
               <p>{pilar.texto}</p>
               <span className="mision-tarjeta__linea" />
@@ -136,7 +131,6 @@ function Mision() {
           ))}
         </div>
       </section>
-    </FadeIn>
   );
 }
 

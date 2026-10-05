@@ -107,12 +107,15 @@ function Marcas() {
         ) : (
           <Swiper
             modules={[Autoplay]}
-            loop={true}
+            loop={marcas.length > 5}
+            rewind
+            grabCursor
             speed={900}
             spaceBetween={25}
             autoplay={{
               delay: 2500,
               disableOnInteraction: false,
+              pauseOnMouseEnter: true,
             }}
             breakpoints={{
               0: {
@@ -129,22 +132,22 @@ function Marcas() {
               },
             }}
           >
-            {marcas.map((brand) => (
-              <SwiperSlide key={brand.id_marca}>
-                <div
+            {marcas.map((marca) => (
+              <SwiperSlide key={marca.id_marca}>
+                <button
+                  type="button"
                   className="tarjeta-marca"
-                  onClick={() => abrirMarca(brand.id_marca)}
+                  onClick={() => abrirMarca(marca.id_marca)}
+                  aria-label={`Ver productos de ${marca.nom_marca}`}
                 >
-                  {brand.logo_url && (
+                  {marca.logo_url ? (
                     <img
-                      src={brand.logo_url}
-                      alt={brand.nom_marca}
+                      src={marca.logo_url}
+                      alt={marca.nom_marca}
                       className="logo-marca"
                     />
-                  )}
-
-                  <h3>{brand.nom_marca}</h3>
-                </div>
+                  ) : <span className="tarjeta-marca__nombre">{marca.nom_marca}</span>}
+                </button>
               </SwiperSlide>
             ))}
           </Swiper>

@@ -10,6 +10,8 @@ function BotonAgregarCarrito({
   texto = "Agregar al carrito",
   disabled = false,
   onAgregado,
+  mostrarCantidad: selectorAbierto,
+  onMostrarCantidadChange,
 }) {
   const {
     agregando,
@@ -18,8 +20,11 @@ function BotonAgregarCarrito({
     agregarAlCarrito,
   } = useCarrito()
 
-  const [mostrarCantidad, setMostrarCantidad] =
+  const [mostrarCantidadLocal, setMostrarCantidadLocal] =
     useState(false)
+
+  const mostrarCantidad = selectorAbierto ?? mostrarCantidadLocal
+  const setMostrarCantidad = onMostrarCantidadChange ?? setMostrarCantidadLocal
 
   const [cantidad, setCantidad] = useState(1)
 

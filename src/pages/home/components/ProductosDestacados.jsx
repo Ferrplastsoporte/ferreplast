@@ -3,20 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
-  Navigation,
   Pagination,
   Autoplay,
 } from "swiper/modules";
 
 import { supabase } from "../../../lib/supabase";
+import { FaBoxOpen } from "react-icons/fa";
 
 import "swiper/css";
-import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "../css/productos-destacados.css";
-
-const IMAGEN_RESPALDO =
-  "https://placehold.co/600x400?text=Sin+imagen";
 
 function ProductosDestacados() {
   const navigate = useNavigate();
@@ -31,7 +27,7 @@ function ProductosDestacados() {
 
   function obtenerUrlImagen(rutaImagen) {
     if (!rutaImagen) {
-      return IMAGEN_RESPALDO;
+      return "";
     }
 
     if (
@@ -45,7 +41,7 @@ function ProductosDestacados() {
       .from("imagenes_productos")
       .getPublicUrl(rutaImagen);
 
-    return data?.publicUrl || IMAGEN_RESPALDO;
+    return data?.publicUrl || "";
   }
 
   async function cargarProductosDestacados() {
@@ -149,7 +145,7 @@ function ProductosDestacados() {
           </span>
 
           <h2>
-            Productos
+            Productos{" "}
             <strong>destacados.</strong>
           </h2>
 
@@ -250,12 +246,10 @@ function ProductosDestacados() {
 
             <Swiper
               modules={[
-                Navigation,
                 Pagination,
                 Autoplay,
               ]}
               spaceBetween={22}
-              navigation
               pagination={{
                 clickable: true,
               }}
@@ -343,7 +337,7 @@ function ProductosDestacados() {
 
                       <div className="tarjeta-producto-destacado__contenedor-imagen">
 
-                        <img
+                        {producto.imagen_url ? <img
                           src={
                             producto.imagen_url
                           }
@@ -352,18 +346,20 @@ function ProductosDestacados() {
                           }
                           className="tarjeta-producto-destacado__imagen"
                           loading="lazy"
-                          onError={(
-                            event
-                          ) => {
-                            event.currentTarget.onerror =
-                              null;
-
-                            event.currentTarget.src =
-                              IMAGEN_RESPALDO;
+                          onError={() => {
+                            setProductos((actuales) => actuales.map((actual) =>
+                              actual.id_prod === producto.id_prod
+                                ? { ...actual, imagen_url: "" }
+                                : actual
+                            ));
                           }}
-                        />
+                        /> : (
+                          <div className="tarjeta-producto-destacado__sin-imagen">
+                            <FaBoxOpen aria-hidden="true" />
+                            <span>Imagen no disponible</span>
+                          </div>
+                        )}
 
-                        <div className="tarjeta-producto-destacado__capa-imagen" />
 
 
                         {/* Oferta */}
@@ -380,7 +376,7 @@ function ProductosDestacados() {
                         <span
                           className={`tarjeta-producto-destacado__disponibilidad ${
                             tieneStock
-                              ? "tarjeta-producto-destacado__disponibilidad--available"
+                              ? "tarjeta-producto-destacado__disponibilidad--disponible"
                               : "tarjeta-producto-destacado__disponibilidad--no-disponible"
                           }`}
                         >

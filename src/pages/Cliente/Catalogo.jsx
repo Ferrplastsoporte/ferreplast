@@ -8,6 +8,8 @@ import {
   normalizarTerminoBusqueda,
 } from "../../utils/comunes/busqueda";
 import "./css/Catalogo.css";
+import flechaAnterior from "../../assets/iconos/catalogo_paginador/flecha_atras_catalogo.png";
+import flechaSiguiente from "../../assets/iconos/catalogo_paginador/flecha_siguiente_catalogo - copia.png";
 
 const PRODUCTOS_POR_PAGINA = 20;
 const TAMANO_LOTE_FILTROS = 1000;
@@ -799,8 +801,10 @@ function Catalogo() {
                     type="button"
                     onClick={() => cambiarPagina(paginaActual - 1)}
                     disabled={paginaActual === 1}
+                    className="catalogo__boton-pagina"
+                    aria-label="Página anterior"
                   >
-                    Anterior
+                    <img src={flechaAnterior} alt="" />
                   </button>
 
                   <span>
@@ -811,8 +815,10 @@ function Catalogo() {
                     type="button"
                     onClick={() => cambiarPagina(paginaActual + 1)}
                     disabled={paginaActual === totalPaginas}
+                    className="catalogo__boton-pagina"
+                    aria-label="Página siguiente"
                   >
-                    Siguiente
+                    <img src={flechaSiguiente} alt="" />
                   </button>
                 </nav>
               )}

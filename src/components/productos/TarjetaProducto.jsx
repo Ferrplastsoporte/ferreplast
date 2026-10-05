@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 import BotonAgregarCarrito from "../carrito/BotonAgregarCarrito"
 import BotonAgregarCotizacion from "../cotizacion/BotonAgregarCotizacion"
 import { useAutenticacion } from "../../hooks/useAutenticacion"
@@ -8,6 +9,9 @@ function TarjetaProducto({ producto }) {
   const { user } = useAutenticacion()
 
   const navigate = useNavigate()
+
+  // Un solo selector de cantidad abierto por tarjeta: carrito o cotización.
+  const [selectorActivo, setSelectorActivo] = useState(null)
 
   const precioOriginal = Number(producto.precio_prod)
 
@@ -113,11 +117,19 @@ function TarjetaProducto({ producto }) {
             Number(producto.stock_prod) || 0
           }
           className="btn-add"
+          mostrarCantidad={selectorActivo === "carrito"}
+          onMostrarCantidadChange={(abierto) =>
+            setSelectorActivo((actual) => abierto ? "carrito" : actual === "carrito" ? null : actual)
+          }
         />
         {user && (
           <BotonAgregarCotizacion
             producto={producto}
             stockDisponible={Number(producto.stock_prod) || 0}
+            mostrarCantidad={selectorActivo === "cotizacion"}
+            onMostrarCantidadChange={(abierto) =>
+              setSelectorActivo((actual) => abierto ? "cotizacion" : actual === "cotizacion" ? null : actual)
+            }
           />
         )}
       </div>

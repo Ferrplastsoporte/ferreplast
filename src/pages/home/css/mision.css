@@ -1,5 +1,5 @@
 /* =========================================================
-   MISSION - FERREPLAST
+   MISIÓN / PRESENTACIÓN - FERREPLAST
    Diseño limpio / moderno / comercial
    Paleta: blanco + azul + negro/gris
    ========================================================= */
@@ -9,7 +9,7 @@
   isolation: isolate;
   overflow: hidden;
 
-  padding: 105px var(--home-section-x) 115px;
+  padding: clamp(44px, 4.5vw, 68px) var(--home-section-x) 64px;
 
   background: #ffffff;
   color: #171717;
@@ -86,21 +86,20 @@
   display: grid;
 
   /*
-   * Imagen protagonista
-   * Información con espacio suficiente
+   * Columnas de igual ancho para equilibrar foto y mensaje.
    */
   grid-template-columns:
-    minmax(0, 1.9fr)
-    minmax(320px, 1fr);
+    minmax(0, 1fr)
+    minmax(0, 1fr);
 
   align-items: center;
 
-  gap: clamp(40px, 5vw, 75px);
+  gap: clamp(28px, 3.5vw, 52px);
 
   width: 100%;
   max-width: var(--home-container);
 
-  margin: 0 auto 80px;
+  margin: 0 auto 48px;
 }
 
 /* =========================================================
@@ -111,7 +110,7 @@
   position: relative;
 
   width: 100%;
-  height: 600px;
+  height: clamp(360px, 31vw, 450px);
 
   overflow: hidden;
 
@@ -303,7 +302,7 @@
 .mision-informacion {
   width: 100%;
 
-  max-width: 500px;
+  max-width: 600px;
 
   padding: 10px 0;
 }
@@ -349,9 +348,11 @@
 .mision-informacion h2 {
   margin: 0;
 
-  font-size: clamp(38px, 4vw, 56px);
+  font-size: clamp(32px, 2.8vw, 42px);
 
-  line-height: 1.04;
+  text-wrap: balance;
+
+  line-height: 1.1;
 
   letter-spacing: -0.04em;
 
@@ -394,13 +395,13 @@
 .mision-descripcion {
   margin: 25px 0 0;
 
-  max-width: 480px;
+  max-width: 570px;
 
-  font-size: 15px;
+  font-size: 16px;
 
-  line-height: 1.8;
+  line-height: 1.7;
 
-  color: #6b7280;
+  color: #536070;
 }
 
 .mision-descripcion strong {
@@ -420,7 +421,7 @@
 
   gap: 9px;
 
-  margin-top: 30px;
+  margin-top: 24px;
 }
 
 .estadistica {
@@ -462,11 +463,11 @@
 .estadistica span {
   display: block;
 
-  font-size: 10px;
+  font-size: 12px;
 
   line-height: 1.4;
 
-  color: #737b87;
+  color: #536070;
 }
 
 /* =========================================================
@@ -496,9 +497,9 @@
 .mision-tarjeta {
   position: relative;
 
-  min-height: 235px;
+  min-height: 240px;
 
-  padding: 30px;
+  padding: 26px;
 
   overflow: hidden;
 
@@ -560,8 +561,8 @@
   align-items: center;
   justify-content: center;
 
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
 
   margin-bottom: 20px;
 
@@ -579,9 +580,15 @@
 }
 
 .mision-tarjeta:hover .mision-icono {
-  background: #0052a4;
+  background: #e3efff;
 
-  color: #ffffff;
+  color: #171717;
+}
+
+.mision-icono img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 /* =========================================================
@@ -646,25 +653,25 @@
 @media (max-width: 1100px) {
 
   .mision {
-    padding-top: 90px;
-    padding-bottom: 100px;
+    padding-top: 48px;
+    padding-bottom: 56px;
   }
 
   .mision-encabezado {
     grid-template-columns:
-      minmax(0, 1.5fr)
-      minmax(280px, 1fr);
+      minmax(0, 1fr)
+      minmax(0, 1fr);
 
-    gap: 40px;
+    gap: 28px;
   }
 
   .mision-carrusel {
-    height: 540px;
+    height: 420px;
   }
 
   .mision-informacion h1,
   .mision-informacion h2 {
-    font-size: 42px;
+    font-size: 32px;
   }
 
   .mision-estadisticas {
@@ -685,7 +692,7 @@
   }
 
   .mision-carrusel {
-    height: 500px;
+    height: 440px;
   }
 
   .mision-informacion {
@@ -694,7 +701,7 @@
 
   .mision-informacion h1,
   .mision-informacion h2 {
-    font-size: 44px;
+    font-size: 40px;
   }
 
   .mision-estadisticas {
@@ -717,13 +724,13 @@
 @media (max-width: 600px) {
 
   .mision {
-    padding: 70px 20px 80px;
+    padding: 36px 5% 44px;
   }
 
   .mision-encabezado {
     gap: 32px;
 
-    margin-bottom: 55px;
+    margin-bottom: 32px;
   }
 
   .mision-carrusel {
@@ -803,7 +810,7 @@
 @media (max-width: 420px) {
 
   .mision {
-    padding: 55px 16px 65px;
+    padding: 28px 5% 36px;
   }
 
   .mision-carrusel {
@@ -826,7 +833,7 @@
   }
 
   .mision-descripcion {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .mision-tarjeta {
