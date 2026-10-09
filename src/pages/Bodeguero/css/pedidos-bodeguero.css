@@ -1,0 +1,928 @@
+/* =========================================================
+   PEDIDOS BODEGUERO
+   ========================================================= */
+
+.pedidos-bodeguero {
+  width: 100%;
+  min-height: 100%;
+  background: #f5f7fa;
+}
+
+.pedidos-bodeguero__content {
+  padding: 28px 32px 40px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   RESUMEN
+   ========================================================= */
+
+.pedidos-bodeguero__resumen {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.pedidos-bodeguero__resumen-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 105px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.pedidos-bodeguero__resumen-card > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: #f1f5f9;
+  font-size: 24px;
+}
+
+.pedidos-bodeguero__resumen-card strong {
+  display: block;
+  color: #172033;
+  font-size: 27px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.pedidos-bodeguero__resumen-card p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pedidos-bodeguero__resumen-card--pendiente {
+  border-left: 4px solid #f59e0b;
+}
+
+.pedidos-bodeguero__resumen-card--preparacion {
+  border-left: 4px solid #3b82f6;
+}
+
+.pedidos-bodeguero__resumen-card--enviado {
+  border-left: 4px solid #22c55e;
+}
+
+
+/* =========================================================
+   PESTAÑAS
+   ========================================================= */
+
+.pedidos-bodeguero__tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 6px;
+  width: fit-content;
+  background: #e9edf2;
+  border-radius: 12px;
+}
+
+.pedidos-bodeguero__tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pedidos-bodeguero__tab:hover {
+  color: #172033;
+}
+
+.pedidos-bodeguero__tab span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 25px;
+  height: 25px;
+  padding: 0 7px;
+  border-radius: 20px;
+  background: #d9dee6;
+  color: #475569;
+  font-size: 12px;
+}
+
+.pedidos-bodeguero__tab--active {
+  background: #ffffff;
+  color: #172033;
+  box-shadow: 0 2px 7px rgba(15, 23, 42, 0.08);
+}
+
+.pedidos-bodeguero__tab--active span {
+  background: #172033;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.pedidos-bodeguero__error {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   LISTA
+   ========================================================= */
+
+.pedidos-bodeguero__lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+
+/* =========================================================
+   TARJETA DEL PEDIDO
+   ========================================================= */
+
+.pedido-bodeguero-card {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.pedido-bodeguero-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 9px 25px rgba(15, 23, 42, 0.09);
+}
+
+
+/* =========================================================
+   CABECERA TARJETA
+   ========================================================= */
+
+.pedido-bodeguero-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 22px 16px;
+}
+
+.pedido-bodeguero-card__label {
+  display: block;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.pedido-bodeguero-card__header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.pedido-bodeguero-card__fecha {
+  display: block;
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
+.pedido-bodeguero-card__estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pedido-bodeguero-card__estado--preparacion {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.pedido-bodeguero-card__estado--enviado {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+
+/* =========================================================
+   PROGRESO DEL PEDIDO
+   ========================================================= */
+
+.pedido-bodeguero-card__progreso {
+  display: flex;
+  align-items: center;
+  padding: 4px 24px 20px;
+}
+
+.pedido-bodeguero-card__paso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pedido-bodeguero-card__paso span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #dbe1e8;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pedido-bodeguero-card__paso small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pedido-bodeguero-card__paso--activo span {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.pedido-bodeguero-card__paso--activo small {
+  color: #475569;
+}
+
+.pedido-bodeguero-card__linea {
+  flex: 1;
+  height: 2px;
+  margin: 0 6px;
+  margin-bottom: 18px;
+  background: #e2e8f0;
+}
+
+.pedido-bodeguero-card__linea--activa {
+  background: #2563eb;
+}
+
+
+/* =========================================================
+   RESUMEN DENTRO DE TARJETA
+   ========================================================= */
+
+.pedido-bodeguero-card__resumen {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  padding: 18px 22px;
+  border-top: 1px solid #eef2f6;
+  border-bottom: 1px solid #eef2f6;
+  background: #fafbfc;
+}
+
+.pedido-bodeguero-card__resumen > div {
+  min-width: 0;
+}
+
+.pedido-bodeguero-card__resumen span {
+  display: block;
+  margin-bottom: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pedido-bodeguero-card__resumen strong {
+  display: block;
+  overflow: hidden;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pedido-bodeguero-card__resumen > div:last-child strong {
+  color: #172033;
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   FOOTER TARJETA
+   ========================================================= */
+
+.pedido-bodeguero-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+}
+
+.pedido-bodeguero-card__boton-detalle,
+.pedido-bodeguero-card__boton-principal {
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.pedido-bodeguero-card__boton-detalle {
+  border: 1px solid #d7dee7;
+  background: #ffffff;
+  color: #475569;
+}
+
+.pedido-bodeguero-card__boton-detalle:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.pedido-bodeguero-card__boton-principal {
+  border: 1px solid #172033;
+  background: #172033;
+  color: #ffffff;
+}
+
+.pedido-bodeguero-card__boton-principal:hover {
+  background: #263248;
+  transform: translateY(-1px);
+}
+
+.pedido-bodeguero-card__boton-principal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pedido-bodeguero-card__completado {
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   ESTADO VACÍO
+   ========================================================= */
+
+.pedidos-bodeguero__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  padding: 40px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.pedidos-bodeguero__empty strong {
+  color: #334155;
+  font-size: 17px;
+}
+
+.pedidos-bodeguero__empty p {
+  margin: 8px 0 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.pedido-bodeguero-modal {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(4px);
+}
+
+.pedido-bodeguero-modal__contenido {
+  width: min(850px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25);
+  animation: pedidoModalEntrada 0.2s ease-out;
+}
+
+@keyframes pedidoModalEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================================
+   HEADER MODAL
+   ========================================================= */
+
+.pedido-bodeguero-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px 28px;
+  border-bottom: 1px solid #e8edf2;
+}
+
+.pedido-bodeguero-modal__header > div:last-child {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.pedido-bodeguero-modal__header > div:first-child > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.pedido-bodeguero-modal__header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.pedido-bodeguero-modal__header p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.pedido-bodeguero-modal__cerrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-top: -5px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pedido-bodeguero-modal__cerrar:hover {
+  background: #e2e8f0;
+}
+
+
+/* =========================================================
+   SECCIONES DEL MODAL
+   ========================================================= */
+
+.pedido-bodeguero-modal__seccion {
+  padding: 24px 28px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.pedido-bodeguero-modal__seccion h3 {
+  margin: 0 0 18px;
+  color: #172033;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   GRID INFORMACIÓN
+   ========================================================= */
+
+.pedido-bodeguero-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.pedido-bodeguero-modal__grid > div {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.pedido-bodeguero-modal__grid span {
+  display: block;
+  margin-bottom: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pedido-bodeguero-modal__grid strong {
+  display: block;
+  color: #334155;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   DIRECCIÓN
+   ========================================================= */
+
+.pedido-bodeguero-modal__direccion {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px;
+  border-radius: 11px;
+  background: #f8fafc;
+}
+
+.pedido-bodeguero-modal__direccion strong {
+  color: #334155;
+  font-size: 14px;
+}
+
+.pedido-bodeguero-modal__direccion span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   PRODUCTOS
+   ========================================================= */
+
+.pedido-bodeguero-modal__productos {
+  overflow: hidden;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+}
+
+.pedido-bodeguero-modal__producto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 17px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.pedido-bodeguero-modal__producto:last-child {
+  border-bottom: none;
+}
+
+.pedido-bodeguero-modal__producto > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pedido-bodeguero-modal__producto > div strong {
+  color: #334155;
+  font-size: 13px;
+}
+
+.pedido-bodeguero-modal__producto > div span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.pedido-bodeguero-modal__producto > strong {
+  color: #172033;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   TOTAL MODAL
+   ========================================================= */
+
+.pedido-bodeguero-modal__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 4px 4px;
+}
+
+.pedido-bodeguero-modal__total span {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pedido-bodeguero-modal__total strong {
+  color: #172033;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   FOOTER MODAL
+   ========================================================= */
+
+.pedido-bodeguero-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px 28px;
+  background: #fafbfc;
+}
+
+
+/* =========================================================
+   SCROLLBAR MODAL
+   ========================================================= */
+
+.pedido-bodeguero-modal__contenido::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pedido-bodeguero-modal__contenido::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.pedido-bodeguero-modal__contenido::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #cbd5e1;
+}
+
+.pedido-bodeguero-modal__contenido::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .pedidos-bodeguero__resumen {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pedidos-bodeguero__lista {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE MÓVIL
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .pedidos-bodeguero__content {
+    padding: 20px 16px 30px;
+  }
+
+  .pedidos-bodeguero__resumen {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .pedidos-bodeguero__resumen-card {
+    min-height: 90px;
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .pedidos-bodeguero__resumen-card > span {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .pedidos-bodeguero__resumen-card strong {
+    font-size: 22px;
+  }
+
+  .pedidos-bodeguero__tabs {
+    width: 100%;
+  }
+
+  .pedidos-bodeguero__tab {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .pedido-bodeguero-card__header {
+    padding: 18px 16px 14px;
+  }
+
+  .pedido-bodeguero-card__header h2 {
+    font-size: 21px;
+  }
+
+  .pedido-bodeguero-card__progreso {
+    padding: 4px 16px 18px;
+  }
+
+  .pedido-bodeguero-card__resumen {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .pedido-bodeguero-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+  }
+
+  .pedido-bodeguero-card__boton-detalle,
+  .pedido-bodeguero-card__boton-principal {
+    width: 100%;
+  }
+
+  .pedido-bodeguero-modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .pedido-bodeguero-modal__contenido {
+    max-height: 94vh;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .pedido-bodeguero-modal__header {
+    padding: 20px;
+  }
+
+  .pedido-bodeguero-modal__seccion {
+    padding: 20px;
+  }
+
+  .pedido-bodeguero-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pedido-bodeguero-modal__footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding: 16px 20px;
+  }
+
+  .pedido-bodeguero-modal__footer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .pedidos-bodeguero__resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .pedido-bodeguero-card__progreso small {
+    font-size: 9px;
+  }
+
+  .pedido-bodeguero-card__estado {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+}
+/* =========================================
+   MODAL DE DESPACHO
+========================================= */
+
+.pedido-bodeguero-modal--despacho {
+  z-index: 1100;
+}
+
+.pedido-bodeguero-modal__contenido--despacho {
+  width: min(560px, 94vw);
+}
+
+.pedido-bodeguero-modal__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.pedido-bodeguero-modal__formulario label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pedido-bodeguero-modal__formulario label > span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.pedido-bodeguero-modal__formulario input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pedido-bodeguero-modal__formulario input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.pedido-bodeguero-modal__formulario input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.pedido-bodeguero-modal__formulario small {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.pedido-bodeguero-modal--despacho
+  .pedido-bodeguero-modal__footer {
+  margin-top: 10px;
+}

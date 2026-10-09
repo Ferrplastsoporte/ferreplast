@@ -39,7 +39,7 @@ const enlaces = [
     ruta: "/bodeguero/productos",
   },
   {
-    texto: "Pedidos (PRÓXIMAMENTE)",
+    texto: "Pedidos",
     ruta: "/bodeguero/pedidos",
   },
 ];
