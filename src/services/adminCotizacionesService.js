@@ -12,6 +12,7 @@ export async function cargarCotizacionesAdmin() {
         .select(
           `
             id_cotizacion,
+            folio_cotizacion,
             id_user,
             fecha_cot,
             fecha_emision,

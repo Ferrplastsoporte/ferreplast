@@ -43,7 +43,7 @@ function Cotizacion() {
 
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  const [idCotizacion, setIdCotizacion] = useState(null);
+  const [folioCotizacion, setFolioCotizacion] = useState("");
 
   useEffect(() => {
     guardarCotizacionCompleta({
@@ -236,7 +236,7 @@ function Cotizacion() {
         comentarioGeneral,
       });
 
-      setIdCotizacion(resultado.idCotizacion);
+      setFolioCotizacion(resultado.folioCotizacion);
 
       setMostrarModal(true);
     } catch (error) {
@@ -259,7 +259,7 @@ function Cotizacion() {
     setMedioContacto("");
     setComentarioGeneral("");
     setMensajeError("");
-    setIdCotizacion(null);
+    setFolioCotizacion("");
     setMostrarModal(false);
 
     navigate("/");
@@ -632,9 +632,9 @@ function Cotizacion() {
 
             <p>Tu cotización fue ingresada y pronto será atendida.</p>
 
-            {idCotizacion && (
+            {folioCotizacion && (
               <p>
-                N.º de cotización: <strong>{idCotizacion}</strong>
+                Folio de cotización: <strong>{folioCotizacion}</strong>
               </p>
             )}
 

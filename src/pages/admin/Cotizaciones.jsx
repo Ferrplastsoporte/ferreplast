@@ -19,7 +19,6 @@ import {
   resolverResultadoCotizacionAdmin,
 } from "../../services/adminCotizacionesService";
 import {
-  PERIODO_HISTORICO,
   crearMapaCotizabilidadCotizacion,
   crearMapaDiasValidezCotizaciones,
   crearMapaNotasCotizaciones,
@@ -34,12 +33,10 @@ import {
   formatearFolioCotizacion,
   formatearMontoCLP,
   formatearPorcentaje,
-  formatearPeriodoCotizacion,
   obtenerEstadoCotizacion,
   obtenerFechaActualChile,
+  obtenerFechaCotizacionChile,
   obtenerNombreProductoCotizado,
-  obtenerPeriodoCotizacion,
-  obtenerPeriodosDisponibles,
   obtenerTotalesCotizacion,
   normalizarConfiguracionCotizacion,
   normalizarNotasCotizacion,
@@ -66,7 +63,8 @@ function Cotizaciones() {
   const [cotizabilidad, setCotizabilidad] = useState({});
   const [notasPorCotizacion, setNotasPorCotizacion] = useState({});
   const [busqueda, setBusqueda] = useState("");
-  const [periodo, setPeriodo] = useState(() => obtenerPeriodoCotizacion());
+  const [fechaDesde, setFechaDesde] = useState(() => obtenerFechaActualChile());
+  const [fechaHasta, setFechaHasta] = useState(() => obtenerFechaActualChile());
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [orden, setOrden] = useState("recientes");
   const [cargando, setCargando] = useState(true);
@@ -162,28 +160,27 @@ function Cotizaciones() {
   }, [recarga]);
 
   // ============================
-  // PERIODOS DISPONIBLES Y SELECCIONADO
+  // RANGO DE FECHAS SELECCIONADO
   // ============================
-  const periodosDisponibles = useMemo(
-    () => obtenerPeriodosDisponibles(cotizaciones),
-    [cotizaciones],
-  );
+  const cotizacionesDelRango = useMemo(() => {
+    return cotizaciones.filter((cotizacion) => {
+      const fechaCotizacion = obtenerFechaCotizacionChile(
+        cotizacion.fecha_cot,
+      );
 
-  const cotizacionesDelPeriodo = useMemo(() => {
-    if (periodo === PERIODO_HISTORICO) return cotizaciones;
-
-    return cotizaciones.filter(
-      (cotizacion) =>
-        obtenerPeriodoCotizacion(cotizacion.fecha_cot) === periodo,
-    );
-  }, [cotizaciones, periodo]);
+      if (!fechaCotizacion) return false;
+      if (fechaDesde && fechaCotizacion < fechaDesde) return false;
+      if (fechaHasta && fechaCotizacion > fechaHasta) return false;
+      return true;
+    });
+  }, [cotizaciones, fechaDesde, fechaHasta]);
 
   // ============================
   // RESUMEN DEL PERIODO
   // ============================
   const resumen = useMemo(
     () =>
-      cotizacionesDelPeriodo.reduce(
+      cotizacionesDelRango.reduce(
         (acumulado, cotizacion) => {
           acumulado.total += 1;
           const estado = Number(cotizacion.id_estado_cot);
@@ -201,7 +198,7 @@ function Cotizaciones() {
           exitosas: 0,
         },
       ),
-    [cotizacionesDelPeriodo],
+    [cotizacionesDelRango],
   );
 
   // ============================
@@ -209,14 +206,16 @@ function Cotizaciones() {
   // ============================
   const cotizacionesFiltradas = useMemo(() => {
     const termino = busqueda.trim().toLocaleLowerCase("es");
-    return cotizacionesDelPeriodo
+    return cotizacionesDelRango
       .filter((cotizacion) => {
         const coincideEstado =
           filtroEstado === "todos" ||
           String(cotizacion.id_estado_cot) === filtroEstado;
         const coincideBusqueda =
           !termino ||
-          String(cotizacion.id_cotizacion).includes(termino) ||
+          cotizacion.folio_cotizacion
+            ?.toLocaleLowerCase("es")
+            .includes(termino) ||
           cotizacion.usuario?.nom_user
             ?.toLocaleLowerCase("es")
             .includes(termino) ||
@@ -231,7 +230,7 @@ function Cotizaciones() {
         const fechaB = new Date(b.fecha_cot).getTime();
         return orden === "antiguas" ? fechaA - fechaB : fechaB - fechaA;
       });
-  }, [busqueda, cotizacionesDelPeriodo, filtroEstado, orden]);
+  }, [busqueda, cotizacionesDelRango, filtroEstado, orden]);
 
   // ============================
   // DISTRIBUCIÓN DEL GRÁFICO DE ESTADOS
@@ -669,7 +668,7 @@ function Cotizaciones() {
         descripcion="Revisa las solicitudes, valoriza cada producto y prepara la respuesta para el cliente."
       />
 
-      {/* Resumen del periodo mediante gráfico de dona y leyenda. */}
+      {/* Resumen del rango seleccionado mediante gráfico de dona y leyenda. */}
       <div
         className="cotizaciones-resumen"
         aria-label="Resumen de cotizaciones"
@@ -747,22 +746,29 @@ function Cotizaciones() {
             placeholder="Buscar por folio, cliente, RUT o correo"
           />
         </label>
-        <label>
-          <span>Periodo</span>
-          <select
-            value={periodo}
-            onChange={(evento) => setPeriodo(evento.target.value)}
-          >
-            {periodosDisponibles.map((periodoDisponible) => (
-              <option key={periodoDisponible} value={periodoDisponible}>
-                {formatearPeriodoCotizacion(periodoDisponible)}
-                {periodoDisponible === obtenerPeriodoCotizacion()
-                  ? " (mes actual)"
-                  : ""}
-              </option>
-            ))}
-            <option value={PERIODO_HISTORICO}>Todas las cotizaciones</option>
-          </select>
+        <label className="cotizaciones-fecha">
+          <span>Desde</span>
+          <input
+            type="date"
+            value={fechaDesde}
+            max={fechaHasta || undefined}
+            onChange={(evento) => {
+              const nuevaFecha = evento.target.value;
+              setFechaDesde(nuevaFecha);
+              if (fechaHasta && nuevaFecha > fechaHasta) {
+                setFechaHasta(nuevaFecha);
+              }
+            }}
+          />
+        </label>
+        <label className="cotizaciones-fecha">
+          <span>Hasta</span>
+          <input
+            type="date"
+            value={fechaHasta}
+            min={fechaDesde || undefined}
+            onChange={(evento) => setFechaHasta(evento.target.value)}
+          />
         </label>
 
         <label>
@@ -811,7 +817,7 @@ function Cotizaciones() {
         </div>
       ) : (
         <div className="cotizaciones-contenido">
-          {/* Listado maestro de solicitudes del periodo seleccionado. */}
+          {/* Listado maestro de solicitudes del rango seleccionado. */}
           <section
             className="cotizaciones-listado"
             aria-labelledby="titulo-listado-cotizaciones"
@@ -849,7 +855,10 @@ function Cotizaciones() {
                     >
                       <span className="cotizacion-tarjeta__superior">
                         <strong>
-                          {formatearFolioCotizacion(cotizacion.id_cotizacion)}
+                          {formatearFolioCotizacion(
+                            cotizacion.folio_cotizacion,
+                            cotizacion.id_cotizacion,
+                          )}
                         </strong>
                         <span
                           className={`cotizaciones-estado cotizaciones-estado--${estado.clase}`}
@@ -897,6 +906,7 @@ function Cotizaciones() {
                     </span>
                     <h2 id="titulo-detalle-cotizacion">
                       {formatearFolioCotizacion(
+                        cotizacionSeleccionada.folio_cotizacion,
                         cotizacionSeleccionada.id_cotizacion,
                       )}
                     </h2>
@@ -1284,7 +1294,7 @@ function Cotizaciones() {
       <ModalConfirmacion
         abierto={Boolean(confirmacionResultado)}
         titulo={`Marcar cotización como ${confirmacionResultado?.nombre ?? ""}`}
-        mensaje={`La cotización ${formatearFolioCotizacion(cotizacionSeleccionada?.id_cotizacion)} cambiará a ${confirmacionResultado?.nombre ?? "este estado"}. Podrás corregir el resultado posteriormente.`}
+        mensaje={`La cotización ${formatearFolioCotizacion(cotizacionSeleccionada?.folio_cotizacion, cotizacionSeleccionada?.id_cotizacion)} cambiará a ${confirmacionResultado?.nombre ?? "este estado"}. Podrás corregir el resultado posteriormente.`}
         textoConfirmar={`Marcar ${confirmacionResultado?.nombre ?? ""}`}
         variante={confirmacionResultado?.idEstado === 4 ? "exito" : "peligro"}
         procesando={cambiandoResultado}

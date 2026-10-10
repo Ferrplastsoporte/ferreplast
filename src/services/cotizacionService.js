@@ -295,6 +295,7 @@ export async function enviarCotizacion({
 
   return {
     idCotizacion: cotizacionCreada.id_cotizacion,
+    folioCotizacion: cotizacionCreada.folio_cotizacion,
     mensaje: cotizacionCreada.mensaje,
   };
 }

@@ -121,7 +121,7 @@
 ============================ */
 .cotizaciones-filtros {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(150px, 190px)) auto;
+  grid-template-columns: minmax(210px, 280px) repeat(2, minmax(140px, 165px)) repeat(2, minmax(145px, 175px)) auto;
   align-items: end;
   gap: 14px;
   margin-bottom: 20px;
@@ -144,6 +144,7 @@
 }
 
 .cotizaciones-filtros select,
+.cotizaciones-filtros input[type="date"],
 .cotizaciones-busqueda {
   min-height: 44px;
   box-sizing: border-box;
@@ -169,6 +170,7 @@
 
 .cotizaciones-busqueda:focus-within,
 .cotizaciones-filtros select:focus,
+.cotizaciones-filtros input[type="date"]:focus,
 .cotizacion-precio:focus-within {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
@@ -181,6 +183,14 @@
   outline: 0;
   color: #172033;
   font: inherit;
+}
+
+.cotizaciones-filtros input[type="date"] {
+  width: 100%;
+  padding: 0 12px;
+  color: #334155;
+  font: inherit;
+  font-size: 0.9rem;
 }
 
 .cotizaciones-actualizar {
@@ -758,6 +768,7 @@
 ============================ */
 @media (max-width: 1250px) {
   .cotizaciones-filtros { grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(150px, 190px)); }
+  .cotizaciones-busqueda { grid-column: auto; }
   .cotizaciones-actualizar { grid-column: 3; }
   .cotizaciones-contenido { grid-template-columns: 290px minmax(0, 1fr); }
   .cotizacion-productos__fila { grid-template-columns: minmax(160px, 1fr) 50px minmax(120px, 145px) minmax(100px, 125px); gap: 10px; padding-inline: 12px; }

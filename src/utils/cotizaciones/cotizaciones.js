@@ -1,4 +1,3 @@
-export const PERIODO_HISTORICO = "historico";
 export const DIAS_VALIDEZ_MINIMOS = 1;
 export const DIAS_VALIDEZ_MAXIMOS = 365;
 export const TASA_IVA_MINIMA = 0;
@@ -13,8 +12,11 @@ const ESTADOS_COTIZACION = {
   4: { nombre: "Exitosa", clase: "exitosa" },
 };
 
-export function formatearFolioCotizacion(idCotizacion) {
-  return `#${idCotizacion ?? ""}`;
+export function formatearFolioCotizacion(folioCotizacion, idCotizacion) {
+  const folio = String(folioCotizacion ?? "").trim();
+  if (folio) return folio;
+
+  return idCotizacion == null ? "" : `#${idCotizacion}`;
 }
 
 export function formatearMontoCLP(valor) {
@@ -36,12 +38,19 @@ export function formatearFechaCotizacion(fecha, incluirHora = false) {
 }
 
 export function obtenerFechaActualChile() {
+  return obtenerFechaCotizacionChile(new Date());
+}
+
+export function obtenerFechaCotizacionChile(fecha) {
+  const fechaValida = new Date(fecha);
+  if (Number.isNaN(fechaValida.getTime())) return "";
+
   const partes = new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     timeZone: ZONA_HORARIA_CHILE,
-  }).formatToParts(new Date());
+  }).formatToParts(fechaValida);
 
   const obtenerParte = (tipo) =>
     partes.find((parte) => parte.type === tipo)?.value;
@@ -169,46 +178,6 @@ export function crearMapaDiasValidezCotizaciones(
       ];
     }),
   );
-}
-
-export function obtenerPeriodoCotizacion(fecha = new Date()) {
-  const partes = new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    timeZone: ZONA_HORARIA_CHILE,
-  }).formatToParts(new Date(fecha));
-  const anio = partes.find((parte) => parte.type === "year")?.value;
-  const mes = partes.find((parte) => parte.type === "month")?.value;
-
-  return `${anio}-${mes}`;
-}
-
-export function formatearPeriodoCotizacion(periodo) {
-  const [anio, mes] = String(periodo).split("-").map(Number);
-  if (!anio || !mes) return "Periodo desconocido";
-
-  const texto = new Intl.DateTimeFormat("es-CL", {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  })
-    .format(new Date(Date.UTC(anio, mes - 1, 1)))
-    .replace(" de ", " ");
-
-  return texto.charAt(0).toLocaleUpperCase("es") + texto.slice(1);
-}
-
-export function obtenerPeriodosDisponibles(cotizaciones = []) {
-  const periodoActual = obtenerPeriodoCotizacion();
-  const periodos = new Set([periodoActual]);
-
-  cotizaciones.forEach((cotizacion) => {
-    if (cotizacion?.fecha_cot) {
-      periodos.add(obtenerPeriodoCotizacion(cotizacion.fecha_cot));
-    }
-  });
-
-  return [...periodos].sort((a, b) => b.localeCompare(a));
 }
 
 export function obtenerEstadoCotizacion(cotizacion) {
