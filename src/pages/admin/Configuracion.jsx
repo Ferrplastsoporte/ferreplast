@@ -1,3 +1,4 @@
+import { supabase } from "../../lib/supabase";
 import { useEffect, useState } from "react";
 import {
   FiCreditCard,
@@ -116,6 +117,9 @@ function Configuracion() {
   const [metodosPago, setMetodosPago] = useState([]);
   const [cargandoMetodosPago, setCargandoMetodosPago] = useState(true);
   const [actualizandoMetodoPago, setActualizandoMetodoPago] = useState(null);
+  const [tiposDespacho, setTiposDespacho] = useState([]);
+  const [cargandoDespachos, setCargandoDespachos] = useState(true);
+  const [guardandoDespacho, setGuardandoDespacho] = useState(null);
 
   useEffect(() => {
     let vigente = true;
@@ -170,6 +174,7 @@ function Configuracion() {
 
     cargar();
     cargarMetodosPago();
+    cargarTiposDespacho();
     return () => {
       vigente = false;
     };
@@ -308,60 +313,154 @@ function Configuracion() {
       setProcesandoRecurso("");
     }
   }
+
+  //////
 async function cargarMetodosPago() {
-  setCargandoMetodosPago(true);
+    setCargandoMetodosPago(true);
 
-  try {
-    const datos = await obtenerMetodosPago();
-    setMetodosPago(datos);
-  } catch (error) {
-    console.error("Error al cargar métodos de pago:", error);
+    try {
+      const datos = await obtenerMetodosPago();
+      setMetodosPago(datos);
+    } catch (error) {
+      console.error("Error al cargar métodos de pago:", error);
 
-    setMensaje({
-      tipo: "error",
-      texto: "No fue posible cargar los métodos de pago.",
-    });
-  } finally {
-    setCargandoMetodosPago(false);
+      setMensaje({
+        tipo: "error",
+        texto: "No fue posible cargar los métodos de pago.",
+      });
+    } finally {
+      setCargandoMetodosPago(false);
+    }
   }
-}
 
-async function cambiarEstadoMetodoPago(id, activo) {
-  setActualizandoMetodoPago(id);
-  setMensaje(null);
+  async function cambiarEstadoMetodoPago(id, activo) {
+    setActualizandoMetodoPago(id);
+    setMensaje(null);
+
+    try {
+      const metodoActualizado = await actualizarEstadoMetodoPago(
+        id,
+        activo
+      );
+
+      setMetodosPago((actuales) =>
+        actuales.map((metodo) =>
+          metodo.id_metodo_pago === id
+            ? metodoActualizado
+            : metodo
+        )
+      );
+
+      setMensaje({
+        tipo: "exito",
+        texto: `Método de pago ${
+          activo ? "activado" : "desactivado"
+        } correctamente.`,
+      });
+    } catch (error) {
+      console.error("Error al actualizar método de pago:", error);
+
+      setMensaje({
+        tipo: "error",
+        texto: "No fue posible actualizar el método de pago.",
+      });
+    } finally {
+      setActualizandoMetodoPago(null);
+    }
+  }
+  
+
+
+async function cargarTiposDespacho() {
+  setCargandoDespachos(true);
 
   try {
-    const metodoActualizado = await actualizarEstadoMetodoPago(
-      id,
-      activo
-    );
-
-    setMetodosPago((actuales) =>
-      actuales.map((metodo) =>
-        metodo.id_metodo_pago === id
-          ? metodoActualizado
-          : metodo
+    const { data, error } = await supabase
+      .from("tipo_despacho")
+      .select(
+        "id_tipo_despacho, nom_tipo_despacho, costo, est_tipo, requiere_coordinacion"
       )
-    );
+      .order("id_tipo_despacho", { ascending: true });
 
-    setMensaje({
-      tipo: "exito",
-      texto: `Método de pago ${
-        activo ? "activado" : "desactivado"
-      } correctamente.`,
-    });
+    console.log("Tipos de despacho:", data);
+    console.log("Error de Supabase:", error);
+
+    if (error) throw error;
+
+    setTiposDespacho(data ?? []);
   } catch (error) {
-    console.error("Error al actualizar método de pago:", error);
+    console.error("Error al cargar precios de envío:", error);
 
     setMensaje({
       tipo: "error",
-      texto: "No fue posible actualizar el método de pago.",
+      texto: error.message || "No fue posible cargar los precios de envío.",
     });
   } finally {
-    setActualizandoMetodoPago(null);
+    setCargandoDespachos(false);
+  }
+}
+
+
+
+async function guardarCostoDespacho(id, costo, requiereCoordinacion) {
+    const precio = costo === "" || costo == null ? null : Number(costo);
+
+    if (
+      !requiereCoordinacion &&
+      (precio === null || !Number.isSafeInteger(precio) || precio < 0)
+    ) {
+      setMensaje({
+        tipo: "error",
+        texto: "El precio debe ser un número entero igual o superior a $0.",
+      });
+      return;
+    }
+
+    setGuardandoDespacho(id);
+    setMensaje(null);
+
+    try {
+      const { error } = await supabase.rpc(
+        "actualizar_costo_tipo_despacho",
+        {
+          p_id_tipo_despacho: id,
+          p_costo: precio,
+          p_requiere_coordinacion: requiereCoordinacion,
+        }
+      );
+
+      if (error) throw error;
+
+      setTiposDespacho((actuales) =>
+        actuales.map((tipo) =>
+          tipo.id_tipo_despacho === id
+            ? {
+                ...tipo,
+                costo: requiereCoordinacion ? tipo.costo : precio,
+                requiere_coordinacion: requiereCoordinacion,
+              }
+            : tipo
+        )
+      );
+
+      setMensaje({
+        tipo: "exito",
+        texto: "Configuración del despacho actualizada correctamente.",
+      });
+    } catch (error) {
+      console.error("Error al guardar despacho:", error);
+      setMensaje({
+        tipo: "error",
+        texto: error.message || "No fue posible guardar la configuración.",
+      });
+    } finally {
+      setGuardandoDespacho(null);
+    }
   }
 
-}
+
+
+  
 
   return (
     <section className="admin-page configuracion-page">
@@ -733,81 +832,189 @@ async function cambiarEstadoMetodoPago(id, activo) {
             </p>
           </section>
            <section className="configuracion-tarjeta">
-  <header className="configuracion-tarjeta__cabecera">
-    <FiCreditCard aria-hidden="true" />
+    <header className="configuracion-tarjeta__cabecera">
+      <FiCreditCard aria-hidden="true" />
 
-    <div>
-      <h2>Métodos de pago</h2>
-      <p>
-        Administra los métodos de pago disponibles para los clientes.
-      </p>
-    </div>
-  </header>
+      <div>
+        <h2>Métodos de pago</h2>
+        <p>
+          Administra los métodos de pago disponibles para los clientes.
+        </p>
+      </div>
+    </header>
 
-  {cargandoMetodosPago ? (
-    <div className="admin-loading">
-      Cargando métodos de pago…
-    </div>
-  ) : metodosPago.length === 0 ? (
-    <p>No hay métodos de pago configurados.</p>
-  ) : (
-    <div className="metodos-pago-admin">
-      {metodosPago.map((metodo) => (
-        <article
-          key={metodo.id_metodo_pago}
-          className="metodo-pago-admin"
-        >
-          <div>
-            <h3>{metodo.nombre}</h3>
+    {cargandoMetodosPago ? (
+      <div className="admin-loading">
+        Cargando métodos de pago…
+      </div>
+    ) : metodosPago.length === 0 ? (
+      <p>No hay métodos de pago configurados.</p>
+    ) : (
+      <div className="metodos-pago-admin">
+        {metodosPago.map((metodo) => (
+          <article
+            key={metodo.id_metodo_pago}
+            className="metodo-pago-admin"
+          >
+            <div>
+              <h3>{metodo.nombre}</h3>
 
-            <p>{metodo.descripcion}</p>
+              <p>{metodo.descripcion}</p>
 
-            <small>
-              Código: {metodo.codigo}
-            </small>
-          </div>
+              <small>
+                Código: {metodo.codigo}
+              </small>
+            </div>
 
-          <div className="metodo-pago-admin__acciones">
-                        <span
-                          className={
-                            metodo.activo
-                              ? "metodo-pago-admin__estado metodo-pago-admin__estado--activo"
-                              : "metodo-pago-admin__estado"
-                          }
-                        >
-                          {metodo.activo ? "Activo" : "Inactivo"}
-                        </span>
+            <div className="metodo-pago-admin__acciones">
+                          <span
+                            className={
+                              metodo.activo
+                                ? "metodo-pago-admin__estado metodo-pago-admin__estado--activo"
+                                : "metodo-pago-admin__estado"
+                            }
+                          >
+                            {metodo.activo ? "Activo" : "Inactivo"}
+                          </span>
 
-                        <button
-                          type="button"
-                          disabled={
-                            actualizandoMetodoPago ===
+                          <button
+                            type="button"
+                            disabled={
+                              actualizandoMetodoPago ===
+                              metodo.id_metodo_pago
+                            }
+                            onClick={() =>
+                              cambiarEstadoMetodoPago(
+                                metodo.id_metodo_pago,
+                                !metodo.activo
+                              )
+                            }
+                          >
+                            {actualizandoMetodoPago ===
                             metodo.id_metodo_pago
-                          }
-                          onClick={() =>
-                            cambiarEstadoMetodoPago(
-                              metodo.id_metodo_pago,
-                              !metodo.activo
-                            )
-                          }
-                        >
-                          {actualizandoMetodoPago ===
-                          metodo.id_metodo_pago
-                            ? "Actualizando..."
-                            : metodo.activo
-                              ? "Desactivar"
-                              : "Activar"}
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-        </div>
-      )}
-    </section>
-  );
-}
+                              ? "Actualizando..."
+                              : metodo.activo
+                                ? "Desactivar"
+                                : "Activar"}
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+              <section className="configuracion-tarjeta">
+    <header className="configuracion-tarjeta__cabecera">
+      <FiSettings aria-hidden="true" />
+      <div>
+        <h2>Precios de envío</h2>
+        <p>Administra el costo de cada tipo de despacho.</p>
+      </div>
+    </header>
 
+    {cargandoDespachos ? (
+      <div className="admin-loading">Cargando precios de envío…</div>
+    ) : tiposDespacho.length === 0 ? (
+      <p>No hay tipos de despacho configurados.</p>
+    ) : (
+      <div className="metodos-pago-admin">
+        {tiposDespacho.map((tipo) => (
+         <article
+            key={tipo.id_tipo_despacho}
+            className="metodo-pago-admin"
+          >
+            <div>
+              <h3>{tipo.nom_tipo_despacho}</h3>
+
+              <p>
+                {tipo.est_tipo ? "Despacho activo" : "Despacho inactivo"}
+              </p>
+
+              {tipo.requiere_coordinacion && (
+                <small>Requiere coordinación</small>
+              )}
+            </div>
+
+            <div className="metodo-pago-admin__acciones">
+              <label className="configuracion-campo">
+                <span>Modalidad de cobro</span>
+
+                <select
+                  value={tipo.requiere_coordinacion ? "coordinar" : "fijo"}
+                  disabled={guardandoDespacho === tipo.id_tipo_despacho}
+                  onChange={(evento) => {
+                    const requiereCoordinacion =
+                      evento.target.value === "coordinar";
+
+                    guardarCostoDespacho(
+                      tipo.id_tipo_despacho,
+                      tipo.costo,
+                      requiereCoordinacion
+                    );
+                  }}
+                >
+                  <option value="fijo">Precio fijo</option>
+                  <option value="coordinar">Costo por coordinar</option>
+                </select>
+              </label>
+
+              {!tipo.requiere_coordinacion && (
+                <>
+                  <label className="configuracion-campo">
+                    <span>Precio de envío (CLP)</span>
+
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={tipo.costo ?? ""}
+                      disabled={guardandoDespacho === tipo.id_tipo_despacho}
+                      onChange={(evento) => {
+                        const valor = evento.target.value;
+
+                        setTiposDespacho((actuales) =>
+                          actuales.map((actual) =>
+                            actual.id_tipo_despacho === tipo.id_tipo_despacho
+                              ? {
+                                  ...actual,
+                                  costo: valor === "" ? "" : Number(valor),
+                                }
+                              : actual
+                          )
+                        );
+                      }}
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    disabled={guardandoDespacho === tipo.id_tipo_despacho}
+                    onClick={() =>
+                      guardarCostoDespacho(
+                        tipo.id_tipo_despacho,
+                        tipo.costo,
+                        false
+                      )
+                    }
+                  >
+                    {guardandoDespacho === tipo.id_tipo_despacho
+                      ? "Guardando..."
+                      : "Guardar precio"}
+                  </button>
+                </>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
+      </section>
+          </div>
+        )}
+        
+      </section>
+      
+  );
+
+}
 export default Configuracion;

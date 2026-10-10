@@ -485,3 +485,172 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* ========================================
+   PRECIOS DE ENVÍO - FERREPLAST
+======================================== */
+
+.configuracion-despachos .metodos-pago-admin {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Tarjeta de cada tipo de despacho */
+.configuracion-despachos .metodo-pago-admin {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 22px;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #dbe4f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 5px 16px rgb(15 23 42 / 5%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.configuracion-despachos .metodo-pago-admin:hover {
+  border-color: #93b4e8;
+  box-shadow: 0 8px 22px rgb(15 23 42 / 9%);
+}
+
+/* Nombre del despacho */
+.configuracion-despachos .metodo-pago-admin h3 {
+  margin: 0 0 8px;
+  color: #12366b;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.configuracion-despachos .metodo-pago-admin p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* Aviso de coordinación */
+.configuracion-despachos .metodo-pago-admin small {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 6px 10px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Controles y botón */
+.configuracion-despachos .metodo-pago-admin__acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Etiquetas de los campos */
+.configuracion-despachos .configuracion-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.configuracion-despachos .configuracion-campo span {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* Inputs y select */
+.configuracion-despachos .configuracion-campo input,
+.configuracion-despachos .configuracion-campo select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  outline: none;
+  background: #f8fafc;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.configuracion-despachos .configuracion-campo input:focus,
+.configuracion-despachos .configuracion-campo select:focus {
+  border-color: #0753bd;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgb(7 83 189 / 12%);
+}
+
+.configuracion-despachos .configuracion-campo input:disabled,
+.configuracion-despachos .configuracion-campo select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Botón Guardar precio */
+.configuracion-despachos .configuracion-guardar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid #0753bd;
+  border-radius: 9px;
+  background: #0753bd;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.configuracion-despachos .configuracion-guardar:hover:not(:disabled) {
+  background: #063f91;
+  transform: translateY(-1px);
+}
+
+.configuracion-despachos .configuracion-guardar:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+/* Mensaje de carga */
+.configuracion-despachos .admin-loading {
+  padding: 24px 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+/* Responsive: tablet y celular */
+@media (max-width: 760px) {
+  .configuracion-despachos .metodos-pago-admin {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .configuracion-despachos .metodo-pago-admin {
+    padding: 18px;
+    gap: 18px;
+  }
+
+  .configuracion-despachos .metodo-pago-admin__acciones {
+    gap: 14px;
+  }
+}
+
