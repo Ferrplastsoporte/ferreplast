@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
 
 import BodegueroHeader from "./components/BodegueroHeader";
@@ -9,6 +10,7 @@ import {
   formatearFecha,
   obtenerDetalleCambios,
 } from "../../utils/solicitudes/solicitudes";
+import { obtenerNombresReferenciasCambios } from "../../services/solicitudesService";
 
 import "./css/bodeguero.css";
 import "./css/solicitudes.css";
@@ -20,6 +22,7 @@ function BodegueroSolicitudes() {
   const [cargando, setCargando] = useState(true);
   const [mensajeError, setMensajeError] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("pendientes");
+  const [nombresReferencias, setNombresReferencias] = useState({});
 
   useEffect(() => {
     cargarSolicitudes();
@@ -87,6 +90,7 @@ function BodegueroSolicitudes() {
       );
 
       const cambiosMap = new Map();
+      let cambiosProductos = [];
 
       if (idsProductos.length > 0) {
         const { data: cambios, error: errorCambios } = await supabase
@@ -113,12 +117,18 @@ function BodegueroSolicitudes() {
           throw errorCambios;
         }
 
-        for (const cambio of cambios ?? []) {
+        cambiosProductos = cambios ?? [];
+
+        for (const cambio of cambiosProductos) {
           if (!cambiosMap.has(cambio.id_prod)) {
             cambiosMap.set(cambio.id_prod, cambio);
           }
         }
       }
+
+      const referencias = await obtenerNombresReferenciasCambios(
+        cambiosProductos,
+      );
 
       const solicitudesProductos = (productos ?? [])
         .filter((producto) => {
@@ -197,6 +207,7 @@ function BodegueroSolicitudes() {
       );
 
       setSolicitudes(todas);
+      setNombresReferencias(referencias);
     } catch (error) {
       console.error("Error al cargar solicitudes:", error);
 
@@ -254,9 +265,29 @@ function BodegueroSolicitudes() {
     return solicitudes;
   })();
 
+  const encabezado = (
+    <BodegueroHeader
+      titulo="Solicitudes pendientes"
+      descripcion="Consulta los productos y marcas que esperan revisión del administrador."
+      acciones={
+        <button
+          type="button"
+          className="solicitudes-recargar"
+          onClick={cargarSolicitudes}
+          disabled={cargando}
+          aria-label="Actualizar solicitudes"
+          title="Actualizar solicitudes"
+        >
+          <FiRefreshCw aria-hidden="true" />
+        </button>
+      }
+    />
+  );
+
   if (cargando) {
     return (
       <section className="bodeguero-page solicitudes-page">
+        {encabezado}
         <p className="bodeguero-loading">Cargando solicitudes...</p>
       </section>
     );
@@ -264,10 +295,7 @@ function BodegueroSolicitudes() {
 
   return (
     <section className="bodeguero-page solicitudes-page">
-      <BodegueroHeader
-        titulo="Solicitudes pendientes"
-        descripcion="Consulta los productos y marcas que esperan revisión del administrador."
-      />
+      {encabezado}
 
       {mensajeError && (
         <div
@@ -378,7 +406,10 @@ function BodegueroSolicitudes() {
                     cambio?.usuario?.nom_user || "Bodeguero";
 
                   const detalleCambios = cambio
-                    ? obtenerDetalleCambios(cambio.campos_modificados)
+                    ? obtenerDetalleCambios(
+                        cambio.campos_modificados,
+                        nombresReferencias,
+                      )
                     : [];
 
                   const esRechazado = solicitud.estado === "Rechazado";

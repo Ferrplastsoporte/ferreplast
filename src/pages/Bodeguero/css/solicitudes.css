@@ -8,6 +8,44 @@
     gap: 1.5rem;
 }
 
+.solicitudes-page .bodeguero-header__user {
+    gap: 10px;
+}
+
+.solicitudes-recargar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #bfd0e5;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #27415f;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.solicitudes-recargar:hover:not(:disabled) {
+    border-color: #93b4dd;
+    background: #eff6ff;
+}
+
+.solicitudes-recargar:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.solicitudes-recargar:disabled svg {
+    animation: solicitudes-recargar-giro 0.8s linear infinite;
+}
+
+@keyframes solicitudes-recargar-giro {
+    to { transform: rotate(360deg); }
+}
+
 /* =======================================================
    FILTROS
 ======================================================= */

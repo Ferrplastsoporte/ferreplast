@@ -1,4 +1,4 @@
-function BodegueroHeader({ titulo, descripcion = "" }) {
+function BodegueroHeader({ titulo, descripcion = "", acciones = null }) {
   return (
     <header className="bodeguero-header">
       <div className="bodeguero-header__information">
@@ -8,6 +8,7 @@ function BodegueroHeader({ titulo, descripcion = "" }) {
       </div>
 
       <div className="bodeguero-header__user">
+        {acciones}
         <span className="bodeguero-header__role">Bodeguero</span>
       </div>
     </header>

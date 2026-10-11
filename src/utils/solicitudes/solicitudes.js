@@ -18,6 +18,7 @@ export const NOMBRES_CAMPOS = {
 };
 
 export const NOMBRES_ACCIONES = {
+  producto_creado: "Producto creado",
   actualizacion: "Producto actualizado",
   ajuste_stock: "Stock actualizado",
   enviado_revision: "Enviado a revisión",
@@ -36,7 +37,15 @@ export function formatearFecha(fecha) {
   }).format(new Date(fecha));
 }
 
-export function obtenerDetalleCambios(campos = {}) {
+function formatearValorCambio(campo, valor, nombresReferencias) {
+  if (valor === null || valor === undefined || valor === "") {
+    return "Sin valor";
+  }
+
+  return nombresReferencias?.[campo]?.[String(valor)] ?? String(valor);
+}
+
+export function obtenerDetalleCambios(campos = {}, nombresReferencias = {}) {
   if (!campos || typeof campos !== "object" || Array.isArray(campos)) {
     return [];
   }
@@ -76,19 +85,17 @@ export function obtenerDetalleCambios(campos = {}) {
       {
         campo: NOMBRES_CAMPOS[campo] || campo,
 
-        anterior:
-          cambio?.anterior === null ||
-          cambio?.anterior === undefined ||
-          cambio?.anterior === ""
-            ? "Sin valor"
-            : String(cambio.anterior),
+        anterior: formatearValorCambio(
+          campo,
+          cambio?.anterior,
+          nombresReferencias,
+        ),
 
-        nuevo:
-          cambio?.nuevo === null ||
-          cambio?.nuevo === undefined ||
-          cambio?.nuevo === ""
-            ? "Sin valor"
-            : String(cambio.nuevo),
+        nuevo: formatearValorCambio(
+          campo,
+          cambio?.nuevo,
+          nombresReferencias,
+        ),
       },
     ];
   });

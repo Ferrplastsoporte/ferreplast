@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
 import {
   NOMBRES_ACCIONES,
   formatearFecha,
   obtenerDetalleCambios,
 } from "../../utils/solicitudes/solicitudes";
+import { obtenerNombresReferenciasCambios } from "../../services/solicitudesService";
 import AdminHeader from "./components/AdminHeader";
 import "./css/Aprobaciones.css";
 
@@ -28,6 +30,7 @@ function Aprobaciones() {
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
   const [marcasSeleccionadas, setMarcasSeleccionadas] = useState([]);
   const [productosExpandidos, setProductosExpandidos] = useState([]);
+  const [nombresReferencias, setNombresReferencias] = useState({});
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
@@ -64,8 +67,8 @@ function Aprobaciones() {
           .order("fecha_cambio", { ascending: false }),
         supabase
           .from("marca_producto")
-          .select("id_marca, nom_marca, logo_url, marca_destacar, est_marca")
-          .eq("est_marca", false)
+          .select("id_marca, nom_marca, logo_url, marca_destacar, id_estado_marca")
+          .eq("id_estado_marca", 1)
           .order("nom_marca", { ascending: true }),
       ]);
 
@@ -73,6 +76,7 @@ function Aprobaciones() {
       if (resultadoMarcas.error) throw resultadoMarcas.error;
 
       const cambios = resultadoCambios.data ?? [];
+      const referencias = await obtenerNombresReferenciasCambios(cambios);
       const idsProductos = [...new Set(cambios.map((cambio) => cambio.id_prod))];
       let productosPendientes = [];
 
@@ -113,6 +117,7 @@ function Aprobaciones() {
 
       setProductos(productosPendientes);
       setMarcas(resultadoMarcas.data ?? []);
+      setNombresReferencias(referencias);
       setProductosSeleccionados([]);
       setMarcasSeleccionadas([]);
       setProductosExpandidos([]);
@@ -168,13 +173,13 @@ function Aprobaciones() {
     setConfirmacion({ tipo: "producto", accion, ids: idsValidos });
   }
 
-  function solicitarAprobacionMarcas(ids) {
+  function solicitarResolucionMarcas(ids, accion) {
     const idsValidos = ids.filter((id) =>
       marcas.some((marca) => marca.id_marca === id),
     );
 
     if (idsValidos.length === 0) return;
-    setConfirmacion({ tipo: "marca", accion: "aprobar", ids: idsValidos });
+    setConfirmacion({ tipo: "marca", accion, ids: idsValidos });
   }
 
   async function confirmarResolucion() {
@@ -202,16 +207,26 @@ function Aprobaciones() {
         });
       } else {
         const { data, error } = await supabase.rpc(
-          "aprobar_marcas_pendientes",
-          { p_ids_marcas: confirmacion.ids },
+          "resolver_aprobaciones_marcas",
+          {
+            p_ids_marcas: confirmacion.ids,
+            p_aprobar: confirmacion.accion === "aprobar",
+          },
         );
 
         if (error) throw error;
 
-        const cantidad = Number(data) || confirmacion.ids.length;
+        const cantidad = Number(data);
+        if (!Number.isInteger(cantidad) || cantidad < 1) {
+          throw new Error(
+            "Las marcas seleccionadas ya no se encuentran pendientes.",
+          );
+        }
+
+        const aprobando = confirmacion.accion === "aprobar";
         setMensaje({
           tipo: "success",
-          texto: `${cantidad} ${cantidad === 1 ? "marca fue habilitada" : "marcas fueron habilitadas"} correctamente.`,
+          texto: `${cantidad === 1 ? "La marca fue" : `Las ${cantidad} marcas fueron`} ${aprobando ? "aprobada" : "rechazada"}${cantidad === 1 ? "" : "s"} correctamente.`,
         });
       }
 
@@ -235,7 +250,8 @@ function Aprobaciones() {
 
     const cantidad = confirmacion.ids.length;
     if (confirmacion.tipo === "marca") {
-      return `Se ${cantidad === 1 ? "habilitará la marca seleccionada" : `habilitarán ${cantidad} marcas seleccionadas`}.`;
+      const verbo = confirmacion.accion === "aprobar" ? "aprobará" : "rechazará";
+      return `Se ${verbo}${cantidad > 1 ? "n" : ""} ${cantidad === 1 ? "la marca seleccionada" : `${cantidad} marcas seleccionadas`}.`;
     }
 
     const verbo = confirmacion.accion === "aprobar" ? "aprobará" : "rechazará";
@@ -247,6 +263,18 @@ function Aprobaciones() {
       <AdminHeader
         titulo="Aprobaciones"
         descripcion="Revisa y resuelve los cambios de productos y las marcas enviadas por bodega."
+        acciones={
+          <button
+            type="button"
+            className="aprobaciones-recargar"
+            onClick={() => cargarAprobaciones()}
+            disabled={cargando}
+            aria-label="Actualizar aprobaciones"
+            title="Actualizar aprobaciones"
+          >
+            <FiRefreshCw aria-hidden="true" />
+          </button>
+        }
       />
 
       <div className="aprobaciones-resumen" aria-label="Resumen de aprobaciones">
@@ -367,7 +395,10 @@ function Aprobaciones() {
                             {expandido && (
                               <div className="aprobaciones-cambios">
                                 {producto.cambios.map((cambio) => {
-                                  const detalles = obtenerDetalleCambios(cambio.campos_modificados);
+                                  const detalles = obtenerDetalleCambios(
+                                    cambio.campos_modificados,
+                                    nombresReferencias,
+                                  );
                                   return (
                                     <article key={cambio.id_cambio}>
                                       <header><strong>{obtenerNombreAccion(cambio.tipo_accion)}</strong><span>{formatearFecha(cambio.fecha_cambio)}</span></header>
@@ -406,12 +437,13 @@ function Aprobaciones() {
               <div>
                 <span className="aprobaciones-panel__etiqueta">Marcas</span>
                 <h2 id="marcas-pendientes">Marcas por validar</h2>
-                <p>Al aprobar una marca quedará habilitada para utilizarse en productos.</p>
+                <p>Aprueba o rechaza las marcas enviadas por bodega.</p>
               </div>
               {marcasSeleccionadas.length > 0 && (
                 <div className="aprobaciones-acciones-masivas">
                   <span>{marcasSeleccionadas.length} seleccionadas</span>
-                  <button type="button" className="aprobaciones-btn aprobaciones-btn--aprobar" onClick={() => solicitarAprobacionMarcas(marcasSeleccionadas)}>Aprobar seleccionadas</button>
+                  <button type="button" className="aprobaciones-btn aprobaciones-btn--rechazar" onClick={() => solicitarResolucionMarcas(marcasSeleccionadas, "rechazar")}>Rechazar</button>
+                  <button type="button" className="aprobaciones-btn aprobaciones-btn--aprobar" onClick={() => solicitarResolucionMarcas(marcasSeleccionadas, "aprobar")}>Aprobar</button>
                 </div>
               )}
             </div>
@@ -431,7 +463,7 @@ function Aprobaciones() {
                           aria-label="Seleccionar todas las marcas"
                         />
                       </th>
-                      <th>Marca</th><th>Tipo</th><th>Estado</th><th>Acción</th>
+                      <th>Marca</th><th>Tipo</th><th>Estado</th><th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -454,7 +486,12 @@ function Aprobaciones() {
                           </td>
                           <td>{marca.marca_destacar ? "Destacada" : "Normal"}</td>
                           <td><span className="aprobaciones-estado">Pendiente</span></td>
-                          <td><button type="button" className="aprobaciones-btn aprobaciones-btn--aprobar" onClick={() => solicitarAprobacionMarcas([marca.id_marca])}>Aprobar</button></td>
+                          <td>
+                            <div className="aprobaciones-acciones-fila">
+                              <button type="button" className="aprobaciones-btn aprobaciones-btn--rechazar" onClick={() => solicitarResolucionMarcas([marca.id_marca], "rechazar")}>Rechazar</button>
+                              <button type="button" className="aprobaciones-btn aprobaciones-btn--aprobar" onClick={() => solicitarResolucionMarcas([marca.id_marca], "aprobar")}>Aprobar</button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })}

@@ -1,6 +1,6 @@
 import "../css/Admin.css";
 
-function AdminHeader({ titulo, descripcion = "" }) {
+function AdminHeader({ titulo, descripcion = "", acciones = null }) {
   return (
     <header className="admin-header">
       <div className="admin-header__information">
@@ -10,6 +10,7 @@ function AdminHeader({ titulo, descripcion = "" }) {
       </div>
 
       <div className="admin-header__user">
+        {acciones}
         <span className="admin-header__role">Administrador</span>
       </div>
     </header>
