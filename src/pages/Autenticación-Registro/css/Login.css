@@ -436,6 +436,20 @@
   text-decoration: underline;
 }
 
+.login-resend-captcha {
+  margin: -5px 0 18px;
+}
+
+.login-resend-captcha > p {
+  margin: 0 0 10px;
+
+  color: #68717c;
+
+  font-size: 0.82rem;
+
+  line-height: 1.45;
+}
+
 
 /* =========================================================
    BOTÓN LOGIN

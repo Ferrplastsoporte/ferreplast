@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormulario } from "../../hooks/useFormulario";
 import { useAutenticacion } from "../../hooks/useAutenticacion";
@@ -60,15 +60,38 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const captcha = useCaptcha();
 
-  const { values, errors, handleChange, handleBlur, validateForm } = useFormulario(
-    INITIAL_VALUES,
-    validateField,
-    sanitizeField,
-  );
+  const {
+    values,
+    errors,
+    handleChange,
+    handleBlur,
+    validateForm,
+  } = useFormulario(INITIAL_VALUES, validateField, sanitizeField);
 
-  const { login, loading, modal, hideModal } = useAutenticacion();
+  const {
+    login,
+    resendConfirmation,
+    loading,
+    resendingConfirmation,
+    modal,
+    hideModal,
+  } = useAutenticacion();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const resendCaptcha = useCaptcha();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setResendCooldown((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -95,6 +118,29 @@ const LoginForm = () => {
     navigate(obtenerRutaInicialPorRol(perfilAutenticado.rol_user), {
       replace: true,
     });
+  };
+
+  const handleResendConfirmation = async () => {
+    if (
+      resendingConfirmation ||
+      resendCooldown > 0 ||
+      resendCaptcha.pendiente
+    ) {
+      return;
+    }
+
+    try {
+      const enviado = await resendConfirmation(
+        values.email,
+        resendCaptcha.token,
+      );
+
+      if (enviado) {
+        setResendCooldown(60);
+      }
+    } finally {
+      resendCaptcha.reiniciar();
+    }
   };
 
   return (
@@ -166,7 +212,37 @@ const LoginForm = () => {
         </button>
       </p>
 
-      <Modal {...modal} onClose={hideModal} />
+      <Modal
+        {...modal}
+        onClose={hideModal}
+        accionSecundaria={
+          modal.codigo === "email_not_confirmed"
+            ? handleResendConfirmation
+            : undefined
+        }
+        textoAccionSecundaria={
+          resendingConfirmation
+            ? "Reenviando..."
+            : resendCooldown > 0
+              ? `Reenviar en ${resendCooldown} s`
+              : "Reenviar correo"
+        }
+        accionSecundariaDeshabilitada={
+          resendingConfirmation ||
+          resendCooldown > 0 ||
+          resendCaptcha.pendiente
+        }
+      >
+        {modal.codigo === "email_not_confirmed" && (
+          <div className="login-resend-captcha">
+            <p>Completa la verificación para solicitar un nuevo enlace.</p>
+            <Captcha
+              onToken={resendCaptcha.setToken}
+              intento={resendCaptcha.intento}
+            />
+          </div>
+        )}
+      </Modal>
     </form>
   );
 };

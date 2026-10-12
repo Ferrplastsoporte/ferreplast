@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 
 export const useAutenticacion = () => {
   const [loading, setLoading] = useState(false)
+  const [resendingConfirmation, setResendingConfirmation] = useState(false)
   const [initializing, setInitializing] = useState(true)
 
   const [session, setSession] = useState(null)
@@ -13,19 +14,22 @@ export const useAutenticacion = () => {
     visible: false,
     tipo: '',
     titulo: '',
-    mensaje: ''
+    mensaje: '',
+    codigo: ''
   })
 
   const showModal = (
     tipo,
     titulo,
-    mensaje
+    mensaje,
+    codigo = ''
   ) => {
     setModal({
       visible: true,
       tipo,
       titulo,
-      mensaje
+      mensaje,
+      codigo
     })
   }
 
@@ -34,7 +38,8 @@ export const useAutenticacion = () => {
       visible: false,
       tipo: '',
       titulo: '',
-      mensaje: ''
+      mensaje: '',
+      codigo: ''
     })
   }
 
@@ -358,10 +363,24 @@ export const useAutenticacion = () => {
         })
 
       if (error) {
+        const message =
+          error.message?.toLowerCase() ?? ''
+
+        const emailNotConfirmed =
+          error.code === 'email_not_confirmed' ||
+          message.includes('email not confirmed')
+
         showModal(
-          'error',
-          'Error al iniciar sesión',
-          translateError(error)
+          emailNotConfirmed
+            ? 'warning'
+            : 'error',
+          emailNotConfirmed
+            ? 'Confirma tu correo'
+            : 'Error al iniciar sesión',
+          translateError(error),
+          emailNotConfirmed
+            ? 'email_not_confirmed'
+            : ''
         )
 
         return false
@@ -430,6 +449,113 @@ export const useAutenticacion = () => {
     }
   }
 
+  const resendConfirmation = async (
+    email,
+    captchaToken
+  ) => {
+    if (resendingConfirmation) {
+      return false
+    }
+
+    setResendingConfirmation(true)
+
+    try {
+      const normalizedEmail = email
+        .trim()
+        .toLowerCase()
+
+      const { error } =
+        await supabase.auth.resend({
+          type: 'signup',
+          email: normalizedEmail,
+          options: {
+            emailRedirectTo:
+              `${window.location.origin}/login`,
+            captchaToken
+          }
+        })
+
+      if (error) {
+        const message =
+          error.message?.toLowerCase() ?? ''
+
+        if (
+          error.status === 429 ||
+          error.code === 'over_email_send_rate_limit' ||
+          error.code === 'over_request_rate_limit' ||
+          message.includes('rate limit') ||
+          message.includes('too many requests')
+        ) {
+          showModal(
+            'warning',
+            'Espera antes de reenviar',
+            'Se alcanzó temporalmente el límite de correos. Inténtalo nuevamente más tarde.'
+          )
+
+          return false
+        }
+
+        if (
+          error.code === 'captcha_failed' ||
+          message.includes('captcha')
+        ) {
+          showModal(
+            'error',
+            'Verificación requerida',
+            'La verificación de seguridad falló o venció. Complétala nuevamente.'
+          )
+
+          return false
+        }
+
+        if (
+          message.includes('network') ||
+          message.includes('failed to fetch')
+        ) {
+          showModal(
+            'error',
+            'Sin conexión',
+            'No fue posible conectar con el servidor. Revisa tu conexión.'
+          )
+
+          return false
+        }
+
+        /*
+         * No mostramos si el correo existe, ya fue
+         * confirmado o no corresponde a un registro.
+         */
+        console.warn(
+          'La solicitud de reenvío no generó un correo:',
+          error
+        )
+      }
+
+      showModal(
+        'success',
+        'Solicitud recibida',
+        'Si existe una cuenta pendiente asociada a ese correo, recibirás un nuevo enlace de activación.'
+      )
+
+      return true
+    } catch (error) {
+      console.error(
+        'Error inesperado al reenviar la confirmación:',
+        error
+      )
+
+      showModal(
+        'error',
+        'No fue posible reenviar',
+        'No fue posible conectar con el servidor. Revisa tu conexión e inténtalo nuevamente.'
+      )
+
+      return false
+    } finally {
+      setResendingConfirmation(false)
+    }
+  }
+
   const logout = async () => {
     if (loading) {
       return false
@@ -487,6 +613,7 @@ export const useAutenticacion = () => {
     profile,
 
     loading,
+    resendingConfirmation,
     initializing,
 
     modal,
@@ -495,6 +622,7 @@ export const useAutenticacion = () => {
 
     register,
     login,
+    resendConfirmation,
     logout,
     loadProfile,
     refreshProfile,
