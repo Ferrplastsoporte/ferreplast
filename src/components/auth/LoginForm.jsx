@@ -17,6 +17,25 @@ import Modal from "../ui/Modal";
 import LoginMascot from "./LoginMascot";
 import Captcha from "./Captcha";
 import useCaptcha from "../../hooks/useCaptcha";
+
+const RESEND_COOLDOWN_MS = 5 * 60_000;
+const RESEND_COOLDOWN_STORAGE_KEY =
+  "ferreplast:auth:resend-confirmation-available-at";
+
+const getStoredResendAvailableAt = () => {
+  try {
+    const storedValue = Number(
+      window.localStorage.getItem(RESEND_COOLDOWN_STORAGE_KEY),
+    );
+
+    return Number.isFinite(storedValue) && storedValue > Date.now()
+      ? storedValue
+      : 0;
+  } catch {
+    return 0;
+  }
+};
+
 const INITIAL_VALUES = {
   email: "",
   password: "",
@@ -78,20 +97,46 @@ const LoginForm = () => {
   } = useAutenticacion();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendAvailableAt, setResendAvailableAt] = useState(
+    getStoredResendAvailableAt,
+  );
+  const [resendCooldown, setResendCooldown] = useState(() =>
+    Math.max(0, Math.ceil((getStoredResendAvailableAt() - Date.now()) / 1000)),
+  );
   const resendCaptcha = useCaptcha();
 
   useEffect(() => {
-    if (resendCooldown <= 0) {
+    if (resendAvailableAt <= Date.now()) {
+      try {
+        window.localStorage.removeItem(RESEND_COOLDOWN_STORAGE_KEY);
+      } catch {
+        // El almacenamiento puede estar deshabilitado; Supabase mantiene su límite.
+      }
+
       return undefined;
     }
 
     const timer = window.setInterval(() => {
-      setResendCooldown((seconds) => Math.max(0, seconds - 1));
+      const remainingSeconds = Math.max(
+        0,
+        Math.ceil((resendAvailableAt - Date.now()) / 1000),
+      );
+
+      setResendCooldown(remainingSeconds);
+
+      if (remainingSeconds === 0) {
+        window.clearInterval(timer);
+
+        try {
+          window.localStorage.removeItem(RESEND_COOLDOWN_STORAGE_KEY);
+        } catch {
+          // El almacenamiento puede estar deshabilitado; Supabase mantiene su límite.
+        }
+      }
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [resendCooldown]);
+  }, [resendAvailableAt]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -136,7 +181,19 @@ const LoginForm = () => {
       );
 
       if (enviado) {
-        setResendCooldown(60);
+        const availableAt = Date.now() + RESEND_COOLDOWN_MS;
+
+        setResendAvailableAt(availableAt);
+        setResendCooldown(Math.ceil(RESEND_COOLDOWN_MS / 1000));
+
+        try {
+          window.localStorage.setItem(
+            RESEND_COOLDOWN_STORAGE_KEY,
+            String(availableAt),
+          );
+        } catch {
+          // El contador seguirá funcionando mientras la página permanezca abierta.
+        }
       }
     } finally {
       resendCaptcha.reiniciar();
