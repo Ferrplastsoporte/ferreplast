@@ -12,14 +12,6 @@ import "./css/stock.css";
 
 const LIMITE_STOCK_BAJO = 10;
 
-function formatearPrecio(valor) {
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    maximumFractionDigits: 0,
-  }).format(Number(valor) || 0);
-}
-
 function BodegueroStock() {
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -31,7 +23,7 @@ function BodegueroStock() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [filtroStock, setFiltroStock] = useState("todos");
-  const [orden, setOrden] = useState("stock-asc");
+  const [orden, setOrden] = useState("prioridad");
 
   const [productoPorAjustar, setProductoPorAjustar] = useState(null);
   const [nuevoStock, setNuevoStock] = useState("");
@@ -44,32 +36,7 @@ function BodegueroStock() {
     setCargando(true);
     setMensajeError("");
 
-    const { data, error } = await supabase
-      .from("producto")
-      .select(
-        `
-        id_prod,
-        nom_prod,
-        precio_prod,
-        precio_act,
-        imagen_url,
-        est_prod,
-        stock_prod,
-
-        estado_producto (
-          id_est_prod,
-          nom_est_prod
-        ),
-
-        unidad_medida (
-          id_und_medida,
-          nom_und_medida
-        )
-      `,
-      )
-      .order("stock_prod", {
-        ascending: true,
-      });
+    const { data, error } = await supabase.rpc("kpi_alerta_stock");
 
     if (error) {
       console.error("Error al cargar el stock:", error);
@@ -87,9 +54,7 @@ function BodegueroStock() {
     () =>
       productos.filter(
         (producto) =>
-          Number(producto.est_prod) === 2 &&
-          Number(producto.stock_prod) > 0 &&
-          Number(producto.stock_prod) < LIMITE_STOCK_BAJO,
+          Number(producto.prioridad_stock) !== 7 && producto.stock_bajo,
       ),
     [productos],
   );
@@ -98,20 +63,15 @@ function BodegueroStock() {
     () =>
       productos.filter(
         (producto) =>
-          Number(producto.est_prod) === 2 &&
-          Number(producto.stock_prod) <= 0,
+          Number(producto.prioridad_stock) !== 7 && producto.sin_stock,
       ),
     [productos],
   );
 
-  const unidadesDisponibles = useMemo(
-    () =>
-      productos
-        .filter((producto) => Number(producto.est_prod) === 2)
-        .reduce(
-          (total, producto) => total + Math.max(Number(producto.stock_prod) || 0, 0),
-          0,
-        ),
+  const productosCoberturaCorta = useMemo(
+    () => productos.filter((producto) =>
+      [2, 3].includes(Number(producto.prioridad_stock)),
+    ),
     [productos],
   );
 
@@ -119,7 +79,7 @@ function BodegueroStock() {
     const texto = busqueda.trim().toLocaleLowerCase("es-CL");
 
     const productosCoincidentes = productos.filter((producto) => {
-      const stock = Number(producto.stock_prod) || 0;
+      const stock = producto.stock_prod == null ? null : Number(producto.stock_prod);
       const estado = Number(producto.est_prod);
 
       const coincideBusqueda =
@@ -130,25 +90,34 @@ function BodegueroStock() {
 
       const coincideStock =
         filtroStock === "todos" ||
-        (filtroStock === "sin-stock" && stock <= 0) ||
+        (filtroStock === "sin-stock" && producto.sin_stock) ||
+        (filtroStock === "cobertura" &&
+          [2, 3].includes(Number(producto.prioridad_stock))) ||
         (filtroStock === "bajo" &&
-          stock > 0 &&
-          stock < LIMITE_STOCK_BAJO) ||
-        (filtroStock === "suficiente" && stock >= LIMITE_STOCK_BAJO);
+          producto.stock_bajo) ||
+        (filtroStock === "suficiente" && stock !== null && stock >= LIMITE_STOCK_BAJO);
 
       return coincideBusqueda && coincideEstado && coincideStock;
     });
 
     return [...productosCoincidentes].sort((productoA, productoB) => {
-      if (orden === "stock-desc") {
-        return Number(productoB.stock_prod) - Number(productoA.stock_prod);
-      }
+      // Mantiene el orden calculado por SQL: urgencia, marca y cobertura.
+      if (orden === "prioridad") return 0;
 
       if (orden === "nombre-asc") {
         return (productoA.nom_prod || "").localeCompare(
           productoB.nom_prod || "",
           "es-CL",
         );
+      }
+
+      if (productoA.stock_prod == null || productoB.stock_prod == null) {
+        if (productoA.stock_prod == null && productoB.stock_prod == null) return 0;
+        return productoA.stock_prod == null ? 1 : -1;
+      }
+
+      if (orden === "stock-desc") {
+        return Number(productoB.stock_prod) - Number(productoA.stock_prod);
       }
 
       return Number(productoA.stock_prod) - Number(productoB.stock_prod);
@@ -159,13 +128,13 @@ function BodegueroStock() {
     busqueda.trim() ||
     filtroEstado !== "todos" ||
     filtroStock !== "todos" ||
-    orden !== "stock-asc";
+    orden !== "prioridad";
 
   function limpiarFiltros() {
     setBusqueda("");
     setFiltroEstado("todos");
     setFiltroStock("todos");
-    setOrden("stock-asc");
+    setOrden("prioridad");
   }
 
   function abrirAjusteStock(producto) {
@@ -249,6 +218,23 @@ function BodegueroStock() {
         descripcion="Consulta y actualiza las existencias disponibles de los productos."
       />
 
+      <div className="stock-kpi-heading">
+        <div>
+          <h2>Prioridad de reposición</h2>
+          <p>Revisa primero los productos que necesitan atención.</p>
+        </div>
+        <button
+          type="button"
+          className="stock-table__adjust stock-refresh"
+          onClick={cargarProductos}
+          disabled={actualizando}
+          aria-label="Actualizar inventario e indicadores"
+          title="Actualizar inventario e indicadores"
+        >
+          <span aria-hidden="true">↻</span>
+        </button>
+      </div>
+
       {mensajeExito && (
         <p
           className="bodeguero-message bodeguero-message--success"
@@ -268,16 +254,6 @@ function BodegueroStock() {
       )}
 
       <div className="stock-summary">
-        <div>
-          <span>Productos registrados</span>
-          <strong>{productos.length}</strong>
-        </div>
-
-        <div>
-          <span>Unidades disponibles</span>
-          <strong>{unidadesDisponibles}</strong>
-        </div>
-
         <div className={productosSinStock.length > 0 ? "stock-summary--danger" : ""}>
           <span>Productos sin stock</span>
           <strong>{productosSinStock.length}</strong>
@@ -286,6 +262,11 @@ function BodegueroStock() {
         <div className={productosStockBajo.length > 0 ? "stock-summary--warning" : ""}>
           <span>Productos con stock bajo</span>
           <strong>{productosStockBajo.length}</strong>
+        </div>
+
+        <div className={productosCoberturaCorta.length > 0 ? "stock-summary--warning" : ""}>
+          <span>Por agotarse según ventas</span>
+          <strong>{productosCoberturaCorta.length}</strong>
         </div>
       </div>
 
@@ -331,9 +312,10 @@ function BodegueroStock() {
           >
             <option value="todos">Todos los niveles</option>
             <option value="sin-stock">Sin stock</option>
+            <option value="cobertura">Cobertura de hasta 14 días</option>
             <option value="bajo">Bajo (1–{LIMITE_STOCK_BAJO - 1})</option>
             <option value="suficiente">
-              Suficiente ({LIMITE_STOCK_BAJO} o más)
+              {LIMITE_STOCK_BAJO} unidades o más
             </option>
           </select>
         </div>
@@ -346,6 +328,7 @@ function BodegueroStock() {
             value={orden}
             onChange={(evento) => setOrden(evento.target.value)}
           >
+            <option value="prioridad">Prioridad de reposición</option>
             <option value="stock-asc">Menor stock primero</option>
             <option value="stock-desc">Mayor stock primero</option>
             <option value="nombre-asc">Nombre A–Z</option>
@@ -372,9 +355,7 @@ function BodegueroStock() {
             <tr>
               <th>Producto</th>
               <th>Stock actual</th>
-              <th>Unidad</th>
-              <th>Estado</th>
-              <th>Precio vigente</th>
+              <th>Prioridad de reposición</th>
               <th>Acción</th>
             </tr>
           </thead>
@@ -382,19 +363,13 @@ function BodegueroStock() {
           <tbody>
             {productosFiltrados.length === 0 ? (
               <tr>
-                <td colSpan="6">
+                <td colSpan="4">
                   No hay productos que coincidan con los filtros.
                 </td>
               </tr>
             ) : (
               productosFiltrados.map((producto) => {
-                const precioNormal = Number(producto.precio_prod);
-                const precioActual = Number(producto.precio_act);
-
-                const precioVigente =
-                  precioActual > 0 ? precioActual : precioNormal;
-
-                const stock = Number(producto.stock_prod);
+                const stock = producto.stock_prod == null ? null : Number(producto.stock_prod);
 
                 const stockBajo = stock > 0 && stock < LIMITE_STOCK_BAJO;
 
@@ -403,35 +378,58 @@ function BodegueroStock() {
                     <td>
                       <div className="stock-table__product">
                         <strong>{producto.nom_prod}</strong>
-                        <small>Producto #{producto.id_prod}</small>
+                        <span className="stock-brand">
+                          {producto.nom_marca || "Sin marca"}
+                          {producto.marca_destacar && (
+                            <span className="stock-brand__featured">Destacada</span>
+                          )}
+                        </span>
                       </div>
                     </td>
 
                     <td>
                       <span
                         className={
-                          stock <= 0
+                          stock !== null && stock <= 0
                             ? "stock-badge stock-agotado"
                             : stockBajo
                               ? "stock-badge stock-bajo"
                               : "stock-badge"
                         }
                       >
-                        {stock <= 0 ? "Sin stock" : stock}
+                        {stock === null ? "Sin registrar" : stock <= 0 ? "Sin stock" : stock}
                       </span>
+                      <small className="stock-cell-detail">
+                        {producto.nom_und_medida || "Sin unidad"}
+                      </small>
                     </td>
 
                     <td>
-                      {producto.unidad_medida?.nom_und_medida || "Sin unidad"}
-                    </td>
-
-                    <td>
-                      <span className={`stock-status stock-status--${producto.est_prod}`}>
-                        {producto.estado_producto?.nom_est_prod || "Sin estado"}
+                      <span className={`stock-alert stock-alert--${producto.prioridad_stock}`}>
+                        {producto.alerta_stock}
                       </span>
+                      <details className="stock-details">
+                        <summary aria-label={`Ver detalle de ${producto.nom_prod}`}>Ver detalle</summary>
+                        <dl>
+                          <div>
+                            <dt>Ventas en 30 días</dt>
+                            <dd>{producto.unidades_vendidas_30_dias ?? 0}</dd>
+                          </div>
+                          <div>
+                            <dt>Stock estimado para</dt>
+                            <dd>
+                              {producto.dias_cobertura == null
+                                ? "Sin estimación"
+                                : `${new Intl.NumberFormat("es-CL", { maximumFractionDigits: 1 }).format(producto.dias_cobertura)} días`}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Estado del producto</dt>
+                            <dd>{producto.nom_est_prod || "Sin estado"}</dd>
+                          </div>
+                        </dl>
+                      </details>
                     </td>
-
-                    <td>{formatearPrecio(precioVigente)}</td>
 
                     <td>
                       <button
