@@ -1,0 +1,361 @@
+
+/* ========================================
+   FERREPLAST - ADMINISTRACIÓN DE PEDIDOS
+======================================== */
+
+.admin-page {
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
+  color: #1e293b;
+  box-sizing: border-box;
+}
+
+.admin-page * {
+  box-sizing: border-box;
+}
+
+.admin-section {
+  width: 100%;
+  min-width: 0;
+  margin-top: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgb(15 23 42 / 5%);
+}
+
+/* ========================================
+   CABECERA Y BOTÓN ACTUALIZAR
+======================================== */
+
+.pedidos-admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.pedidos-admin-toolbar h2 {
+  margin: 0 0 6px;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.pedidos-admin-toolbar p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pedidos-admin-toolbar button,
+.pedidos-admin-error button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  background: #174ea6;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.pedidos-admin-toolbar button:hover,
+.pedidos-admin-error button:hover {
+  background: #123d83;
+  transform: translateY(-1px);
+}
+
+.pedidos-admin-toolbar button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========================================
+   BÚSQUEDA Y FILTROS
+======================================== */
+
+.pedidos-admin-filtros {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.pedidos-admin-filtros input,
+.pedidos-admin-filtros select {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  outline: none;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: inherit;
+  font-size: 0.92rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pedidos-admin-filtros input::placeholder {
+  color: #94a3b8;
+}
+
+.pedidos-admin-filtros input:focus,
+.pedidos-admin-filtros select:focus {
+  border-color: #174ea6;
+  box-shadow: 0 0 0 3px rgb(23 78 166 / 12%);
+}
+
+/* ========================================
+   CONTENEDOR Y TABLA
+======================================== */
+
+.pedidos-admin-tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+.pedidos-admin-tabla {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.pedidos-admin-tabla thead {
+  background: #f1f5f9;
+}
+
+.pedidos-admin-tabla th {
+  padding: 15px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pedidos-admin-tabla td {
+  padding: 16px;
+  border-bottom: 1px solid #edf2f7;
+  color: #334155;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+.pedidos-admin-tabla tbody tr {
+  transition: background 0.15s ease;
+}
+
+.pedidos-admin-tabla tbody tr:hover {
+  background: #f8fafc;
+}
+
+.pedidos-admin-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pedidos-admin-tabla td:first-child {
+  color: #174ea6;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pedidos-admin-tabla td strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #0f172a;
+  font-weight: 650;
+}
+
+.pedidos-admin-tabla td small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+/* ========================================
+   ESTADOS DE PEDIDO
+======================================== */
+
+.pedido-admin-estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ========================================
+   ESTADO DE REGISTRO ERP
+======================================== */
+
+.pedido-admin-erp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pedido-admin-erp-ok {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.pedido-admin-erp-pendiente {
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+/* ========================================
+   MENSAJES Y ERRORES
+======================================== */
+
+.admin-section > p {
+  padding: 24px 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.pedidos-admin-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+}
+
+.pedidos-admin-error p {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pedidos-admin-error button {
+  flex-shrink: 0;
+  background: #b91c1c;
+}
+
+.pedidos-admin-error button:hover {
+  background: #991b1b;
+}
+
+/* ========================================
+   RESPONSIVE: TABLETS
+======================================== */
+
+@media (max-width: 900px) {
+  .admin-page {
+    padding: 18px;
+  }
+
+  .admin-section {
+    padding: 18px;
+  }
+
+  .pedidos-admin-filtros {
+    grid-template-columns: minmax(0, 1fr) 180px;
+  }
+}
+
+/* ========================================
+   RESPONSIVE: CELULARES
+======================================== */
+
+@media (max-width: 600px) {
+  .admin-page {
+    padding: 12px;
+  }
+
+  .admin-section {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .pedidos-admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .pedidos-admin-toolbar h2 {
+    font-size: 1.15rem;
+  }
+
+  .pedidos-admin-toolbar button {
+    width: 100%;
+  }
+
+  .pedidos-admin-filtros {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .pedidos-admin-filtros input,
+  .pedidos-admin-filtros select {
+    height: 44px;
+  }
+
+  .pedidos-admin-tabla {
+    min-width: 1000px;
+  }
+
+  .pedidos-admin-tabla th,
+  .pedidos-admin-tabla td {
+    padding: 12px;
+  }
+
+  .pedidos-admin-error {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pedidos-admin-error button {
+    width: 100%;
+  }
+}

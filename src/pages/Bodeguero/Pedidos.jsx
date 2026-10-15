@@ -129,28 +129,30 @@ function Pedidos() {
     try {
       setProcesando(idPedido);
       setError("");
-      const { error: errorActualizacion } =
-        await supabase.rpc(
-          "cambiar_estado_pedido_bodeguero",
-          {
-            p_id_pedido: idPedido,
-            p_nuevo_estado: nuevoEstado,
-          }
-        );
-      if (errorActualizacion) {
-        throw errorActualizacion;
+
+      if (nuevoEstado !== ESTADO_PREPARACION) {
+        setError("Esta operación solo permite iniciar la preparación.");
+        return;
       }
+
+      const { error: errorInicio } = await supabase.rpc(
+        "iniciar_preparacion_bodeguero",
+        { p_id_pedido: idPedido }
+      );
+
+      if (errorInicio) throw errorInicio;
+
       setPedidoSeleccionado(null);
       await cargarPedidos();
     } catch (error) {
-      console.error(
-        "Error al actualizar pedido:",
-        error
-      );
+      console.error("Error al iniciar preparación:", error);
+
       setError(
         error.message ||
-        "No fue posible actualizar el estado del pedido."
+          "No fue posible tomar el pedido. Puede que otro bodeguero ya lo haya tomado."
       );
+
+      await cargarPedidos();
     } finally {
       setProcesando(null);
     }
@@ -799,6 +801,12 @@ function Pedidos() {
                           pedido
                         )}{" "}
                         unidades
+                      </strong>
+                    </div>
+                    <div>
+                      <span>👷 Bodeguero responsable</span>
+                      <strong>
+                        {pedido.bodeguero?.nom_user || "Sin asignar"}
                       </strong>
                     </div>
                     <div>
