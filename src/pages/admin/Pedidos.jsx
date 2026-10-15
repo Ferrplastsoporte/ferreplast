@@ -74,7 +74,7 @@ function Pedidos() {
 
     return pedidos.filter((pedido) => {
       const camposBusqueda = [
-        pedido.id_pedido,
+        pedido.folio_pedido,
         pedido.cliente,
         pedido.rut_cliente,
         pedido.telefono_cliente,
@@ -165,7 +165,7 @@ function Pedidos() {
               <table className="pedidos-admin-tabla">
                 <thead>
                   <tr>
-                    <th>Pedido</th>
+                    <th>Folio</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
                     <th>Bodeguero responsable</th>
@@ -176,11 +176,14 @@ function Pedidos() {
                     <th>ERP</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {pedidosFiltrados.map((pedido) => (
                     <tr key={pedido.id_pedido}>
-                      <td>#{pedido.id_pedido}</td>
+                      <td>
+                        <strong>
+                          {pedido.folio_pedido || "Folio pendiente"}
+                        </strong>
+                      </td>
 
                       <td>
                         {formatearFecha(pedido.fecha_pedido)}
@@ -188,8 +191,7 @@ function Pedidos() {
 
                       <td>
                         <strong>
-                          {pedido.cliente ||
-                            "Cliente no identificado"}
+                          {pedido.cliente || "Cliente no identificado"}
                         </strong>
 
                         <small>
@@ -197,8 +199,7 @@ function Pedidos() {
                         </small>
 
                         <small>
-                          {pedido.telefono_cliente ||
-                            "Sin teléfono"}
+                          {pedido.telefono_cliente || "Sin teléfono"}
                         </small>
                       </td>
 
@@ -226,13 +227,11 @@ function Pedidos() {
 
                       <td>
                         <strong>
-                          {pedido.transportista ||
-                            "Sin transportista"}
+                          {pedido.transportista || "Sin transportista"}
                         </strong>
 
                         <small>
-                          {pedido.num_seguimiento ||
-                            "Sin seguimiento"}
+                          {pedido.num_seguimiento || "Sin seguimiento"}
                         </small>
 
                         <small>
@@ -240,8 +239,7 @@ function Pedidos() {
                         </small>
 
                         <small>
-                          {pedido.direccion_despacho ||
-                            "Sin dirección"}
+                          {pedido.direccion_despacho || "Sin dirección"}
                         </small>
                       </td>
 
