@@ -66,6 +66,7 @@ function Pedidos() {
         .from("pedido")
         .select(`
           id_pedido,
+          folio_pedido,
           fecha_predido,
           total_pedido,
           id_estado,
@@ -111,6 +112,7 @@ function Pedidos() {
       if (errorPedidos) {
         throw errorPedidos;
       }
+      
       setPedidos(data || []);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
@@ -270,9 +272,12 @@ function Pedidos() {
     .filter((pedido) => {
       const texto = busqueda.trim().toLowerCase();
       const nombreCliente = pedido.usuario?.nom_user || "";
-      const idPedido = String(pedido.id_pedido);
+
+      const folioPedido = pedido.folio_pedido || "";
       const coincideBusqueda =
-        !texto || idPedido.includes(texto) || nombreCliente.toLowerCase().includes(texto);
+        !texto ||
+        folioPedido.toLowerCase().includes(texto) ||
+        nombreCliente.toLowerCase().includes(texto);
       const fechaPedido = pedido.fecha_predido
         ? new Date(pedido.fecha_predido).toISOString().slice(0, 10)
         : "";
@@ -615,7 +620,12 @@ function Pedidos() {
           <div className="pedidos-bodeguero__filtros-grid">
             <label className="pedidos-bodeguero__campo pedidos-bodeguero__campo--busqueda">
               <span>Buscar pedido o cliente</span>
-              <input type="search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="N.º de pedido o nombre del cliente" />
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(event) => setBusqueda(event.target.value)}
+                placeholder="Folio del pedido o nombre del cliente"
+              />
             </label>
             <label className="pedidos-bodeguero__campo"><span>Estado</span>
               <select value={filtroEstado} onChange={(event) => setFiltroEstado(event.target.value)}>
@@ -702,12 +712,12 @@ function Pedidos() {
                   {/* CABECERA */}
                   <div className="pedido-bodeguero-card__header">
                     <div>
-                      <span className="pedido-bodeguero-card__label">
-                        PEDIDO
-                      </span>
-                      <h2>
-                        #{pedido.id_pedido}
-                      </h2>
+                    <span className="pedido-bodeguero-card__label">
+                      FOLIO DEL PEDIDO
+                    </span>
+                    <h2>
+                      {pedido.folio_pedido || "Folio pendiente"}
+                    </h2>
                       <span className="pedido-bodeguero-card__fecha">
                         {formatearFechaHora(
                           pedido.fecha_predido
@@ -914,9 +924,9 @@ function Pedidos() {
             <div className="pedido-bodeguero-modal__contenido">
               <div className="pedido-bodeguero-modal__header">
                 <div>
-                  <span>PEDIDO</span>
+                  <span>FOLIO DEL PEDIDO</span>
                   <h2>
-                    #{pedidoSeleccionado.id_pedido}
+                    Pedido {pedidoSeleccionado.folio_pedido || "Folio pendiente"}
                   </h2>
                   <p>
                     {formatearFechaHora(
