@@ -1,1285 +1,1044 @@
 /* =========================================================
-   FERREPLAST
-   MISIÓN
+   FERREPLAST · MISIÓN
+   Azul + Rojo sobre blanco polar
    ========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap");
 
 .mision {
-  --azul: #102f49;
-  --azul-oscuro: #071f33;
-  --rojo: #e40019;
-  --gris: #607487;
-  --gris-claro: #f3f4f4;
-  --borde: rgba(16, 47, 73, 0.15);
+  --azul: #0b3a68;
+  --azul-profundo: #072847;
+  --azul-claro: #1c5ea3;
+  --rojo: #e4001b;
+  --rojo-oscuro: #b80015;
+  --polar: #f4f8fc;
+  --blanco: #ffffff;
+  --texto: #3d5873;
+  --borde: rgba(11, 58, 104, 0.14);
 
-  width: 100%;
-
-  background: #ffffff;
-
-  color: var(--azul);
-}
-
-
-/* =========================================================
-   SECCIÓN
-   ========================================================= */
-
-.mision__seccion {
-  width: min(1560px, 100%);
-
-  margin: 0 auto;
-
-  padding: 16px 40px 20px;
-}
-
-
-/* =========================================================
-   CONTENIDO PRINCIPAL
-   ========================================================= */
-
-.mision__principal {
-  display: grid;
-
-  grid-template-columns:
-    0.48fr
-    1.52fr;
-
-  gap: 16px;
-
-  padding: 16px 0;
-}
-
-
-/* =========================================================
-   INTRO / MISIÓN
-   ========================================================= */
-
-.mision__intro {
   position: relative;
+  width: 100%;
+  overflow-x: clip;
 
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content: space-between;
-
-  min-height: 510px;
-
-  overflow: hidden;
-
-  padding: 36px;
-
-  border: 1px solid var(--borde);
-
-  background: white;
+  background: var(--polar);
+  color: var(--azul);
+  font-family: "Archivo", "Segoe UI", system-ui, sans-serif;
 }
 
+.mision *,
+.mision *::before,
+.mision *::after {
+  box-sizing: border-box;
+}
+
+.mision__contenedor {
+  width: min(1360px, 100%);
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+}
 
 /* =========================================================
-   DECORACIÓN
+   HERO
    ========================================================= */
 
-.mision__numero {
-  position: absolute;
+.mision__hero {
+  position: relative;
+  padding: clamp(20px, 3.5vh, 40px) 0 clamp(36px, 6vh, 64px);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(228, 0, 27, 0.08), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(11, 58, 104, 0.1), transparent 45%),
+    var(--polar);
+}
 
+/* Bloque azul diagonal de fondo */
+.mision__hero::before {
+  content: "";
+  position: absolute;
   top: 0;
   right: 0;
-
-  width: 80px;
-  height: 80px;
-
-  border-left: 1px solid var(--borde);
-  border-bottom: 1px solid var(--borde);
+  width: 46%;
+  height: 100%;
+  background: var(--azul);
+  clip-path: polygon(24% 0, 100% 0, 100% 100%, 0 100%);
+  opacity: 0.96;
 }
 
-
-.mision__numero span {
-  position: absolute;
-
-  top: 12px;
-  right: 12px;
-
-  color: rgba(16, 47, 73, 0.4);
-
-  font-family: monospace;
-
-  font-size: 9px;
+.mision__hero-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(28px, 4vw, 64px);
 }
-
 
 /* =========================================================
-   TEXTO INTRO
+   TEXTO
    ========================================================= */
 
-.mision__eyebrow {
+.mision__ubicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
-
-  color: var(--rojo);
-
-  font-family: monospace;
-
-  font-size: 10px;
-
-  font-weight: 500;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.2em;
-}
-
-
-.mision__intro h1 {
-  max-width: 650px;
-
-  margin: 24px 0 0;
-
+  padding: 8px 16px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--blanco);
   color: var(--azul);
-
-  font-size: clamp(
-    2.8rem,
-    4.6vw,
-    4.8rem
-  );
-
-  font-weight: 600;
-
-  line-height: 0.9;
-
-  letter-spacing: -0.065em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
-
-.mision__intro h1 span {
-  color: var(--rojo);
+.mision__punto {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--rojo);
+  box-shadow: 0 0 0 0 rgba(228, 0, 27, 0.5);
+  animation: mision-pulso 2s infinite;
 }
 
+@keyframes mision-pulso {
+  0%   { box-shadow: 0 0 0 0 rgba(228, 0, 27, 0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(228, 0, 27, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(228, 0, 27, 0); }
+}
 
-/* =========================================================
-   DESCRIPCIÓN
-   ========================================================= */
+.mision__texto h1 {
+  margin: clamp(12px, 2vh, 20px) 0 0;
+  max-width: 15ch;
+  color: var(--azul);
+  font-size: clamp(2.4rem, min(4.6vw, 8.2vh), 4.6rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.mision__marca {
+  display: inline-block;
+  padding: 0 0.14em 0.04em;
+  margin: 0 -0.04em;
+  background: var(--rojo);
+  color: var(--blanco);
+  transform: rotate(-1.5deg);
+  box-shadow: 4px 4px 0 var(--azul);
+}
 
 .mision__descripcion {
-  max-width: 500px;
-
-  margin: 24px 0 0;
-
-  color: #566e81;
-
-  font-size: 16px;
-
-  line-height: 1.75;
+  max-width: 46ch;
+  margin: clamp(14px, 2.4vh, 24px) 0 0;
+  color: var(--texto);
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.65;
 }
-
 
 /* =========================================================
-   PARTE INFERIOR
+   BOTONES
    ========================================================= */
 
-.mision__parte-inferior {
-  margin-top: 36px;
+.mision__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(16px, 3vh, 28px);
 }
 
+.mision__accion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.mision__accion:focus-visible,
+.mision__controles button:focus-visible,
+.mision__punto-nav:focus-visible {
+  outline: 3px solid var(--azul-claro);
+  outline-offset: 3px;
+}
+
+.mision__accion--principal {
+  background: var(--rojo);
+  color: var(--blanco);
+  box-shadow: 0 12px 28px rgba(228, 0, 27, 0.32);
+}
+
+.mision__accion--principal span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--rojo);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.mision__accion--principal:hover {
+  transform: translateY(-2px);
+  background: var(--rojo-oscuro);
+}
+
+.mision__accion--principal:hover span {
+  transform: translateX(3px);
+}
+
+.mision__accion--secundaria {
+  border-color: var(--azul);
+  background: var(--blanco);
+  color: var(--azul);
+}
+
+.mision__accion--secundaria:hover {
+  background: var(--azul);
+  color: var(--blanco);
+  transform: translateY(-2px);
+}
 
 /* =========================================================
    ESTADÍSTICAS
    ========================================================= */
 
 .mision__estadisticas {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  border-top: 1px solid var(--borde);
-
-  border-bottom: 1px solid var(--borde);
-}
-
-
-.mision__estadisticas > div {
-  padding: 20px 16px;
-}
-
-
-.mision__estadisticas > div:first-child {
-  padding-left: 0;
-
-  border-right: 1px solid var(--borde);
-}
-
-
-.mision__estadisticas > div:last-child {
-  padding-left: 20px;
-}
-
-
-.mision__estadisticas strong {
-  display: block;
-
-  color: var(--azul);
-
-  font-size: 2.5rem;
-
-  font-weight: 600;
-
-  line-height: 1;
-
-  letter-spacing: -0.06em;
-}
-
-
-.mision__estadisticas span {
-  display: block;
-
-  margin-top: 7px;
-
-  color: #697d8d;
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.14em;
-}
-
-
-/* =========================================================
-   ACCIONES
-   ========================================================= */
-
-.mision__acciones {
   display: flex;
-
+  flex-wrap: wrap;
   gap: 12px;
-
-  margin-top: 24px;
+  margin-top: clamp(16px, 3vh, 28px);
 }
 
-
-.mision__accion {
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-height: 48px;
-
-  padding: 0 20px;
-
-  font-size: 14px;
-
-  font-weight: 700;
-
-  text-decoration: none;
-
-  transition:
-    background 0.25s ease,
-    color 0.25s ease,
-    border 0.25s ease;
+.mision__estadistica {
+  min-width: 150px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  color: var(--blanco);
 }
 
-
-.mision__accion--principal {
-  flex: 1;
-
-  background: var(--azul);
-
-  color: white;
-}
-
-
-.mision__accion--principal span {
-  margin-left: 12px;
-}
-
-
-.mision__accion--principal:hover {
+.mision__estadistica--roja {
   background: var(--rojo);
 }
 
-
-.mision__accion--secundaria {
-  border: 1px solid rgba(16, 47, 73, 0.3);
-
-  color: var(--azul);
+.mision__estadistica--azul {
+  background: var(--azul);
 }
 
-
-.mision__accion--secundaria:hover {
-  border-color: var(--azul);
-
-  background: var(--gris-claro);
+.mision__estadistica strong {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
 
+.mision__estadistica span {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+}
 
 /* =========================================================
-   GALERÍA
+   VISUAL
    ========================================================= */
 
-.mision__galeria {
-  display: grid;
-
-  grid-template-columns:
-    repeat(12, 1fr);
-
-  grid-template-rows:
-    repeat(12, minmax(35px, 1fr));
-
-  min-height: 510px;
-
-  gap: 8px;
+.mision__visual {
+  position: relative;
+  padding-bottom: 44px;
 }
 
-
-/* =========================================================
-   CARRUSEL
-   ========================================================= */
+/* Marco rojo desplazado detrás del carrusel */
+.mision__visual::before {
+  content: "";
+  position: absolute;
+  top: -18px;
+  left: -18px;
+  width: 62%;
+  height: 62%;
+  background: var(--rojo);
+  border-radius: 28px;
+}
 
 .mision__carrusel {
   position: relative;
-
-  grid-column: span 9;
-
-  grid-row: span 12;
-
+  height: clamp(320px, 62vh, 540px);
   overflow: hidden;
-
-  background: #d3d9dd;
+  border-radius: 28px;
+  background: var(--azul-profundo);
+  box-shadow: 0 30px 60px rgba(7, 40, 71, 0.35);
 }
-
 
 .mision__slide {
   position: absolute;
-
   inset: 0;
-
   margin: 0;
-
   opacity: 0;
-
-  transform: scale(1.03);
-
+  transform: scale(1.05);
   pointer-events: none;
-
   transition:
-    opacity 0.7s ease,
-    transform 0.7s ease;
+    opacity 0.8s ease,
+    transform 1.2s ease;
 }
-
 
 .mision__slide--activo {
   z-index: 2;
-
   opacity: 1;
-
   transform: scale(1);
-
   pointer-events: auto;
 }
 
-
 .mision__slide > img {
   display: block;
-
   width: 100%;
   height: 100%;
-
   object-fit: cover;
 }
-
-
-/* =========================================================
-   OVERLAY
-   ========================================================= */
 
 .mision__slide-overlay {
   position: absolute;
-
   inset: 0;
-
-  background:
-    linear-gradient(
-      to top,
-      rgba(7, 31, 51, 0.9),
-      transparent 60%
-    );
+  background: linear-gradient(
+    to top,
+    rgba(7, 40, 71, 0.92) 0%,
+    rgba(7, 40, 71, 0.35) 40%,
+    transparent 70%
+  );
 }
-
-
-/* =========================================================
-   CAPTION
-   ========================================================= */
 
 .mision__slide figcaption {
   position: absolute;
-
   left: 0;
-  right: 0;
   bottom: 0;
-
-  padding: 32px;
-
-  color: white;
+  max-width: 50%;
+  padding: clamp(16px, 2.2vw, 28px);
+  color: var(--blanco);
 }
-
 
 .mision__slide figcaption p {
+  display: inline-block;
   margin: 0;
-
-  color: rgba(255, 255, 255, 0.65);
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.19em;
-}
-
-
-.mision__slide figcaption h2 {
-  max-width: 550px;
-
-  margin: 8px 0 0;
-
-  font-size: 30px;
-
-  font-weight: 600;
-
-  line-height: 1.1;
-
-  letter-spacing: -0.035em;
-}
-
-
-/* =========================================================
-   CONTROLES CARRUSEL
-   ========================================================= */
-
-.mision__controles {
-  position: absolute;
-
-  top: 20px;
-  right: 20px;
-
-  z-index: 20;
-
-  display: flex;
-}
-
-
-.mision__controles button {
-  display: grid;
-
-  width: 40px;
-  height: 40px;
-
-  place-items: center;
-
-  padding: 0;
-
-  border: none;
-
-  background: white;
-
-  color: var(--azul);
-
-  font-size: 18px;
-
-  cursor: pointer;
-
-  transition:
-    background 0.25s ease,
-    color 0.25s ease;
-}
-
-
-.mision__controles button:first-child {
-  border-right: 1px solid var(--borde);
-}
-
-
-.mision__controles button:hover {
+  padding: 5px 10px;
+  border-radius: 6px;
   background: var(--rojo);
-
-  color: white;
-}
-
-
-/* =========================================================
-   ETIQUETA
-   ========================================================= */
-
-.mision__etiqueta {
-  position: absolute;
-
-  top: 20px;
-  left: 20px;
-
-  z-index: 20;
-
-  padding: 9px 12px;
-
-  background: var(--rojo);
-
-  color: white;
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.16em;
-}
-
-
-/* =========================================================
-   CARDS
-   ========================================================= */
-
-.mision__card {
-  position: relative;
-
-  overflow: hidden;
-
-  margin: 0;
-
-  background: #d3d9dd;
-}
-
-
-.mision__card--puerto {
-  grid-column: span 3;
-
-  grid-row: span 6;
-}
-
-
-.mision__card--local {
-  grid-column: span 3;
-
-  grid-row: span 6;
-}
-
-
-/* =========================================================
-   IMÁGENES CARDS
-   ========================================================= */
-
-.mision__card > img {
-  position: absolute;
-
-  inset: 0;
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  transition:
-    transform 0.7s ease;
-}
-
-
-.mision__card:hover > img {
-  transform: scale(1.05);
-}
-
-
-/* =========================================================
-   OVERLAY CARDS
-   ========================================================= */
-
-.mision__card-overlay {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 1;
-
-  background:
-    linear-gradient(
-      to top,
-      rgba(7, 31, 51, 0.85),
-      transparent 65%
-    );
-}
-
-
-/* =========================================================
-   CAPTION CARDS
-   ========================================================= */
-
-.mision__card figcaption {
-  position: absolute;
-
-  left: 0;
-  bottom: 0;
-
-  z-index: 2;
-
-  padding: 16px;
-
-  color: white;
-}
-
-
-.mision__card figcaption p {
-  margin: 0;
-
-  color: rgba(255, 255, 255, 0.65);
-
-  font-family: monospace;
-
-  font-size: 8px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.15em;
-}
-
-
-.mision__card figcaption h3 {
-  margin: 5px 0 0;
-
-  font-size: 14px;
-
+  font-size: 12px;
   font-weight: 700;
 }
 
-
-/* =========================================================
-   CLIENTES
-   ========================================================= */
-
-.mision__clientes {
-  display: grid;
-
-  grid-template-columns:
-    1fr
-    1fr
-    1.25fr;
-
-  border: 1px solid var(--borde);
+.mision__slide figcaption h2 {
+  margin: 12px 0 0;
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-
-/* =========================================================
-   CLIENTE
-   ========================================================= */
-
-.mision__cliente {
-  display: flex;
-
-  align-items: center;
-
-  gap: 20px;
-
-  padding: 20px;
-
-  border-right: 1px solid var(--borde);
-}
-
-
-.mision__cliente-numero {
-  color: var(--rojo);
-
-  font-family: monospace;
-
-  font-size: 12px;
-
-  font-weight: 500;
-}
-
-
-.mision__cliente-info {
-  flex: 1;
-}
-
-
-.mision__cliente-info p {
-  margin: 0;
-
-  color: #687c8c;
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.16em;
-}
-
-
-.mision__cliente-info h3 {
-  margin: 4px 0 0;
-
+/* Etiqueta superior */
+.mision__etiqueta {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 20;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--blanco);
   color: var(--azul);
-
-  font-size: 16px;
-
-  font-weight: 600;
-}
-
-
-/* =========================================================
-   BOTÓN CLIENTE
-   ========================================================= */
-
-.mision__cliente-boton {
-  display: grid;
-
-  width: 40px;
-  height: 40px;
-
-  flex-shrink: 0;
-
-  place-items: center;
-
-  background: var(--rojo);
-
-  color: white;
-
-  font-size: 18px;
-
-  text-decoration: none;
-
-  transition:
-    transform 0.25s ease;
-}
-
-
-.mision__cliente-boton:hover {
-  transform: translateX(4px);
-}
-
-
-.mision__cliente-boton--azul {
-  background: var(--azul);
-}
-
-
-/* =========================================================
-   PRODUCTOS
-   ========================================================= */
-
-.mision__productos {
-  padding: 20px;
-
-  background: var(--gris-claro);
-}
-
-
-.mision__productos > p {
-  width: 100%;
-
-  margin: 0 0 10px;
-
-  color: var(--rojo);
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  font-weight: 500;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.16em;
-}
-
-
-.mision__productos > div {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 8px 20px;
-}
-
-
-.mision__productos span {
-  color: #526a7d;
-
   font-size: 12px;
-
-  font-weight: 600;
+  font-weight: 800;
 }
 
-
-/* =========================================================
-   PILARES
-   ========================================================= */
-
-.mision__pilares-seccion {
-  padding: 75px 0 35px;
-}
-
-
-.mision__pilares-titulo > p {
-  margin: 0;
-
-  color: var(--rojo);
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  font-weight: 600;
-
-  letter-spacing: 0.17em;
-}
-
-
-.mision__pilares-titulo h2 {
-  margin: 15px 0 0;
-
-  color: var(--azul);
-
-  font-size: clamp(
-    2.5rem,
-    4.5vw,
-    4.8rem
-  );
-
-  font-weight: 600;
-
-  line-height: 0.92;
-
-  letter-spacing: -0.06em;
-}
-
-
-.mision__pilares-titulo h2 span {
-  color: var(--rojo);
-}
-
-
-.mision__pilares {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
+/* Controles */
+.mision__controles {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 20;
+  display: flex;
   gap: 8px;
-
-  margin-top: 45px;
 }
 
+.mision__controles button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--azul);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
 
-.mision__pilar {
-  min-height: 260px;
+.mision__controles button:hover {
+  background: var(--rojo);
+  color: var(--blanco);
+  transform: scale(1.08);
+}
 
-  padding: 28px;
+/* Puntos de navegación */
+.mision__puntos {
+  position: absolute;
+  right: 20px;
+  bottom: 22px;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+}
 
-  border: 1px solid var(--borde);
+.mision__punto-nav {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
 
-  background: white;
+.mision__punto-nav--activo {
+  width: 30px;
+  background: var(--rojo);
+}
 
+/* =========================================================
+   MINI CARDS (flotan sobre el carrusel)
+   ========================================================= */
+
+.mision__mini {
+  position: absolute;
+  right: -14px;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  gap: 12px;
+}
+
+.mision__card {
+  position: relative;
+  width: clamp(110px, 11vw, 160px);
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  overflow: hidden;
+  border: 5px solid var(--polar);
+  border-radius: 20px;
+  background: var(--azul);
+  box-shadow: 0 18px 36px rgba(7, 40, 71, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.mision__card:hover {
+  transform: translateY(-6px) rotate(-1deg);
+}
+
+.mision__card > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mision__card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(7, 40, 71, 0.9), transparent 65%);
+}
+
+.mision__card figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 10px 12px;
+  color: var(--blanco);
+}
+
+.mision__card figcaption p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.mision__card figcaption h3 {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* =========================================================
+   CINTA DE PRODUCTOS (único movimiento continuo)
+   ========================================================= */
+
+.mision__cinta {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  background: var(--rojo);
+  color: var(--blanco);
+  transform: rotate(-1deg) scale(1.02);
+  box-shadow: 0 10px 30px rgba(228, 0, 27, 0.25);
+}
+
+.mision__cinta-pista {
+  display: flex;
+  width: max-content;
+  animation: mision-cinta 40s linear infinite;
+}
+
+.mision__cinta:hover .mision__cinta-pista {
+  animation-play-state: paused;
+}
+
+.mision__cinta ul {
+  display: flex;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mision__cinta li {
+  display: flex;
+  align-items: center;
+  padding: 18px 0;
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.mision__cinta li::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin: 0 28px;
+  background: var(--blanco);
+  transform: rotate(45deg);
+}
+
+@keyframes mision-cinta {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* =========================================================
+   CARTA DE PRESENTACIÓN
+   ========================================================= */
+
+.mision__carta {
+  position: relative;
+  margin-top: clamp(48px, 6vw, 80px);
+  padding: clamp(56px, 7vw, 96px) 0;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(228, 0, 27, 0.28), transparent 40%),
+    linear-gradient(160deg, var(--azul) 0%, var(--azul-profundo) 100%);
+  color: var(--blanco);
+}
+
+.mision__carta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg, var(--rojo) 0 34%, var(--blanco) 34% 36%, var(--azul-claro) 36% 100%);
+}
+
+.mision__carta-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
+}
+
+.mision__carta-etiqueta {
+  display: inline-block;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--rojo);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mision__carta-texto h2 {
+  max-width: 13ch;
+  margin: 18px 0 0;
+  font-size: clamp(2.4rem, 4.6vw, 4.4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.mision__carta-texto h2 span {
+  color: #ff5a6c;
+}
+
+.mision__carta-texto > p:not(.mision__carta-etiqueta) {
+  max-width: 52ch;
+  margin: 20px 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(15px, 1.3vw, 17px);
+  line-height: 1.7;
+}
+
+.mision__carta-cierre {
+  margin: 28px 0 0;
+  padding: 4px 0 4px 20px;
+  border-left: 4px solid var(--rojo);
+}
+
+.mision__carta-cierre p {
+  max-width: 52ch;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.mision__carta-cierre footer {
+  margin-top: 16px;
+}
+
+.mision__carta-cierre strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.mision__carta-cierre footer span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+/* ---------- Etapas ---------- */
+
+.mision__etapas {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Línea que une las etapas */
+.mision__etapas::before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  bottom: 40px;
+  left: 52px;
+  width: 3px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--rojo) 0 8px,
+    transparent 8px 14px
+  );
+}
+
+.mision__etapa {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  border-radius: 24px;
+  background: var(--blanco);
+  color: var(--azul);
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
 }
 
-
-.mision__pilar:hover {
-  transform: translateY(-5px);
-
-  box-shadow:
-    0 20px 40px rgba(16, 47, 73, 0.08);
+.mision__etapa:hover {
+  transform: translateX(8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-
-.mision__pilar-top {
-  display: flex;
-
-  align-items: flex-start;
-
-  justify-content: space-between;
+.mision__etapa-icono {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 3px solid var(--rojo);
+  border-radius: 50%;
+  background: var(--polar);
 }
 
-
-.mision__pilar-top > span {
-  color: var(--rojo);
-
-  font-family: monospace;
-
-  font-size: 10px;
-}
-
-
-.mision__pilar-top img {
-  width: 50px;
-  height: 50px;
-
+.mision__etapa-icono img {
+  width: 34px;
+  height: 34px;
   object-fit: contain;
 }
 
+.mision__etapa-info p {
+  margin: 0;
+  color: var(--rojo);
+  font-size: 12px;
+  font-weight: 800;
+}
 
-.mision__pilar h3 {
-  margin: 45px 0 0;
+.mision__etapa-info h3 {
+  margin: 3px 0 0;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
 
+.mision__etapa-info span {
+  display: block;
+  margin-top: 6px;
+  color: var(--texto);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   LO QUE OFRECEMOS
+   ========================================================= */
+
+.mision__ofrece {
+  padding: clamp(56px, 7vw, 96px) 0 clamp(48px, 6vw, 80px);
+}
+
+.mision__ofrece-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 32px;
+  margin-bottom: 28px;
+}
+
+.mision__ofrece-cabecera h2 {
+  margin: 0;
   color: var(--azul);
+  font-size: clamp(2.2rem, 4.4vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
 
-  font-size: 22px;
+.mision__ofrece-cabecera p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--texto);
+  font-size: 15px;
+}
 
-  font-weight: 600;
+.mision__ofrece-cabecera b {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--azul);
+  color: var(--blanco);
+  font-size: 13px;
+  font-weight: 800;
+}
 
+.mision__ofrece-cabecera b:last-child {
+  background: var(--rojo);
+}
+
+.mision__grupos {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mision__grupo {
+  position: relative;
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 200px;
+  padding: 28px;
+  overflow: hidden;
+  border-radius: 26px;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.mision__grupo:nth-child(n + 4) {
+  grid-column: span 3;
+}
+
+.mision__grupo:hover {
+  transform: translateY(-6px);
+}
+
+/* Rombo del mismo estilo que la cinta */
+.mision__grupo::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  left: 28px;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.mision__grupo::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: transform 0.4s ease;
+}
+
+.mision__grupo:hover::after {
+  transform: scale(1.3);
+}
+
+.mision__grupo h3 {
+  position: relative;
+  z-index: 1;
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 900;
+  line-height: 1.1;
   letter-spacing: -0.03em;
 }
 
-
-.mision__pilar p {
-  max-width: 360px;
-
-  margin: 12px 0 0;
-
-  color: var(--gris);
-
-  font-size: 13px;
-
-  line-height: 1.7;
+.mision__grupo p {
+  position: relative;
+  z-index: 1;
+  max-width: 38ch;
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
-
-/* =========================================================
-   FOOTER
-   ========================================================= */
-
-.mision__footer {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 20px;
-
-  padding: 16px 0;
-
-  color: #687b8b;
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.14em;
+.mision__grupo--azul {
+  background: var(--azul);
+  box-shadow: 0 18px 40px rgba(11, 58, 104, 0.25);
+  color: var(--blanco);
 }
 
-
-.mision__footer p {
-  margin: 0;
+.mision__grupo--rojo {
+  background: var(--rojo);
+  box-shadow: 0 18px 40px rgba(228, 0, 27, 0.25);
+  color: var(--blanco);
 }
 
-
-.mision__footer-destacado {
+.mision__grupo--blanco {
+  border: 1px solid var(--borde);
+  background: var(--blanco);
   color: var(--rojo);
 }
 
+.mision__grupo--blanco::after {
+  background: rgba(11, 58, 104, 0.05);
+}
+
+.mision__grupo--blanco h3 {
+  color: var(--azul);
+}
+
+.mision__grupo--blanco p {
+  color: var(--texto);
+}
 
 /* =========================================================
    TABLET
    ========================================================= */
 
 @media (max-width: 1100px) {
-
-  .mision__seccion {
-    padding-right: 28px;
-    padding-left: 28px;
+  .mision__hero::before {
+    width: 100%;
+    height: 42%;
+    top: auto;
+    bottom: 0;
+    clip-path: polygon(0 28%, 100% 0, 100% 100%, 0 100%);
   }
 
-
-  .mision__principal {
-    grid-template-columns:
-      1fr;
+  .mision__hero-grid {
+    grid-template-columns: 1fr;
   }
 
-
-  .mision__intro {
-    min-height: 430px;
+  .mision__texto h1 {
+    max-width: 14ch;
   }
 
-
-  .mision__galeria {
-    min-height: 600px;
+  .mision__visual {
+    max-width: 760px;
   }
-
-}
-
-
-/* =========================================================
-   TABLET PEQUEÑA
-   ========================================================= */
-
-@media (max-width: 850px) {
-
-  .mision__galeria {
-    grid-template-rows:
-      repeat(12, minmax(35px, 1fr));
-  }
-
 
   .mision__carrusel {
-    grid-column: span 8;
+    height: auto;
+    aspect-ratio: 16 / 11;
   }
 
-
-  .mision__card--puerto,
-  .mision__card--local {
-    grid-column: span 4;
+  .mision__carta-grid {
+    grid-template-columns: 1fr;
   }
 
-
-  .mision__clientes {
-    grid-template-columns:
-      1fr;
+  .mision__grupos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-
-  .mision__cliente {
-    border-right: none;
-
-    border-bottom: 1px solid var(--borde);
+  .mision__grupo,
+  .mision__grupo:nth-child(n + 4) {
+    grid-column: span 1;
   }
 
-
-  .mision__productos {
-    min-height: 100px;
+  .mision__grupo:last-child {
+    grid-column: span 2;
   }
-
-
-  .mision__pilares {
-    grid-template-columns:
-      1fr;
-  }
-
 }
-
 
 /* =========================================================
    MÓVIL
    ========================================================= */
 
 @media (max-width: 600px) {
-
-  .mision__seccion {
-    padding: 10px 16px 20px;
+  .mision__hero {
+    padding-bottom: 48px;
   }
-
-
-  .mision__intro {
-    min-height: auto;
-
-    padding: 25px;
-  }
-
-
-  .mision__intro h1 {
-    font-size:
-      clamp(
-        2.7rem,
-        13vw,
-        4rem
-      );
-  }
-
-
-  .mision__descripcion {
-    font-size: 15px;
-
-    line-height: 1.65;
-  }
-
-
-  .mision__estadisticas strong {
-    font-size: 2rem;
-  }
-
 
   .mision__acciones {
     flex-direction: column;
   }
 
-
   .mision__accion {
     width: 100%;
   }
 
-
-  /* =====================================================
-     GALERÍA MÓVIL
-     ====================================================== */
-
-  .mision__galeria {
-    display: grid;
-
-    grid-template-columns:
-      repeat(2, 1fr);
-
-    grid-template-rows:
-      300px
-      180px;
-
-    min-height: 0;
-
-    gap: 8px;
+  .mision__estadistica {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px;
   }
 
+  .mision__estadistica strong {
+    font-size: 2rem;
+  }
+
+  .mision__visual {
+    padding-bottom: 0;
+  }
+
+  .mision__visual::before {
+    top: -10px;
+    left: -10px;
+  }
 
   .mision__carrusel {
-    grid-column: 1 / -1;
-
-    grid-row: 1;
-
-    min-height: 300px;
+    height: auto;
+    aspect-ratio: 4 / 4.2;
+    border-radius: 22px;
   }
-
-
-  .mision__card--puerto {
-    grid-column: 1;
-
-    grid-row: 2;
-  }
-
-
-  .mision__card--local {
-    grid-column: 2;
-
-    grid-row: 2;
-  }
-
 
   .mision__slide figcaption {
-    padding: 20px;
+    max-width: 100%;
+    padding-bottom: 44px;
   }
 
-
-  .mision__slide figcaption h2 {
-    font-size: 22px;
+  .mision__puntos {
+    left: 20px;
+    right: auto;
+    bottom: 18px;
   }
 
-
-  .mision__etiqueta {
-    top: 14px;
-
-    left: 14px;
-
-    font-size: 8px;
+  .mision__mini {
+    position: static;
+    margin-top: 12px;
   }
 
-
-  .mision__controles {
-    top: 14px;
-
-    right: 14px;
+  .mision__card {
+    flex: 1;
+    width: auto;
+    border-width: 0;
+    border-radius: 18px;
   }
 
-
-  .mision__controles button {
-    width: 36px;
-
-    height: 36px;
+  .mision__etapas::before {
+    display: none;
   }
 
-
-  /* =====================================================
-     CLIENTES
-     ====================================================== */
-
-  .mision__cliente {
-    padding: 18px;
+  .mision__etapa {
+    padding: 16px;
   }
 
-
-  .mision__cliente-info h3 {
-    font-size: 14px;
+  .mision__etapa-icono {
+    width: 54px;
+    height: 54px;
   }
 
-
-  .mision__productos {
-    padding: 18px;
+  .mision__grupos {
+    grid-template-columns: 1fr;
   }
 
-
-  /* =====================================================
-     PILARES
-     ====================================================== */
-
-  .mision__pilares-seccion {
-    padding-top: 55px;
+  .mision__grupo:last-child {
+    grid-column: span 1;
   }
 
-
-  .mision__pilares-titulo h2 {
-    font-size: 2.8rem;
-  }
-
-
-  .mision__pilar {
-    min-height: 220px;
-  }
-
-
-  /* =====================================================
-     FOOTER
-     ====================================================== */
-
-  .mision__footer {
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    padding-top: 18px;
+  .mision__grupo {
+    min-height: 170px;
   }
 
 }
 
-
 /* =========================================================
-   MÓVIL PEQUEÑO
+   MOVIMIENTO REDUCIDO
    ========================================================= */
 
-@media (max-width: 400px) {
-
-  .mision__intro {
-    padding: 20px;
+@media (prefers-reduced-motion: reduce) {
+  .mision__cinta-pista,
+  .mision__punto {
+    animation: none;
   }
 
-
-  .mision__estadisticas {
-    grid-template-columns:
-      1fr;
+  .mision__slide,
+  .mision__card,
+  .mision__etapa,
+  .mision__grupo,
+  .mision__accion {
+    transition: none;
   }
-
-
-  .mision__estadisticas > div:first-child {
-    border-right: none;
-
-    border-bottom: 1px solid var(--borde);
-  }
-
-
-  .mision__estadisticas > div:last-child {
-    padding-left: 0;
-  }
-
-
-  .mision__galeria {
-    grid-template-rows:
-      270px
-      160px;
-  }
-
-
-  .mision__carrusel {
-    min-height: 270px;
-  }
-
 }
