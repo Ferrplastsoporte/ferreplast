@@ -1,137 +1,196 @@
+/* ==================================================
+   PÁGINA
+================================================== */
 
 .pago-resultado {
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 220px);
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 40px 20px;
-  background: #f5f7fa;
+  justify-content: center;
+  padding: 48px 16px;
+  background: #f5f7fb;
 }
+
+/* ==================================================
+   TARJETA
+================================================== */
 
 .pago-card {
   width: 100%;
   max-width: 520px;
   background: #ffffff;
-  padding: 50px 40px;
   border-radius: 20px;
-  text-align: center;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
-}
-
-.pago-icono {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 25px;
-
+  padding: 48px 40px 40px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-
-  border-radius: 50%;
-
-  font-size: 42px;
-  font-weight: 700;
+  text-align: center;
 }
 
 .pago-card h1 {
-  margin: 0 0 15px;
-  color: #172033;
-  font-size: 30px;
+  margin: 0 0 10px;
+  font-size: 1.9rem;
   font-weight: 700;
+  color: #0f172a;
 }
 
-.pago-card p {
-  margin: 0 auto 30px;
-  color: #5f6b7a;
-  font-size: 17px;
-  line-height: 1.6;
+.pago-card > p {
+  margin: 0;
+  font-size: 1rem;
+  color: #475569;
 }
 
-/* APROBADO */
+/* ==================================================
+   ÍCONO
+================================================== */
+
+.pago-icono {
+  width: 96px;
+  height: 96px;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8rem;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* Colores según el estado */
 
 .pago-resultado.aprobado .pago-icono {
-  background: #e8f7ee;
-  color: #16834b;
+  background: #e7f6ee;
+  color: #15803d;
 }
-
-/* RECHAZADO */
 
 .pago-resultado.rechazado .pago-icono {
-  background: #fdeaea;
-  color: #d62828;
+  background: #fdecec;
+  color: #dc2626;
 }
 
-/* CANCELADO */
-
-.pago-resultado.cancelado .pago-icono {
-  background: #fff4df;
-  color: #d88900;
-}
-
-/* ERROR */
-
+.pago-resultado.cancelado .pago-icono,
 .pago-resultado.error .pago-icono {
-  background: #fdeaea;
-  color: #d62828;
+  background: #fff4e0;
+  color: #d97706;
 }
 
-/* ESTADO DESCONOCIDO */
+/* ==================================================
+   DETALLE DE LA COMPRA
+================================================== */
 
-.pago-resultado.desconocido .pago-icono {
-  background: #eef1f5;
-  color: #667085;
+.pago-detalle {
+  margin-top: 12px !important;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #334155 !important;
+  font-size: 0.95rem !important;
 }
 
-/* BOTÓN */
+.pago-detalle strong {
+  color: #0f172a;
+}
+
+/* ==================================================
+   ACCIONES
+================================================== */
+
+.pago-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 28px;
+}
 
 .pago-boton {
-  display: inline-block;
-  padding: 13px 28px;
-
-  background: #0057b8;
-  color: #ffffff;
-
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 300px;
+  padding: 13px 22px;
+  border: none;
   border-radius: 10px;
-
-  text-decoration: none;
-  font-size: 16px;
+  background: #0b5cad;
+  color: #ffffff;
+  font: inherit;
+  font-size: 1rem;
   font-weight: 600;
-
-  transition: all 0.2s ease;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .pago-boton:hover {
-  background: #003f87;
-  transform: translateY(-2px);
+  background: #094a8c;
 }
 
-/* RESPONSIVE */
+.pago-boton:active {
+  transform: scale(0.98);
+}
 
-@media (max-width: 600px) {
-  .pago-resultado {
-    padding: 25px 15px;
-  }
+.pago-boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
 
+/* Botón secundario (Volver al inicio) */
+
+.pago-boton--secundario {
+  background: transparent;
+  color: #0b5cad;
+  border: 1px solid #cbd5e1;
+}
+
+.pago-boton--secundario:hover {
+  background: #f1f5f9;
+}
+
+/* Enlace (Ver detalle del pedido) */
+
+.pago-enlace {
+  margin-top: 2px;
+  font-size: 0.9rem;
+  color: #475569;
+  text-decoration: underline;
+}
+
+.pago-enlace:hover {
+  color: #0b5cad;
+}
+
+/* Aviso cuando el comprobante aún no está listo */
+
+.pago-aviso {
+  margin: 0;
+  max-width: 320px;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* ==================================================
+   CELULAR
+================================================== */
+
+@media (max-width: 480px) {
   .pago-card {
-    padding: 40px 25px;
+    padding: 36px 22px 28px;
+    border-radius: 16px;
   }
 
   .pago-card h1 {
-    font-size: 25px;
-  }
-
-  .pago-card p {
-    font-size: 16px;
+    font-size: 1.5rem;
   }
 
   .pago-icono {
-    width: 70px;
-    height: 70px;
-    font-size: 35px;
-  }
-
-  .pago-boton {
-    width: 100%;
-    box-sizing: border-box;
+    width: 80px;
+    height: 80px;
+    font-size: 2.3rem;
   }
 }

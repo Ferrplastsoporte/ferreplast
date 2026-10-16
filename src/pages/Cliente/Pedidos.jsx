@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import TarjetaPedido from "../../components/pedidos/TarjetaPedido";
-import "./css/pedido.css";
+import "./css/Pedido.css";
 
 function Pedidos() {
   const navigate = useNavigate();

@@ -27,7 +27,7 @@ function TarjetaPedido({
           </span>
 
           <h2>
-            #{pedido.id_pedido}
+            N° {pedido.folio_pedido || "Sin folio"}
           </h2>
         </div>
 

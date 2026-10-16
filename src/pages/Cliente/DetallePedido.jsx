@@ -10,6 +10,7 @@ function DetallePedido() {
   const [pedido, setPedido] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [descargando, setDescargando] = useState(false);
 
   useEffect(() => {
     cargarPedido();
@@ -34,23 +35,13 @@ function DetallePedido() {
       } = await supabase.auth.getUser();
 
       if (errorUsuario) {
-        console.error(
-          "Error obteniendo usuario:",
-          errorUsuario
-        );
-
-        setError(
-          "No fue posible obtener tu sesión."
-        );
-
+        console.error("Error obteniendo usuario:", errorUsuario);
+        setError("No fue posible obtener tu sesión.");
         return;
       }
 
       if (!user) {
-        setError(
-          "Debes iniciar sesión para ver este pedido."
-        );
-
+        setError("Debes iniciar sesión para ver este pedido.");
         return;
       }
 
@@ -58,10 +49,7 @@ function DetallePedido() {
       // OBTENER DETALLE DEL PEDIDO
       // ==================================================
 
-      const {
-        data,
-        error: errorPedido,
-      } = await supabase.rpc(
+      const { data, error: errorPedido } = await supabase.rpc(
         "obtener_detalle_pedido",
         {
           p_id_pedido: Number(id),
@@ -69,51 +57,37 @@ function DetallePedido() {
       );
 
       if (errorPedido) {
-        console.error(
-          "ERROR OBTENIENDO DETALLE DEL PEDIDO:",
-          errorPedido
-        );
-
-        setError(
-          `No fue posible cargar el pedido: ${errorPedido.message}`
-        );
-
+        console.error("ERROR OBTENIENDO DETALLE DEL PEDIDO:", errorPedido);
+        setError(`No fue posible cargar el pedido: ${errorPedido.message}`);
         return;
       }
 
-      // ==================================================
-      // LA FUNCIÓN RETORNA TABLE,
-      // POR LO QUE SUPABASE PUEDE DEVOLVER UN ARRAY
-      // ==================================================
-
-      const pedidoData = Array.isArray(data)
-        ? data[0]
-        : data;
+      // La función retorna TABLE, por lo que puede venir como array
+      const pedidoData = Array.isArray(data) ? data[0] : data;
 
       if (!pedidoData) {
-        setError(
-          "No se encontró el pedido."
-        );
-
+        setError("No se encontró el pedido.");
         return;
       }
 
-      console.log(
-        "DETALLE DEL PEDIDO:",
-        pedidoData
-      );
+      // ==================================================
+      // OBTENER FOLIO Y COMPROBANTE
+      // ==================================================
+
+      const { data: datosExtra } = await supabase
+        .from("pedido")
+        .select("folio_pedido, comprobante_path")
+        .eq("id_pedido", Number(id))
+        .single();
+
+      pedidoData.folio_pedido = datosExtra?.folio_pedido || null;
+      pedidoData.comprobante_path = datosExtra?.comprobante_path || null;
 
       setPedido(pedidoData);
 
     } catch (errorCarga) {
-      console.error(
-        "Error inesperado:",
-        errorCarga
-      );
-
-      setError(
-        "Ocurrió un error al cargar el pedido."
-      );
+      console.error("Error inesperado:", errorCarga);
+      setError("Ocurrió un error al cargar el pedido.");
 
     } finally {
       setCargando(false);
@@ -125,14 +99,11 @@ function DetallePedido() {
   // ==================================================
 
   function formatearPrecio(precio) {
-    return new Intl.NumberFormat(
-      "es-CL",
-      {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-      }
-    ).format(Number(precio || 0));
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      maximumFractionDigits: 0,
+    }).format(Number(precio || 0));
   }
 
   // ==================================================
@@ -144,9 +115,7 @@ function DetallePedido() {
       return null;
     }
 
-    // Si ya es una URL completa,
-    // la utilizamos directamente.
-
+    // Si ya es una URL completa, se usa directamente
     if (
       imagenUrl.startsWith("http://") ||
       imagenUrl.startsWith("https://")
@@ -154,12 +123,7 @@ function DetallePedido() {
       return imagenUrl;
     }
 
-    // La BD guarda solamente la ruta:
-    // producto/93/imagen.jpg
-    //
-    // El bucket es:
-    // imagenes_productos
-
+    // La BD guarda solo la ruta (bucket imagenes_productos)
     const { data } = supabase.storage
       .from("imagenes_productos")
       .getPublicUrl(imagenUrl);
@@ -176,13 +140,38 @@ function DetallePedido() {
       return "Sin fecha";
     }
 
-    return new Intl.DateTimeFormat(
-      "es-CL",
-      {
-        dateStyle: "medium",
-        timeStyle: "short",
+    return new Intl.DateTimeFormat("es-CL", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(fecha));
+  }
+
+  // ==================================================
+  // DESCARGAR COMPROBANTE
+  // ==================================================
+
+  async function descargarComprobante() {
+    if (!pedido?.comprobante_path) return;
+
+    setDescargando(true);
+
+    try {
+      const { data, error: errorDescarga } = await supabase.storage
+        .from("comprobantes")
+        .createSignedUrl(pedido.comprobante_path, 60, {
+          download: `comprobante-${pedido.folio_pedido || pedido.id_pedido}.pdf`,
+        });
+
+      if (errorDescarga) {
+        console.error("Error descargando comprobante:", errorDescarga);
+        alert("No fue posible descargar el comprobante.");
+        return;
       }
-    ).format(new Date(fecha));
+
+      window.location.href = data.signedUrl;
+    } finally {
+      setDescargando(false);
+    }
   }
 
   // ==================================================
@@ -190,10 +179,7 @@ function DetallePedido() {
   // ==================================================
 
   function obtenerEstadoPedido() {
-    return (
-      pedido?.estado_pedido?.nom_estado ||
-      "Pendiente"
-    );
+    return pedido?.estado_pedido?.nom_estado || "Pendiente";
   }
 
   // ==================================================
@@ -227,17 +213,10 @@ function DetallePedido() {
   if (cargando) {
     return (
       <main className="detalle-pedido-page">
-
         <div className="detalle-pedido-status">
-
           <span className="detalle-pedido-spinner" />
-
-          <p>
-            Cargando pedido...
-          </p>
-
+          <p>Cargando pedido...</p>
         </div>
-
       </main>
     );
   }
@@ -249,26 +228,13 @@ function DetallePedido() {
   if (error) {
     return (
       <main className="detalle-pedido-page">
-
         <div className="detalle-pedido-status">
-
-          <h2>
-            No pudimos cargar el pedido
-          </h2>
-
-          <p>
-            {error}
-          </p>
-
-          <button
-            type="button"
-            onClick={() => navigate("/pedidos")}
-          >
+          <h2>No pudimos cargar el pedido</h2>
+          <p>{error}</p>
+          <button type="button" onClick={() => navigate("/pedidos")}>
             Volver a mis pedidos
           </button>
-
         </div>
-
       </main>
     );
   }
@@ -285,9 +251,7 @@ function DetallePedido() {
 
       <section className="detalle-pedido-container">
 
-        {/* ==================================================
-            VOLVER
-        ================================================== */}
+        {/* ================= VOLVER ================= */}
 
         <button
           type="button"
@@ -297,29 +261,16 @@ function DetallePedido() {
           ← Volver a mis pedidos
         </button>
 
-
-        {/* ==================================================
-            ENCABEZADO
-        ================================================== */}
+        {/* ================= ENCABEZADO ================= */}
 
         <div className="detalle-pedido-header">
 
           <div>
+            <span>DETALLE DEL PEDIDO</span>
 
-            <span>
-              DETALLE DEL PEDIDO
-            </span>
+            <h1>Pedido N° {pedido.folio_pedido || "Sin folio"}</h1>
 
-            <h1>
-              Pedido #{pedido.id_pedido}
-            </h1>
-
-            <p>
-              {formatearFecha(
-                pedido.fecha_predido
-              )}
-            </p>
-
+            <p>{formatearFecha(pedido.fecha_predido)}</p>
           </div>
 
           <div className="detalle-pedido-estado">
@@ -328,332 +279,177 @@ function DetallePedido() {
 
         </div>
 
-
-        {/* ==================================================
-            PRODUCTOS
-        ================================================== */}
+        {/* ================= PRODUCTOS ================= */}
 
         <section className="detalle-pedido-card">
 
-          <h2>
-            Productos
-          </h2>
+          <h2>Productos</h2>
 
           <div className="detalle-pedido-productos">
 
-            {(pedido.detalle_pedido || []).map(
-              (detalle) => {
+            {(pedido.detalle_pedido || []).map((detalle) => {
+              const urlImagen = obtenerUrlImagen(detalle.producto?.imagen_url);
 
-                const urlImagen =
-                  obtenerUrlImagen(
-                    detalle.producto?.imagen_url
-                  );
+              return (
+                <article
+                  className="detalle-pedido-producto"
+                  key={detalle.id_detalle}
+                >
+                  <div className="detalle-pedido-producto-info">
 
-                return (
-                  <article
-                    className="detalle-pedido-producto"
-                    key={detalle.id_detalle}
-                  >
-
-                    <div className="detalle-pedido-producto-info">
-
-                      {/* IMAGEN */}
-
-                      <div className="detalle-pedido-producto-imagen">
-
-                        {urlImagen ? (
-
-                          <img
-                            src={urlImagen}
-                            alt={
-                              detalle.producto?.nom_prod ||
-                              "Producto"
-                            }
-                            onError={(e) => {
-                              console.error(
-                                "No se pudo cargar la imagen:",
-                                urlImagen
-                              );
-
-                              e.currentTarget.style.display =
-                                "none";
-                            }}
-                          />
-
-                        ) : (
-
-                          <span>
-                            📦
-                          </span>
-
-                        )}
-
-                      </div>
-
-
-                      {/* INFORMACIÓN DEL PRODUCTO */}
-
-                      <div>
-
-                        <h3>
-                          {detalle.producto?.nom_prod ||
-                            "Producto"}
-                        </h3>
-
-                        <p>
-                          Cantidad:{" "}
-                          {detalle.cantidad}
-                        </p>
-
-                        <p>
-                          Precio unitario:{" "}
-                          {formatearPrecio(
-                            detalle.precio_unitario
-                          )}
-                        </p>
-
-                      </div>
-
+                    {/* IMAGEN */}
+                    <div className="detalle-pedido-producto-imagen">
+                      {urlImagen ? (
+                        <img
+                          src={urlImagen}
+                          alt={detalle.producto?.nom_prod || "Producto"}
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <span>📦</span>
+                      )}
                     </div>
 
+                    {/* INFORMACIÓN DEL PRODUCTO */}
+                    <div>
+                      <h3>{detalle.producto?.nom_prod || "Producto"}</h3>
+                      <p>Cantidad: {detalle.cantidad}</p>
+                      <p>
+                        Precio unitario:{" "}
+                        {formatearPrecio(detalle.precio_unitario)}
+                      </p>
+                    </div>
 
-                    {/* SUBTOTAL */}
+                  </div>
 
-                    <strong>
-                      {formatearPrecio(
-                        Number(
-                          detalle.precio_unitario
-                        ) *
-                          Number(
-                            detalle.cantidad
-                          )
-                      )}
-                    </strong>
+                  {/* SUBTOTAL */}
+                  <strong>
+                    {formatearPrecio(
+                      Number(detalle.precio_unitario) * Number(detalle.cantidad)
+                    )}
+                  </strong>
+                </article>
+              );
+            })}
 
-                  </article>
-                );
-              }
+          </div>
+
+        </section>
+
+        {/* ================= DESPACHO ================= */}
+
+        <section className="detalle-pedido-card">
+
+          <h2>Despacho</h2>
+
+          <div className="detalle-pedido-info">
+
+            <div>
+              <span>Tipo de despacho</span>
+              <strong>
+                {despacho?.tipo_despacho?.nom_tipo_despacho || "Sin información"}
+              </strong>
+            </div>
+
+            <div>
+              <span>Costo de despacho</span>
+              <strong>{despacho?.costo_mostrar || "Por definir"}</strong>
+            </div>
+
+            {despacho?.mostrar_direccion && (
+              <div>
+                <span>Dirección de envío</span>
+                <strong>
+                  {despacho?.direccion_despacho || "Sin dirección registrada"}
+                </strong>
+                {despacho?.comuna_despacho && (
+                  <small>{despacho.comuna_despacho}</small>
+                )}
+              </div>
             )}
 
           </div>
 
         </section>
 
-
-      {/* ==================================================
-              DESPACHO
-          ================================================== */}
-
-          <section className="detalle-pedido-card">
-
-            <h2>
-              Despacho
-            </h2>
-
-            <div className="detalle-pedido-info">
-
-              {/* TIPO DE DESPACHO */}
-
-              <div>
-
-                <span>
-                  Tipo de despacho
-                </span>
-
-                <strong>
-                  {despacho
-                    ?.tipo_despacho
-                    ?.nom_tipo_despacho ||
-                    "Sin información"}
-                </strong>
-
-              </div>
-
-
-              {/* COSTO DE DESPACHO */}
-
-              <div>
-
-                <span>
-                  Costo de despacho
-                </span>
-
-                <strong>
-                  {despacho?.costo_mostrar ||
-                    "Por definir"}
-                </strong>
-
-              </div>
-
-
-              {/* DIRECCIÓN */}
-
-              {despacho?.mostrar_direccion && (
-
-                <div>
-
-                  <span>
-                    Dirección de envío
-                  </span>
-
-                  <strong>
-                    {despacho?.direccion_despacho ||
-                      "Sin dirección registrada"}
-                  </strong>
-
-                  {despacho?.comuna_despacho && (
-
-                    <small>
-                      {despacho.comuna_despacho}
-                    </small>
-
-                  )}
-
-                </div>
-
-              )}
-
-            </div>
-
-          </section>
-        {/* ==================================================
-            INFORMACIÓN DE PAGO
-        ================================================== */}
+        {/* ================= INFORMACIÓN DE PAGO ================= */}
 
         <section className="detalle-pedido-card">
 
-          <h2>
-            Información de pago
-          </h2>
+          <h2>Información de pago</h2>
 
           <div className="detalle-pedido-info">
 
-            {/* MÉTODO DE PAGO */}
-
             <div>
-
-              <span>
-                Método de pago
-              </span>
-
-              <strong>
-                {pago?.metodo_pago === 1
-                  ? "Webpay"
-                  : "Otro método"}
-              </strong>
-
+              <span>Método de pago</span>
+              <strong>{pago?.metodo_pago === 1 ? "Webpay" : "Otro método"}</strong>
             </div>
 
-
-            {/* ESTADO DEL PAGO */}
-
             <div>
-
-              <span>
-                Estado del pago
-              </span>
-
+              <span>Estado del pago</span>
               <strong>
-                {
-                  pago
-                    ?.estado_pago
-                    ?.nom_estado_pago ||
-                  "Sin información"
-                }
+                {pago?.estado_pago?.nom_estado_pago || "Sin información"}
               </strong>
-
             </div>
-
-
-            {/* ORDEN DE COMPRA */}
 
             {pago?.buy_order && (
-
               <div>
-
-                <span>
-                  Orden de compra
-                </span>
-
-                <strong>
-                  {pago.buy_order}
-                </strong>
-
+                <span>Orden de compra</span>
+                <strong>{pago.buy_order}</strong>
               </div>
-
             )}
 
           </div>
 
         </section>
 
-
-        {/* ==================================================
-            DOCUMENTO
-        ================================================== */}
+        {/* ================= DOCUMENTO ================= */}
 
         <section className="detalle-pedido-card">
 
-          <h2>
-            Documento
-          </h2>
+          <h2>Documento</h2>
 
           <div className="detalle-pedido-info">
 
-            {/* TIPO DE DOCUMENTO */}
-
             <div>
-
-              <span>
-                Tipo de documento
-              </span>
-
-              <strong>
-                {pedido.es_factura
-                  ? "Factura"
-                  : "Boleta"}
-              </strong>
-
+              <span>Tipo de documento</span>
+              <strong>{pedido.es_factura ? "Factura" : "Boleta"}</strong>
             </div>
 
-
-            {/* ESTADO ERP */}
-
             <div>
+              <span>Estado ERP</span>
+              <strong>{pedido.registrado_erp ? "Registrado" : "Pendiente"}</strong>
+            </div>
 
-              <span>
-                Estado ERP
-              </span>
+            {/* COMPROBANTE DE PAGO */}
+            <div>
+              <span>Comprobante de pago</span>
 
-              <strong>
-                {pedido.registrado_erp
-                  ? "Registrado"
-                  : "Pendiente"}
-              </strong>
-
+              {pedido.comprobante_path ? (
+                <button
+                  type="button"
+                  className="detalle-pedido-descargar"
+                  onClick={descargarComprobante}
+                  disabled={descargando}
+                >
+                  {descargando ? "Descargando..." : "Descargar comprobante"}
+                </button>
+              ) : (
+                <strong>Disponible cuando se confirme el pago</strong>
+              )}
             </div>
 
           </div>
 
         </section>
 
-
-        {/* ==================================================
-            TOTAL
-        ================================================== */}
+        {/* ================= TOTAL ================= */}
 
         <section className="detalle-pedido-total">
-
-          <span>
-            Total del pedido
-          </span>
-
-          <strong>
-            {formatearPrecio(
-              pedido.total_pedido
-            )}
-          </strong>
-
+          <span>Total del pedido</span>
+          <strong>{formatearPrecio(pedido.total_pedido)}</strong>
         </section>
 
       </section>
