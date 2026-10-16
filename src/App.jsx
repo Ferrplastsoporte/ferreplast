@@ -123,7 +123,7 @@ function App() {
             <Route path="/admin/cotizaciones" element={<Cotizaciones />} />
             <Route path="/admin/pedidos" element={<Pedidos />} />
             <Route path="/admin/pagos" element={<Pagos />} />
-            <Route path="/admin/reportes" element={<Reportes />} />
+            <Route path="/admin/Reportes" element={<Reportes />} />
             <Route path="/admin/auditoria" element={<Auditoria />} />
             <Route path="/admin/configuracion" element={<Configuracion />} />
           </Route>

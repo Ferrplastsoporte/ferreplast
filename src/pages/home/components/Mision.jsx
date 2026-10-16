@@ -265,7 +265,7 @@ function Mision() {
                 <div className="mision__card-overlay" />
                 <figcaption>
                   <p>Ferreplast</p>
-                  <h3>Soluciones confiables</h3>
+                  <h3>Local de ventas</h3>
                 </figcaption>
               </figure>
             </div>

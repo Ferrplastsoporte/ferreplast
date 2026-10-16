@@ -259,7 +259,7 @@
 
 .mision__visual {
   position: relative;
-  padding-bottom: 44px;
+  padding-bottom: 11%;
 }
 
 /* Marco rojo desplazado detrás del carrusel */
@@ -276,7 +276,7 @@
 
 .mision__carrusel {
   position: relative;
-  height: clamp(320px, 62vh, 540px);
+  height: clamp(300px, 56vh, 500px);
   overflow: hidden;
   border-radius: 28px;
   background: var(--azul-profundo);
@@ -324,7 +324,7 @@
   position: absolute;
   left: 0;
   bottom: 0;
-  max-width: 50%;
+  max-width: 36%;
   padding: clamp(16px, 2.2vw, 28px);
   color: var(--blanco);
 }
@@ -434,12 +434,14 @@
   bottom: 0;
   z-index: 30;
   display: flex;
-  gap: 12px;
+  width: 62%;
+  gap: 14px;
 }
 
 .mision__card {
   position: relative;
-  width: clamp(110px, 11vw, 160px);
+  flex: 1;
+  min-width: 0;
   aspect-ratio: 4 / 3;
   margin: 0;
   overflow: hidden;
@@ -474,20 +476,20 @@
   left: 0;
   bottom: 0;
   z-index: 2;
-  padding: 10px 12px;
+  padding: 14px 16px;
   color: var(--blanco);
 }
 
 .mision__card figcaption p {
   margin: 0;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .mision__card figcaption h3 {
-  margin: 2px 0 0;
-  font-size: 13px;
+  margin: 3px 0 0;
+  font-size: clamp(14px, 1.4vw, 19px);
   font-weight: 800;
   line-height: 1.15;
 }
@@ -987,6 +989,7 @@
 
   .mision__mini {
     position: static;
+    width: 100%;
     margin-top: 12px;
   }
 
