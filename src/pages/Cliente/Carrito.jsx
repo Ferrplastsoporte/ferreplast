@@ -53,6 +53,7 @@ function Carrito() {
   const [comunas, setComunas] = useState([]);
   const [idRegionDespacho, setIdRegionDespacho] = useState("");
   const [cargandoUbicaciones, setCargandoUbicaciones] = useState(false);
+  const [metodoEnProceso, setMetodoEnProceso] = useState(null);
 
   const {
     esFactura,
@@ -128,6 +129,18 @@ async function cargarMetodosPago() {
 
   setCargandoMetodosPago(false);
 }
+// recarga la pagina al volver atras
+  useEffect(() => {
+    function manejarPageShow(event) {
+      if (event.persisted) {
+        setIniciandoPago(false);
+        setMetodoEnProceso(null);
+      }
+    }
+
+    window.addEventListener("pageshow", manejarPageShow);
+    return () => window.removeEventListener("pageshow", manejarPageShow);
+  }, []);
 
   const cargarUbicaciones = useCallback(async () => {
     setCargandoUbicaciones(true);
@@ -332,7 +345,7 @@ async function cargarMetodosPago() {
     // ==================================================
 
     setIniciandoPago(true);
-
+    setMetodoEnProceso(metodoPago);
     try {
       // ==================================================
       // OBTENER SESIÓN AUTENTICADA
@@ -521,6 +534,7 @@ async function cargarMetodosPago() {
       );
 
       setIniciandoPago(false);
+      setMetodoEnProceso(null);
     }
   }
 
@@ -1285,34 +1299,44 @@ async function cargarMetodosPago() {
             ================================================= */}
 
               {cargandoMetodosPago ? (
-                <p>Cargando métodos de pago...</p>
-              ) : metodosPago.length > 0 ? (
-                metodosPago.map((metodo) => (
-                  <button
-                    key={metodo.id_metodo_pago}
-                    type="button"
-                    className="cart-summary__pay-button"
-                    disabled={
-                      productos.length === 0 ||
-                      cargando ||
-                      actualizando ||
-                      iniciandoPago ||
-                      !despachoListo
-                    }
-                      onClick={() => {
-                        continuarCompra(metodo.codigo);
-                      }}
-                  >
-                    {iniciandoPago && metodo.codigo === "WEBPAY"
-                      ? "Redirigiendo a Webpay..."
-                      : `Pagar con ${metodo.nombre}`}
-                  </button>
-                ))
-              ) : (
-                <p className="cart-summary__notice">
-                  No hay métodos de pago disponibles.
-                </p>
-              )}
+                  <p className="cart-summary__notice">Cargando métodos de pago...</p>
+                ) : metodosPago.length > 0 ? (
+                  <div className="cart-summary__payments">
+                    <span className="cart-summary__payments-title">Elige cómo pagar</span>
+
+                    {metodosPago.map((metodo, indice) => {
+                      const enProceso = metodoEnProceso === metodo.codigo;
+
+                      return (
+                        <button
+                          key={metodo.id_metodo_pago}
+                          type="button"
+                          className={`cart-summary__pay-button${
+                            indice > 0 ? " cart-summary__pay-button--secundario" : ""
+                          }`}
+                          disabled={
+                            productos.length === 0 ||
+                            cargando ||
+                            actualizando ||
+                            iniciandoPago ||
+                            !despachoListo
+                          }
+                          aria-busy={enProceso}
+                          onClick={() => continuarCompra(metodo.codigo)}
+                        >
+                          {enProceso && (
+                            <span className="cart-summary__spinner" aria-hidden="true" />
+                          )}
+                          {enProceso
+                            ? `Redirigiendo a ${metodo.nombre}...`
+                            : `Pagar con ${metodo.nombre}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="cart-summary__notice">No hay métodos de pago disponibles.</p>
+                )}
 
             {/* ================================================= 
                 MENSAJE DESPACHO
