@@ -7,8 +7,10 @@ import logoFerreplast from "../../assets/logo.png";
 // REPORTES DEL ADMINISTRADOR (archivo autocontenido)
 // - Consulta detallada por rango de fechas usando las funciones SQL reporte_*_admin.
 // - Gráficos de barras, tabla ordenable con totales.
-// - Genera sus propios archivos: CSV (descarga directa) y PDF (con diseño propio,
-//   se abre "Guardar como PDF" del navegador; no requiere librerías).
+// - Tres salidas:
+//   · Descargar CSV: se genera en el navegador (descarga directa).
+//   · Descargar PDF: lo genera la Edge Function "reporte-pdf" y se descarga directo.
+//   · Imprimir: documento HTML con diseño propio y el diálogo de impresión del navegador.
 // - KPI relevantes del período elegido (función SQL reporte_resumen_admin),
 //   comparados con el período anterior de igual duración.
 // - Usa solo las funciones de reportes_admin.sql. No toca el Dashboard.
@@ -148,7 +150,7 @@ function mensajeErrorReporte(error, funcion) {
 // =====================================================================
 
 // Preparación y geometría de gráficos de reportes.
-// JS puro (sin React): lo usan la pantalla (Indicadores.jsx) y el PDF (exportarReportes.js).
+// JS puro (sin React): lo usan la pantalla, la impresión y los datos que se mandan al PDF.
 
 
 const COLOR_BARRA = "#0647b9";
@@ -293,7 +295,7 @@ function geometriaColumnas(puntos, { ancho = 760, alto = 240, agrupacion = "day"
 }
 
 // --------------------------------------------------
-// SVG en texto (para el PDF)
+// SVG en texto (para la impresión)
 // --------------------------------------------------
 const escaparXML = (texto) =>
   String(texto ?? "")
@@ -355,12 +357,12 @@ function htmlBarras(grafico) {
 }
 
 // =====================================================================
-// EXPORTACIÓN: CSV Y PDF
+// EXPORTACIÓN: CSV, PDF E IMPRESIÓN
 // =====================================================================
 
-// Exportación de reportes: CSV (Excel) y PDF con diseño propio.
-// El PDF se arma como un documento HTML independiente y se envía a imprimir
-// en un iframe oculto: el usuario elige "Guardar como PDF". No requiere librerías.
+// CSV: se arma en el navegador.
+// PDF: lo genera la Edge Function "reporte-pdf" y se descarga directo.
+// Imprimir: documento HTML independiente en un iframe oculto y diálogo de impresión.
 
 
 const TIPOS_NUMERICOS = ["moneda", "numero", "porcentaje"];
@@ -407,9 +409,41 @@ function descargarCSV({ titulo, periodo, columnas, filas, totales, nombreArchivo
 }
 
 // --------------------------------------------------
-// PDF: documento HTML
+// PDF: lo genera la Edge Function "reporte-pdf" y se descarga directo
 // --------------------------------------------------
-const ESTILOS_PDF = `
+const MAX_FILAS_PDF = 800; // mismo límite que la Edge Function
+
+async function descargarPDF(contenido, nombreArchivo) {
+  const { data, error } = await supabase.functions.invoke("reporte-pdf", {
+    body: { ...contenido, nombreArchivo },
+  });
+
+  if (error) {
+    // La Edge Function responde { error: "..." } con un mensaje claro
+    let mensaje = "";
+    try {
+      mensaje = (await error.context.json()).error;
+    } catch {
+      // sin cuerpo JSON (por ejemplo, sin conexión)
+    }
+    throw new Error(mensaje || "No se pudo generar el PDF.");
+  }
+
+  const archivo = new Blob([data], { type: "application/pdf" });
+  const url = URL.createObjectURL(archivo);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = `${nombreArchivo}.pdf`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}
+
+// --------------------------------------------------
+// IMPRIMIR: documento HTML
+// --------------------------------------------------
+const ESTILOS_IMPRESION = `
   @page { size: A4 landscape; margin: 12mm 12mm 16mm; }
   * { box-sizing: border-box; }
   body { margin: 0; color: #172033; font: 10pt/1.4 "Segoe UI", Arial, Helvetica, sans-serif;
@@ -544,7 +578,7 @@ function generarHTMLReporte({
 <head>
 <meta charset="utf-8">
 <title>${escaparHTML(nombreDocumento)}</title>
-<style>${ESTILOS_PDF}</style>
+<style>${ESTILOS_IMPRESION}</style>
 </head>
 <body>
   <header class="encabezado">
@@ -569,9 +603,9 @@ function generarHTMLReporte({
 }
 
 // --------------------------------------------------
-// PDF: imprimir el documento en un iframe oculto
+// IMPRIMIR: el documento se imprime en un iframe oculto
 // --------------------------------------------------
-function imprimirPDF(opciones) {
+function imprimirReporte(opciones) {
   const html = generarHTMLReporte(opciones);
 
   const marco = document.createElement("iframe");
@@ -1234,7 +1268,7 @@ function compararValores(a, b) {
   return String(a).localeCompare(String(b), "es");
 }
 
-function TablaReporte({ reporte, datos, actualizando, alExportar }) {
+function TablaReporte({ reporte, datos, actualizando, alExportar, generandoPdf }) {
   const [texto, setTexto] = useState("");
   const [orden, setOrden] = useState({ campo: null, asc: true });
   const { columnas } = reporte;
@@ -1286,16 +1320,19 @@ function TablaReporte({ reporte, datos, actualizando, alExportar }) {
             : `${filas.length} de ${datos.length} resultados`}
         </span>
         <div className="reportes-tabla-acciones">
+          <button type="button" disabled={!filas.length} onClick={() => alExportar("imprimir", filas, totales, texto)}>
+            Imprimir
+          </button>
           <button type="button" disabled={!filas.length} onClick={() => alExportar("csv", filas, totales, texto)}>
             Descargar CSV
           </button>
           <button
             type="button"
             className="es-principal"
-            disabled={!filas.length}
+            disabled={!filas.length || generandoPdf}
             onClick={() => alExportar("pdf", filas, totales, texto)}
           >
-            Descargar PDF
+            {generandoPdf ? "Generando PDF..." : "Descargar PDF"}
           </button>
         </div>
       </div>
@@ -1391,6 +1428,8 @@ function Reportes() {
   const [catalogos, setCatalogos] = useState(CATALOGOS_VACIOS);
   const [resultado, setResultado] = useState({ clave: null, tipo: null });
   const [kpis, setKpis] = useState({ clave: null, resumen: null, alertas: null });
+  const [generandoPdf, setGenerandoPdf] = useState(false);
+  const [errorPdf, setErrorPdf] = useState("");
 
   const rangoValido = Boolean(desde && hasta && desde <= hasta);
   const reporte = REPORTES[tipo];
@@ -1455,6 +1494,7 @@ function Reportes() {
     setTipo(nuevoTipo);
     setBusqueda("");
     setBusquedaAplicada("");
+    setErrorPdf("");
   };
 
   const aplicarPreset = (clavePreset) => {
@@ -1484,37 +1524,110 @@ function Reportes() {
     return partes;
   };
 
-  const exportar = (formato, filas, totales, textoLocal) => {
+  const exportar = async (formato, filas, totales, textoLocal) => {
     const nombreArchivo = `ferreplast-${tipo}-${desde}-a-${hasta}`;
 
+    // Mismos KPI que en pantalla, ya formateados (para imprimir y para el PDF)
+    const kpisFormateados = listaKpis.map((k) => {
+      const cambio = variacion(k.valor, k.anterior);
+      const esBueno = cambio === null || cambio === 0 ? null : cambio > 0 !== Boolean(k.menosEsMejor);
+      return {
+        titulo: k.titulo,
+        valor: formatearValor(k.tipo, k.valor ?? 0),
+        nota: textoVariacion(k.valor, k.anterior) ?? "Sin datos del período anterior",
+        clase: esBueno === null ? "" : esBueno ? "bueno" : "malo",
+        detalle: k.detalle ?? "",
+      };
+    });
+
+    // Descargar CSV
     if (formato === "csv") {
       descargarCSV({ titulo: reporte.titulo, periodo: periodoTexto, columnas: reporte.columnas, filas, totales, nombreArchivo });
       return;
     }
 
-    imprimirPDF({
-      titulo: reporte.titulo,
-      descripcion: reporte.descripcion,
-      periodo: periodoTexto,
-      filtros: describirFiltros(textoLocal),
-      kpis: listaKpis.map((k) => {
-        const cambio = variacion(k.valor, k.anterior);
-        const esBueno = cambio === null || cambio === 0 ? null : cambio > 0 !== Boolean(k.menosEsMejor);
-        return {
-          titulo: k.titulo,
-          valor: formatearValor(k.tipo, k.valor ?? 0),
-          nota: textoVariacion(k.valor, k.anterior) ?? "Sin datos del período anterior",
-          clase: esBueno === null ? "" : esBueno ? "bueno" : "malo",
-        };
-      }),
-      graficos: reporte.graficos(filtros).map((config) => prepararGrafico(config, filas)),
-      agrupacion: filtros.agrupacion,
-      columnas: reporte.columnas,
-      filas,
-      totales,
-      logoUrl: new URL(logoFerreplast, window.location.href).href,
-      nombreDocumento: nombreArchivo,
-    });
+    // Imprimir (diálogo del navegador)
+    if (formato === "imprimir") {
+      imprimirReporte({
+        titulo: reporte.titulo,
+        descripcion: reporte.descripcion,
+        periodo: periodoTexto,
+        filtros: describirFiltros(textoLocal),
+        kpis: kpisFormateados,
+        graficos: reporte.graficos(filtros).map((config) => prepararGrafico(config, filas)),
+        agrupacion: filtros.agrupacion,
+        columnas: reporte.columnas,
+        filas,
+        totales,
+        logoUrl: new URL(logoFerreplast, window.location.href).href,
+        nombreDocumento: nombreArchivo,
+      });
+      return;
+    }
+
+    // Descargar PDF (Edge Function)
+    if (generandoPdf) return;
+    setGenerandoPdf(true);
+    setErrorPdf("");
+
+    try {
+      await descargarPDF(
+        {
+          desde,
+          hasta,
+          titulo: reporte.titulo,
+          descripcion: reporte.descripcion,
+          periodo: periodoTexto,
+          filtros: describirFiltros(textoLocal),
+          kpis: kpisFormateados,
+
+          // Gráficos calculados sobre todas las filas (con el filtro de la tabla aplicado)
+          graficos: reporte.graficos(filtros).map((config) => {
+            const g = prepararGrafico(config, filas);
+            return {
+              titulo: g.titulo,
+              tipo: g.tipo === "serie" ? "serie" : "barras",
+              formato: g.formato,
+              puntos: g.puntos.map((p) => ({
+                etiqueta: g.tipo === "serie" ? etiquetaPeriodo(p.etiqueta, filtros.agrupacion) : String(p.etiqueta),
+                valor: p.valor,
+                texto: formatearValor(g.formato, p.valor),
+              })),
+            };
+          }),
+
+          columnas: reporte.columnas.map((col) => ({
+            t: col.t,
+            num: TIPOS_NUMERICOS.includes(col.tipo),
+            largo: Boolean(col.largo),
+          })),
+
+          // Celdas ya formateadas; insignias (nivel) y resaltados viajan como objeto
+          filas: filas.slice(0, MAX_FILAS_PDF).map((fila) =>
+            reporte.columnas.map((col) => {
+              const valor = fila[col.c];
+              if (col.nivel) return { v: String(valor ?? col.vacio ?? "—"), n: col.nivel(fila) };
+              const texto = formatearValor(col.tipo, valor);
+              return col.resaltar?.(valor) ? { v: texto, r: true } : texto;
+            }),
+          ),
+
+          // El total se calcula con todas las filas, aunque el PDF muestre 800
+          total: totales
+            ? reporte.columnas.map((col, i) =>
+                i === 0 ? "Total" : col.total ? formatearValor(col.tipo, totales[col.c]) : "",
+              )
+            : null,
+          totalFilas: filas.length,
+        },
+        nombreArchivo,
+      );
+    } catch (err) {
+      console.error("Error al generar el PDF:", err);
+      setErrorPdf(err.message || "No se pudo generar el PDF.");
+    } finally {
+      setGenerandoPdf(false);
+    }
   };
 
   const selectorCatalogo = (campo, etiqueta, lista) => (
@@ -1709,7 +1822,20 @@ function Reportes() {
               ))}
             </div>
 
-            <TablaReporte key={tipo} reporte={reporte} datos={datos} actualizando={cargando} alExportar={exportar} />
+            {errorPdf && (
+              <div role="alert" className="reportes-error">
+                {errorPdf}
+              </div>
+            )}
+
+            <TablaReporte
+              key={tipo}
+              reporte={reporte}
+              datos={datos}
+              actualizando={cargando}
+              alExportar={exportar}
+              generandoPdf={generandoPdf}
+            />
           </>
         )}
       </div>
