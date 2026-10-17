@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+import { obtenerUrlImagenProducto } from "../../services/productoStorageService";
 import {
   LONGITUD_MAXIMA_BUSQUEDA,
   sanitizarTerminoBusqueda,
@@ -11,6 +13,25 @@ import "./css/productos-bodeguero.css";
 import "./css/stock.css";
 
 const LIMITE_STOCK_BAJO = 10;
+
+function ImagenProductoStock({ ruta, nombre }) {
+  const [urlFallida, setUrlFallida] = useState(null);
+  const url = obtenerUrlImagenProducto(ruta);
+
+  if (!url || url === urlFallida) {
+    return <span className="stock-table__image stock-table__image--empty">Sin imagen</span>;
+  }
+
+  return (
+    <img
+      className="stock-table__image"
+      src={url}
+      alt={`Imagen de ${nombre}`}
+      loading="lazy"
+      onError={() => setUrlFallida(url)}
+    />
+  );
+}
 
 function BodegueroStock() {
   const [productos, setProductos] = useState([]);
@@ -83,7 +104,9 @@ function BodegueroStock() {
       const estado = Number(producto.est_prod);
 
       const coincideBusqueda =
-        !texto || producto.nom_prod?.toLocaleLowerCase("es-CL").includes(texto);
+        !texto ||
+        producto.nom_prod?.toLocaleLowerCase("es-CL").includes(texto) ||
+        String(producto.id_prod ?? "").includes(texto);
 
       const coincideEstado =
         filtroEstado === "todos" || estado === Number(filtroEstado);
@@ -203,9 +226,29 @@ function BodegueroStock() {
     }
   }
 
+  const encabezado = (
+    <BodegueroHeader
+      titulo="Gestión de stock"
+      descripcion="Consulta y actualiza las existencias disponibles de los productos."
+      acciones={
+        <button
+          type="button"
+          className="stock-refresh"
+          onClick={cargarProductos}
+          disabled={cargando || actualizando}
+          aria-label="Actualizar inventario e indicadores"
+          title="Actualizar inventario e indicadores"
+        >
+          <FiRefreshCw aria-hidden="true" />
+        </button>
+      }
+    />
+  );
+
   if (cargando) {
     return (
-      <section className="bodeguero-page">
+      <section className="bodeguero-page stock-page">
+        {encabezado}
         <p className="bodeguero-loading">Cargando inventario...</p>
       </section>
     );
@@ -213,26 +256,13 @@ function BodegueroStock() {
 
   return (
     <section className="bodeguero-page stock-page">
-      <BodegueroHeader
-        titulo="Gestión de stock"
-        descripcion="Consulta y actualiza las existencias disponibles de los productos."
-      />
+      {encabezado}
 
       <div className="stock-kpi-heading">
         <div>
           <h2>Prioridad de reposición</h2>
           <p>Revisa primero los productos que necesitan atención.</p>
         </div>
-        <button
-          type="button"
-          className="stock-table__adjust stock-refresh"
-          onClick={cargarProductos}
-          disabled={actualizando}
-          aria-label="Actualizar inventario e indicadores"
-          title="Actualizar inventario e indicadores"
-        >
-          <span aria-hidden="true">↻</span>
-        </button>
       </div>
 
       {mensajeExito && (
@@ -282,7 +312,7 @@ function BodegueroStock() {
               setBusqueda(sanitizarTerminoBusqueda(evento.target.value))
             }
             maxLength={LONGITUD_MAXIMA_BUSQUEDA}
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por nombre o ID..."
           />
         </div>
 
@@ -376,14 +406,18 @@ function BodegueroStock() {
                 return (
                   <tr key={producto.id_prod}>
                     <td>
+                      <div className="stock-table__identity">
+                      <ImagenProductoStock ruta={producto.imagen_url} nombre={producto.nom_prod} />
                       <div className="stock-table__product">
                         <strong>{producto.nom_prod}</strong>
+                        <small>Producto #{producto.id_prod}</small>
                         <span className="stock-brand">
                           {producto.nom_marca || "Sin marca"}
                           {producto.marca_destacar && (
                             <span className="stock-brand__featured">Destacada</span>
                           )}
                         </span>
+                      </div>
                       </div>
                     </td>
 
@@ -399,9 +433,6 @@ function BodegueroStock() {
                       >
                         {stock === null ? "Sin registrar" : stock <= 0 ? "Sin stock" : stock}
                       </span>
-                      <small className="stock-cell-detail">
-                        {producto.nom_und_medida || "Sin unidad"}
-                      </small>
                     </td>
 
                     <td>

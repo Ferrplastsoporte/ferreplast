@@ -414,6 +414,49 @@
    ACCIONES RÁPIDAS
 ============================ */
 
+.productos-page .bodeguero-header__user {
+  gap: 10px;
+}
+
+.productos-recargar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid #bfd0e5;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #27415f;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.productos-recargar:hover:not(:disabled) {
+  border-color: #93b4dd;
+  background: #eff6ff;
+}
+
+.productos-recargar:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.productos-recargar:disabled svg {
+  animation: productos-recargar-giro 0.8s linear infinite;
+}
+
+@keyframes productos-recargar-giro {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .productos-recargar:disabled svg { animation: none; }
+}
+
 .productos-page .table-actions {
   display: flex;
   align-items: center;
@@ -478,7 +521,7 @@
   background: #fef2f2;
 }
 
-.productos-page .btn-edit:hover,
+.productos-page .btn-edit:hover:not(:disabled),
 .productos-page .btn-deactivate:hover,
 .productos-page .btn-reactivate:hover,
 .productos-page .btn-approve:hover,
@@ -486,6 +529,11 @@
   transform: translateY(-2px);
 
   box-shadow: 0 5px 12px rgba(15, 23, 42, 0.1);
+}
+
+.productos-page .btn-edit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* ==========================================================

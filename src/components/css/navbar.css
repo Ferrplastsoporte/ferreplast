@@ -14,26 +14,22 @@
   border-bottom-right-radius: 24px;
   color: #fff;
 
-  /* El fondo blanco y el degradado se dibujan en ::before y ::after. */
+  /* El degradado respeta las curvas; las esquinas exteriores son transparentes. */
   isolation: isolate;
   background: transparent;
 }
-/* 2. FONDO: blanco de las esquinas, degradado azul y sombra. */
-.navbar::before, .navbar::after {
+/* 2. FONDO: degradado azul y sombra con esquinas transparentes. */
+.navbar::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-.navbar::before {
-  z-index: -2;
-  background: #fff;
-}
 .navbar::after {
   z-index: -1;
   border-radius: inherit;
   background: linear-gradient(100deg, #277ce0 0%, #2476d7 60%, #1f6fcb 100%);
-  box-shadow: 0 3px 10px rgb(15 42 74 / 8%);
+  box-shadow: 0 6px 16px rgb(15 42 74 / 14%), 0 2px 4px rgb(15 42 74 / 8%);
 }
 /* 3. REGLAS COMUNES: enlaces, botones y contorno de foco con teclado. */
 .navbar, .navbar * { box-sizing: border-box; }
@@ -304,6 +300,32 @@
   .navbar__abrir-menu { display: flex; }
   .navbar__logo { padding-inline: 0; }
   .navbar__logo-imagen { height: 52px; }
+
+  .navbar__menu-contenido {
+    gap: 14px;
+    padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+  }
+  .navbar__menu-cabecera { padding-bottom: 12px; }
+  .navbar .navbar__menu-cabecera h2 { font-size: 20px; }
+  .navbar .navbar__abrir-menu,
+  .navbar .navbar__cerrar-menu { font-size: 20px; }
+  .navbar__menu-navegacion,
+  .navbar__menu-usuario { gap: 8px; }
+  .navbar__menu-usuario { padding-top: 14px; }
+  .navbar .navbar__opcion {
+    min-height: 44px;
+    padding: 10px 12px;
+    gap: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .navbar .navbar__opcion svg { font-size: 18px; }
+  .navbar .navbar__opcion .navbar__flecha { font-size: 14px; }
+  .navbar .navbar__categorias-lista button {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }
 
 /* 14. MÓVIL (hasta 640px): logo y menú arriba; buscador a todo el ancho abajo. */
@@ -319,7 +341,7 @@
 @media (max-width: 360px) {
   .navbar { padding-inline: 4%; }
   .navbar__menu-contenido { padding-inline: 16px; }
-  .navbar__opcion { padding: 14px 12px; gap: 10px; }
+  .navbar .navbar__opcion { padding: 10px 12px; gap: 10px; }
 }
 /* 16. ACCESIBILIDAD: desactivar movimiento si el usuario lo solicita. */
 @media (prefers-reduced-motion: reduce) {

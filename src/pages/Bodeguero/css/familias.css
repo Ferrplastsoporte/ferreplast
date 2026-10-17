@@ -342,9 +342,22 @@
 
 .familias-table {
   width: 100%;
-  min-width: 440px;
+  min-width: 0;
 
   border-collapse: collapse;
+}
+
+.familias-table:not(.familias-table--subcategorias) {
+  table-layout: fixed;
+}
+
+.familias-table:not(.familias-table--subcategorias) th:last-child {
+  width: 120px;
+  box-sizing: border-box;
+}
+
+.familias-table:not(.familias-table--subcategorias) td:first-child {
+  overflow-wrap: anywhere;
 }
 
 .familias-table--subcategorias {

@@ -12,11 +12,17 @@ import {
 
 import {
   obtenerUrlLogoMarca,
-  subirLogoMarca,
+  guardarMarcaConLogo,
 } from "../../services/marcaService";
 
 import "./css/bodeguero.css";
 import "./css/marcas.css";
+
+const ESTADOS_MARCA = [
+  { id: 1, nombre: "Pendiente", plural: "Pendientes", clase: "pending" },
+  { id: 2, nombre: "Aprobada", plural: "Aprobadas", clase: "active" },
+  { id: 3, nombre: "Rechazada", plural: "Rechazadas", clase: "rejected" },
+];
 
 function Marcas() {
   const [marcas, setMarcas] = useState([]);
@@ -64,7 +70,7 @@ function Marcas() {
         nom_marca,
         logo_url,
         marca_destacar,
-        est_marca
+        id_estado_marca
       `,
       )
       .order("nom_marca", { ascending: true });
@@ -105,6 +111,10 @@ function Marcas() {
   }
 
   function abrirFormularioEdicion(marca) {
+    if (Number(marca.id_estado_marca) === 1) {
+      setMensajeError("Esta marca está pendiente de revisión. Espera la resolución del administrador para editarla.");
+      return;
+    }
     limpiarVistaPrevia();
 
     setMarcaEditando(marca);
@@ -162,6 +172,11 @@ function Marcas() {
     evento.preventDefault();
     if (guardando) return;
 
+    if (Number(marcaEditando?.id_estado_marca) === 1) {
+      setMensajeError("Esta marca está pendiente de revisión. Espera la resolución del administrador para editarla.");
+      return;
+    }
+
     const validacionNombre = validarNombreMarca(nombre);
 
     if (!validacionNombre.valido) {
@@ -179,40 +194,12 @@ function Marcas() {
     setMensajeExito("");
 
     try {
-      /*
-       * Primero creamos/actualizamos los datos generales
-       * de la marca.
-       */
-      const { data: idMarca, error } = await supabase.rpc("guardar_marca", {
-        p_nombre: validacionNombre.valor,
-        p_destacar: marcaDestacar === "true",
-        p_id_marca: marcaEditando?.id_marca ?? null,
-        p_logo_url: null,
+      await guardarMarcaConLogo({
+        nombre: validacionNombre.valor,
+        destacar: marcaDestacar === "true",
+        marcaActual: marcaEditando,
+        archivoLogo,
       });
-
-      if (error) throw error;
-
-      /*
-       * Si existe un nuevo logo:
-       * 1. se sube/reemplaza en Storage;
-       * 2. se guarda la nueva ruta mediante la misma RPC.
-       */
-      if (archivoLogo) {
-        const rutaLogo = await subirLogoMarca(
-          idMarca,
-          archivoLogo,
-          marcaEditando?.logo_url ?? null,
-        );
-
-        const { error: errorLogo } = await supabase.rpc("guardar_marca", {
-          p_nombre: validacionNombre.valor,
-          p_destacar: marcaDestacar === "true",
-          p_id_marca: idMarca,
-          p_logo_url: rutaLogo,
-        });
-
-        if (errorLogo) throw errorLogo;
-      }
 
       const editando = Boolean(marcaEditando);
 
@@ -229,31 +216,24 @@ function Marcas() {
     } catch (error) {
       console.error("Error al guardar marca:", error);
 
+      if (error?.code === "55000") {
+        const idPendiente = marcaEditando?.id_marca;
+        setMarcas((actuales) => actuales.map((marca) =>
+          marca.id_marca === idPendiente
+            ? { ...marca, id_estado_marca: 1 }
+            : marca,
+        ));
+        reiniciarFormulario();
+      }
       setMensajeError(error?.message || "No fue posible guardar la marca.");
     } finally {
       setGuardando(false);
     }
   }
 
-  const totalActivas = marcas.filter(
-    (marca) => marca.est_marca === true,
-  ).length;
-
-  const totalNoDisponibles = marcas.filter(
-    (marca) => marca.est_marca === false,
-  ).length;
-
-  const marcasPorEstado = marcas.filter((marca) => {
-    if (filtroEstado === "activas") {
-      return marca.est_marca === true;
-    }
-
-    if (filtroEstado === "no-disponibles") {
-      return marca.est_marca === false;
-    }
-
-    return true;
-  });
+  const marcasPorEstado = marcas.filter((marca) =>
+    filtroEstado === "todas" || Number(marca.id_estado_marca) === Number(filtroEstado),
+  );
 
   const totalDestacadas = marcasPorEstado.filter(
     (marca) => marca.marca_destacar === true,
@@ -274,6 +254,8 @@ function Marcas() {
 
     return true;
   });
+
+  const hayFiltrosActivos = filtroEstado !== "todas" || filtroRelevancia !== "todas";
 
   return (
     <section className="bodeguero-page marcas-page">
@@ -311,81 +293,49 @@ function Marcas() {
       {!cargando && (
         <div className="marcas-filtros" aria-label="Filtros de marcas">
           <div className="marcas-filtros__grupo">
-            <span className="marcas-filtros__label">Estado</span>
-
-            <div className="marcas-filtros__opciones">
-              <button
-                type="button"
-                className={`marcas-filtro ${
-                  filtroEstado === "todas" ? "active" : ""
-                }`}
-                onClick={() => setFiltroEstado("todas")}
-                aria-pressed={filtroEstado === "todas"}
-              >
-                Todas ({marcas.length})
-              </button>
-
-              <button
-                type="button"
-                className={`marcas-filtro ${
-                  filtroEstado === "activas" ? "active" : ""
-                }`}
-                onClick={() => setFiltroEstado("activas")}
-                aria-pressed={filtroEstado === "activas"}
-              >
-                Activas ({totalActivas})
-              </button>
-
-              <button
-                type="button"
-                className={`marcas-filtro ${
-                  filtroEstado === "no-disponibles" ? "active" : ""
-                }`}
-                onClick={() => setFiltroEstado("no-disponibles")}
-                aria-pressed={filtroEstado === "no-disponibles"}
-              >
-                No disponibles ({totalNoDisponibles})
-              </button>
-            </div>
+            <label className="marcas-filtros__label" htmlFor="estadoMarca">Estado</label>
+            <select
+              id="estadoMarca"
+              value={filtroEstado}
+              onChange={(evento) => setFiltroEstado(evento.target.value)}
+            >
+              <option value="todas">Todas ({marcas.length})</option>
+              {ESTADOS_MARCA.map((estado) => (
+                <option key={estado.id} value={String(estado.id)}>
+                  {estado.plural} ({marcas.filter((marca) => Number(marca.id_estado_marca) === estado.id).length})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="marcas-filtros__grupo">
-            <span className="marcas-filtros__label">Relevancia</span>
+            <label className="marcas-filtros__label" htmlFor="relevanciaMarca">Relevancia</label>
+            <select
+              id="relevanciaMarca"
+              value={filtroRelevancia}
+              onChange={(evento) => setFiltroRelevancia(evento.target.value)}
+            >
+              <option value="todas">Todas ({marcasPorEstado.length})</option>
+              <option value="destacadas">Destacadas ({totalDestacadas})</option>
+              <option value="normales">Normales ({totalNormales})</option>
+            </select>
+          </div>
 
-            <div className="marcas-filtros__opciones">
+          <div className="marcas-filtros__footer">
+            <span role="status" aria-live="polite">
+              Mostrando <strong>{marcasFiltradas.length}</strong> de <strong>{marcas.length}</strong> marcas
+            </span>
+            {hayFiltrosActivos && (
               <button
                 type="button"
-                className={`marcas-filtro ${
-                  filtroRelevancia === "todas" ? "active" : ""
-                }`}
-                onClick={() => setFiltroRelevancia("todas")}
-                aria-pressed={filtroRelevancia === "todas"}
+                onClick={() => {
+                  setFiltroEstado("todas");
+                  setFiltroRelevancia("todas");
+                }}
               >
-                Todas ({marcasPorEstado.length})
+                Limpiar filtros
               </button>
-
-              <button
-                type="button"
-                className={`marcas-filtro ${
-                  filtroRelevancia === "destacadas" ? "active" : ""
-                }`}
-                onClick={() => setFiltroRelevancia("destacadas")}
-                aria-pressed={filtroRelevancia === "destacadas"}
-              >
-                Destacadas ({totalDestacadas})
-              </button>
-
-              <button
-                type="button"
-                className={`marcas-filtro ${
-                  filtroRelevancia === "normales" ? "active" : ""
-                }`}
-                onClick={() => setFiltroRelevancia("normales")}
-                aria-pressed={filtroRelevancia === "normales"}
-              >
-                Normales ({totalNormales})
-              </button>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -520,6 +470,10 @@ function Marcas() {
                 </tr>
               ) : (
                 marcasFiltradas.map((marca) => {
+                  const estado = ESTADOS_MARCA.find(
+                    (opcion) => opcion.id === Number(marca.id_estado_marca),
+                  );
+                  const pendiente = Number(marca.id_estado_marca) === 1;
                   const logoPublico = obtenerUrlLogoMarca(
                     marca.logo_url,
                     versionImagenes,
@@ -559,13 +513,9 @@ function Marcas() {
 
                       <td>
                         <span
-                          className={
-                            marca.est_marca
-                              ? "status-badge status-badge--active"
-                              : "status-badge status-badge--pending"
-                          }
+                          className={`status-badge status-badge--${estado?.clase ?? "normal"}`}
                         >
-                          {marca.est_marca ? "Activa" : "No disponible"}
+                          {estado?.nombre ?? "Sin estado"}
                         </span>
                       </td>
 
@@ -574,7 +524,8 @@ function Marcas() {
                           type="button"
                           className="marcas-table__edit"
                           onClick={() => abrirFormularioEdicion(marca)}
-                          disabled={guardando}
+                          disabled={guardando || pendiente}
+                          title={pendiente ? "Espera la revisión del administrador para editar esta marca" : "Editar marca"}
                         >
                           Editar
                         </button>

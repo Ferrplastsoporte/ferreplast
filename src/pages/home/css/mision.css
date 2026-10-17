@@ -42,8 +42,19 @@
    ========================================================= */
 
 .mision__hero {
+  --mision-solape-cabecera: 24px;
   position: relative;
+  isolation: isolate;
   padding: clamp(20px, 3.5vh, 40px) 0 clamp(36px, 6vh, 64px);
+}
+
+/* Extender solo el fondo bajo las curvas de la barra, sin mover el contenido. */
+.mision__hero::after {
+  content: "";
+  position: absolute;
+  inset: calc(0px - var(--mision-solape-cabecera)) 0 0;
+  z-index: -1;
+  pointer-events: none;
   background:
     radial-gradient(circle at 8% 0%, rgba(228, 0, 27, 0.08), transparent 38%),
     radial-gradient(circle at 100% 100%, rgba(11, 58, 104, 0.1), transparent 45%),
@@ -54,10 +65,10 @@
 .mision__hero::before {
   content: "";
   position: absolute;
-  top: 0;
+  top: calc(0px - var(--mision-solape-cabecera));
   right: 0;
   width: 46%;
-  height: 100%;
+  height: calc(100% + var(--mision-solape-cabecera));
   background: var(--azul);
   clip-path: polygon(24% 0, 100% 0, 100% 100%, 0 100%);
   opacity: 0.96;

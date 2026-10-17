@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
 
 import BodegueroHeader from "./components/BodegueroHeader";
@@ -426,6 +427,10 @@ function BodegueroProductos() {
       return;
     }
 
+    if (Number(productoEditando.est_prod) === 1) {
+      throw new Error("Este producto está pendiente de revisión. Espera la resolución del administrador para editarlo.");
+    }
+
     setGuardando(true);
     setMensajeError("");
     setMensajeExito("");
@@ -435,6 +440,22 @@ function BodegueroProductos() {
     let rutaImagenNueva = null;
 
     try {
+      // Evita subir imágenes si otra sesión ya envió el producto a revisión.
+      // guardar_producto vuelve a validar el estado dentro de la transacción.
+      const { data: vigente, error: errorEstado } = await supabase
+        .from("producto")
+        .select("est_prod")
+        .eq("id_prod", productoEditando.id_prod)
+        .single();
+
+      if (errorEstado) throw errorEstado;
+      if (Number(vigente.est_prod) === 1) {
+        throw Object.assign(
+          new Error("Este producto está pendiente de revisión. Podrás editarlo cuando el administrador resuelva la solicitud."),
+          { code: "55000" },
+        );
+      }
+
       if (imagen) {
         rutaImagenNueva = await subirImagenProducto(
           productoEditando.id_prod,
@@ -471,6 +492,20 @@ function BodegueroProductos() {
 
       console.error("Error al actualizar el producto:", error);
 
+      if (error?.code === "55000") {
+        const idPendiente = productoEditando.id_prod;
+        setProductos((actuales) => actuales.map((producto) =>
+          producto.id_prod === idPendiente
+            ? {
+                ...producto,
+                est_prod: 1,
+                estado_producto: { ...producto.estado_producto, nom_est_prod: "Pendiente" },
+              }
+            : producto,
+        ));
+        cerrarFormulario();
+      }
+
       setMensajeError(
         error?.message || "No fue posible actualizar el producto.",
       );
@@ -492,6 +527,11 @@ function BodegueroProductos() {
   }
 
   function abrirEdicionProducto(producto) {
+    if (Number(producto.est_prod) === 1) {
+      setMensajeError("Este producto está pendiente de revisión. Espera la resolución del administrador para editarlo.");
+      return;
+    }
+
     const documentosProducto = Array.isArray(producto.producto_documento)
       ? producto.producto_documento
       : producto.producto_documento
@@ -679,9 +719,29 @@ function BodegueroProductos() {
     setFiltroMarca("todas");
   }
 
+  const encabezado = (
+    <BodegueroHeader
+      titulo="Gestión de productos"
+      descripcion="Crea, actualiza y administra los productos disponibles en el catálogo."
+      acciones={
+        <button
+          type="button"
+          className="productos-recargar"
+          onClick={cargarVista}
+          disabled={cargando || guardando || desactivando || reactivando}
+          aria-label="Actualizar productos"
+          title="Actualizar productos"
+        >
+          <FiRefreshCw aria-hidden="true" />
+        </button>
+      }
+    />
+  );
+
   if (cargando) {
     return (
       <section className="bodeguero-page productos-page">
+        {encabezado}
         <p className="bodeguero-loading">Cargando productos...</p>
       </section>
     );
@@ -689,10 +749,7 @@ function BodegueroProductos() {
 
   return (
     <section className="bodeguero-page productos-page">
-      <BodegueroHeader
-        titulo="Gestión de productos"
-        descripcion="Crea, actualiza y administra los productos disponibles en el catálogo."
-      />
+      {encabezado}
 
       <div className="productos-toolbar">
         <button

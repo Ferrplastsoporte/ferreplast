@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
@@ -23,6 +23,7 @@ function BodegueroSolicitudes() {
   const [mensajeError, setMensajeError] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("pendientes");
   const [nombresReferencias, setNombresReferencias] = useState({});
+  const [solicitudesExpandidas, setSolicitudesExpandidas] = useState([]);
 
   useEffect(() => {
     cargarSolicitudes();
@@ -45,6 +46,7 @@ function BodegueroSolicitudes() {
   async function cargarSolicitudes() {
     setCargando(true);
     setMensajeError("");
+    setSolicitudesExpandidas([]);
 
     try {
       const { data: productos, error: errorProductos } = await supabase
@@ -175,10 +177,10 @@ function BodegueroSolicitudes() {
           nom_marca,
           logo_url,
           marca_destacar,
-          est_marca
+          id_estado_marca
         `,
         )
-        .eq("est_marca", false);
+        .in("id_estado_marca", [1, 3]);
 
       if (errorMarcas) {
         throw errorMarcas;
@@ -191,8 +193,10 @@ function BodegueroSolicitudes() {
         fecha: null,
         titulo: marca.nom_marca,
         subtitulo: marca.marca_destacar ? "Marca destacada" : "Marca normal",
-        detalle: "Pendiente de aprobación",
-        estado: "Pendiente",
+        detalle: Number(marca.id_estado_marca) === 3
+          ? "Solicitud rechazada"
+          : "Pendiente de aprobación",
+        estado: Number(marca.id_estado_marca) === 3 ? "Rechazado" : "Pendiente",
         ultimoCambio: null,
       }));
 
@@ -225,8 +229,7 @@ function BodegueroSolicitudes() {
   ).length;
 
   const totalRechazados = solicitudes.filter(
-    (solicitud) =>
-      solicitud.tipo === "producto" && solicitud.estado === "Rechazado",
+    (solicitud) => solicitud.estado === "Rechazado",
   ).length;
 
   const totalMarcas = solicitudes.filter(
@@ -253,8 +256,7 @@ function BodegueroSolicitudes() {
 
     if (filtroTipo === "rechazados") {
       return solicitudes.filter(
-        (solicitud) =>
-          solicitud.tipo === "producto" && solicitud.estado === "Rechazado",
+        (solicitud) => solicitud.estado === "Rechazado",
       );
     }
 
@@ -267,8 +269,8 @@ function BodegueroSolicitudes() {
 
   const encabezado = (
     <BodegueroHeader
-      titulo="Solicitudes pendientes"
-      descripcion="Consulta los productos y marcas que esperan revisión del administrador."
+      titulo="Solicitudes"
+      descripcion="Consulta el estado de revisión de productos y marcas."
       acciones={
         <button
           type="button"
@@ -354,7 +356,7 @@ function BodegueroSolicitudes() {
 
       {solicitudesFiltradas.length === 0 ? (
         <section className="bodega-empty-state">
-          <h2>No hay solicitudes pendientes</h2>
+          <h2>No hay solicitudes en esta sección</h2>
 
           <p>
             {filtroTipo === "pendientes"
@@ -363,47 +365,48 @@ function BodegueroSolicitudes() {
                 ? "No hay productos pendientes de revisión."
                 : filtroTipo === "rechazados"
                   ? "No hay solicitudes rechazadas que requieran cambios."
-                  : "No hay marcas pendientes de revisión."}
+                  : "No hay solicitudes de marcas pendientes ni rechazadas."}
           </p>
 
           <Link to="/bodeguero/productos">Ir a gestión de productos</Link>
         </section>
       ) : (
-        <>
-          <div
-            className="bodeguero-message bodeguero-message--info"
-            role="status"
-          >
-            <p>
-              {solicitudesFiltradas.length}{" "}
-              {solicitudesFiltradas.length === 1
-                ? "solicitud está"
-                : "solicitudes están"}{" "}
-              esperando revisión del administrador.
-            </p>
+        <section className="solicitudes-panel" aria-labelledby="titulo-solicitudes-tabla">
+          <div className="solicitudes-panel__cabecera">
+            <span className="solicitudes-panel__etiqueta">Productos y marcas</span>
+            <h2 id="titulo-solicitudes-tabla">
+              {filtroTipo === "rechazados"
+                ? "Solicitudes rechazadas"
+                : filtroTipo === "marcas"
+                  ? "Solicitudes de marcas"
+                  : "Cambios pendientes"}
+            </h2>
+            <p>{solicitudesFiltradas.length} {solicitudesFiltradas.length === 1 ? "solicitud" : "solicitudes"} · Abre el detalle para consultar los cambios.</p>
           </div>
 
           <div className="solicitudes-table-wrapper">
             <table className="solicitudes-table">
               <thead>
                 <tr>
-                  <th>Imagen / Logo</th>
-                  <th>Nombre</th>
-                  <th>Detalle</th>
+                  <th>Producto / Marca</th>
+                  <th>Solicitado por</th>
+                  <th>Último cambio</th>
                   <th>Estado</th>
-                  <th>Fecha</th>
-                  <th>Acciones realizadas</th>
+                  <th>Detalle</th>
                 </tr>
               </thead>
 
               <tbody>
                 {solicitudesFiltradas.map((solicitud) => {
                   const esProducto = solicitud.tipo === "producto";
+                  const clave = `${solicitud.tipo}-${solicitud.id}`;
+                  const expandido = solicitudesExpandidas.includes(clave);
+                  const detalleId = `solicitud-detalle-${clave}`;
 
                   const cambio = solicitud.ultimoCambio;
 
                   const nombreUsuario =
-                    cambio?.usuario?.nom_user || "Bodeguero";
+                    cambio?.usuario?.nom_user || "No registrado";
 
                   const detalleCambios = cambio
                     ? obtenerDetalleCambios(
@@ -419,20 +422,27 @@ function BodegueroSolicitudes() {
                     : "estado-pendiente";
 
                   const estadoTexto = esRechazado
-                    ? "⛔ Rechazado"
-                    : "⏳ Pendiente";
+                    ? "Rechazado"
+                    : "Pendiente";
+
+                  const nombreAccion = cambio
+                    ? NOMBRES_ACCIONES[cambio.tipo_accion] || "Producto modificado"
+                    : esRechazado
+                      ? "Solicitud rechazada"
+                      : "Pendiente de revisión";
 
                   const rutaImagen = esProducto
                     ? solicitud.imagen_url
                     : solicitud.logo_url;
 
                   return (
-                    <tr key={`${solicitud.tipo}-${solicitud.id}`}>
-                      
+                    <Fragment key={clave}>
+                    <tr>
                       <td>
+                        <div className="solicitudes-elemento">
                         {rutaImagen ? (
                           <img
-                            className="solicitudes-table__image"
+                            className={`solicitudes-table__image ${!esProducto ? "solicitudes-table__image--logo" : ""}`}
                             src={obtenerUrlImagen(rutaImagen)}
                             alt={solicitud.titulo}
                             onError={(evento) => {
@@ -444,47 +454,66 @@ function BodegueroSolicitudes() {
                             {esProducto ? "Sin imagen" : "Sin logo"}
                           </div>
                         )}
-                      </td>
-
-                      <td>
                         <div className="solicitudes-table__product">
                           <strong>{solicitud.titulo}</strong>
-
-                          <span>{solicitud.subtitulo}</span>
+                          <span>{esProducto ? `${solicitud.detalle} · ${solicitud.subtitulo}` : solicitud.subtitulo}</span>
+                          <small>{esProducto ? "Producto" : "Marca"} #{solicitud.id}</small>
+                        </div>
                         </div>
                       </td>
 
-                      <td>{solicitud.detalle}</td>
+                      <td><strong className="solicitudes-usuario">{nombreUsuario}</strong></td>
+
+                      <td>
+                        <div className="solicitudes-fecha">
+                          <strong>{nombreAccion}</strong>
+                          <span>{solicitud.fecha ? formatearFecha(solicitud.fecha) : "Sin fecha registrada"}</span>
+                        </div>
+                      </td>
 
                       <td>
                         <span className={estadoClase}>{estadoTexto}</span>
                       </td>
 
                       <td>
-                        <small>
-                          {solicitud.fecha
-                            ? formatearFecha(solicitud.fecha)
-                            : "Sin fecha registrada"}
-                        </small>
+                        <button
+                          type="button"
+                          className="solicitudes-btn-detalle"
+                          aria-expanded={expandido}
+                          aria-controls={detalleId}
+                          onClick={() => setSolicitudesExpandidas((actuales) =>
+                            actuales.includes(clave)
+                              ? actuales.filter((id) => id !== clave)
+                              : [...actuales, clave],
+                          )}
+                        >
+                          {expandido ? "Ocultar cambios" : "Ver cambios"}
+                        </button>
                       </td>
-
-                      <td>
-                        {esProducto && cambio ? (
+                    </tr>
+                    <tr id={detalleId} hidden={!expandido} className="solicitudes-fila-detalle">
+                      <td colSpan="5">
+                      {expandido && (esProducto && cambio ? (
                           <div className="solicitudes-change">
-                            <strong>
+                            <header>
+                              <strong>
                               {NOMBRES_ACCIONES[cambio.tipo_accion] ||
                                 "Producto modificado"}
-                            </strong>
+                              </strong>
+                              <span>{formatearFecha(cambio.fecha_cambio)}</span>
+                            </header>
 
                             {detalleCambios.length > 0 ? (
-                              <div className="solicitudes-change__details">
-                                {detalleCambios.map((detalle) => (
-                                  <span key={detalle.campo}>
-                                    <strong>{detalle.campo}:</strong>{" "}
-                                    {detalle.anterior} → {detalle.nuevo}
-                                  </span>
+                              <ul className="solicitudes-change__details">
+                                {detalleCambios.map((detalle, indice) => (
+                                  <li key={`${detalle.campo}-${indice}`}>
+                                    <strong>{detalle.campo}</strong>
+                                    <span>{detalle.anterior}</span>
+                                    <b aria-hidden="true">→</b>
+                                    <span>{detalle.nuevo}</span>
+                                  </li>
                                 ))}
-                              </div>
+                              </ul>
                             ) : (
                               <span>Sin detalle de campos</span>
                             )}
@@ -505,19 +534,20 @@ function BodegueroSolicitudes() {
                           </div>
                         ) : (
                           <div className="solicitudes-change solicitudes-change--empty">
-                            <strong>Marca nueva</strong>
+                            <strong>Solicitud de marca</strong>
 
                             <span>Pendiente de aprobación.</span>
                           </div>
-                        )}
+                        ))}
                       </td>
                     </tr>
+                    </Fragment>
                   );
                 })}
               </tbody>
             </table>
           </div>
-        </>
+        </section>
       )}
     </section>
   );

@@ -206,8 +206,13 @@ function TablaProductos({
                         type="button"
                         className="btn-edit"
                         onClick={() => onEditar(producto)}
-                        title="Editar producto"
-                        aria-label={`Editar ${producto.nom_prod}`}
+                        disabled={Number(producto.est_prod) === 1}
+                        title={Number(producto.est_prod) === 1
+                          ? "Pendiente de revisión: espera la resolución del administrador"
+                          : "Editar producto"}
+                        aria-label={Number(producto.est_prod) === 1
+                          ? `${producto.nom_prod}: edición bloqueada por revisión pendiente`
+                          : `Editar ${producto.nom_prod}`}
                       >
                         ✏️
                       </button>
