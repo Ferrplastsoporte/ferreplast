@@ -1,0 +1,404 @@
+/* Los mismos iconos se adaptan a una barra superior en celulares. */
+.barra-lateral-admin__icono,
+.barra-lateral-admin__icono-logo,
+.barra-lateral-admin__nombre-panel,
+.barra-lateral-admin__cuenta { display: none; }
+
+.barra-lateral-admin-etiqueta-flotante {
+  position: fixed;
+  z-index: 3000;
+  width: max-content;
+  max-width: min(300px, calc(100vw - 100px));
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 8px;
+  background: #123657;
+  color: #fff;
+  box-shadow: 0 6px 20px rgb(10 30 50 / 30%);
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  transform: translateY(-50%);
+  animation: barra-lateral-admin-etiqueta 140ms ease-out;
+}
+
+.barra-lateral-admin-etiqueta-flotante::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: calc(50% - 5px);
+  width: 10px;
+  height: 10px;
+  background: #123657;
+  transform: rotate(45deg);
+}
+
+@keyframes barra-lateral-admin-etiqueta {
+  from { opacity: 0; transform: translate(5px, -50%); }
+  to { opacity: 1; transform: translate(0, -50%); }
+}
+
+@media (min-width: 701px) {
+  .admin-layout.barra-lateral-admin-estructura {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .barra-lateral-admin.admin-barra-lateral {
+    --alto-opcion: clamp(30px, 5.5dvh, 42px);
+    --espacio-opciones: clamp(2px, 0.6dvh, 6px);
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 88px;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    padding: 12px 8px;
+    overflow: visible;
+    background: linear-gradient(100deg, #277ce0 0%, #2476d7 60%, #1f6fcb 100%);
+    color: #fff;
+    box-shadow: 4px 0 16px rgb(15 42 74 / 13%);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__cabecera {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 100%;
+    margin: 0 0 10px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid rgb(255 255 255 / 20%);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__icono-logo {
+    display: block;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__texto-logo,
+  .barra-lateral-admin .barra-lateral-admin__texto { display: none; }
+
+  .barra-lateral-admin .barra-lateral-admin__nombre-panel {
+    display: block;
+    margin: 0;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__navegacion {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-opciones);
+    width: 100%;
+    min-height: 0;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 var(--alto-opcion);
+    width: 48px;
+    height: var(--alto-opcion);
+    min-height: var(--alto-opcion);
+    margin: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    box-shadow: none;
+    text-decoration: none;
+    cursor: pointer;
+    transform: none;
+    transition: background-color 160ms ease, border-color 160ms ease;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__icono {
+    display: block;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    transition: transform 160ms ease;
+    pointer-events: none;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion:hover,
+  .barra-lateral-admin .barra-lateral-admin__opcion:focus-visible {
+    background: rgb(255 255 255 / 14%);
+    color: #fff;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion:hover .barra-lateral-admin__icono,
+  .barra-lateral-admin .barra-lateral-admin__opcion:focus-visible .barra-lateral-admin__icono {
+    transform: translateY(-1px) scale(1.03);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion--activo,
+  .barra-lateral-admin .barra-lateral-admin__opcion--activo:hover {
+    border-color: rgb(255 255 255 / 28%);
+    background: rgb(255 255 255 / 22%);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion--activo::before {
+    content: "";
+    position: absolute;
+    left: -11px;
+    top: 25%;
+    width: 3px;
+    height: 50%;
+    border-radius: 0 3px 3px 0;
+    background: #fff;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion:focus-visible {
+    outline: 2px solid #ffd66b;
+    outline-offset: 2px;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__pie {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-opciones);
+    width: 100%;
+    margin: 10px 0 0;
+    padding: 10px 0 0;
+    border-top: 1px solid rgb(255 255 255 / 20%);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__cerrar-sesion:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  .barra-lateral-admin__error {
+    position: absolute;
+    left: calc(100% + 12px);
+    bottom: 12px;
+    width: 230px;
+    padding: 12px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fff;
+    color: #b91c1c;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mantener accesibles todas las opciones en ventanas excepcionalmente bajas. */
+@media (min-width: 701px) and (max-height: 560px) {
+  .barra-lateral-admin.admin-barra-lateral {
+    --alto-opcion: 30px;
+    --espacio-opciones: 2px;
+    padding-block: 8px;
+  }
+  .barra-lateral-admin .barra-lateral-admin__cabecera { margin-bottom: 6px; padding-bottom: 6px; }
+  .barra-lateral-admin .barra-lateral-admin__icono-logo { width: 36px; height: 36px; }
+  .barra-lateral-admin .barra-lateral-admin__pie { margin-top: 6px; padding-top: 6px; }
+  .barra-lateral-admin .barra-lateral-admin__navegacion { overflow-y: auto; scrollbar-width: thin; }
+  .barra-lateral-admin .barra-lateral-admin__icono { width: 26px; height: 26px; }
+}
+
+
+/* Acceso ocasional desde celulares: cabecera compacta y opciones en dos filas. */
+@media (max-width: 700px) {
+  .admin-layout.barra-lateral-admin-estructura { display: block; }
+
+  .barra-lateral-admin.admin-barra-lateral {
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 8px 12px 10px;
+    overflow: visible;
+    background: linear-gradient(100deg, #277ce0 0%, #2476d7 60%, #1f6fcb 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgb(15 42 74 / 16%);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__cabecera {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__icono-logo {
+    display: block;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__nombre-panel {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+    white-space: normal;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__texto-logo { display: none; }
+
+  .barra-lateral-admin .barra-lateral-admin__navegacion {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 4px 2px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    box-shadow: none;
+    text-decoration: none;
+    transform: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__icono {
+    display: block;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    pointer-events: none;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__texto {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion:hover,
+  .barra-lateral-admin .barra-lateral-admin__opcion:active {
+    background: rgb(255 255 255 / 14%);
+    color: #fff;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion--activo,
+  .barra-lateral-admin .barra-lateral-admin__opcion--activo:hover {
+    border-color: rgb(255 255 255 / 35%);
+    background: rgb(255 255 255 / 22%);
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__opcion:focus-visible {
+    outline: 2px solid #ffd66b;
+    outline-offset: 1px;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__pie {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__pie .barra-lateral-admin__opcion {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .barra-lateral-admin .barra-lateral-admin__pie .barra-lateral-admin__texto { display: none; }
+  .barra-lateral-admin .barra-lateral-admin__cerrar-sesion:disabled { opacity: 0.6; cursor: wait; }
+
+  .barra-lateral-admin__error {
+    position: absolute;
+    top: 100%;
+    right: 12px;
+    left: 12px;
+    margin: 8px 0 0;
+    padding: 12px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fff;
+    color: #b91c1c;
+    font-size: 13px;
+  }
+
+  .barra-lateral-admin-etiqueta-flotante {
+    max-width: calc(100vw - 24px);
+    font-size: 13px;
+    transform: none;
+    animation: none;
+  }
+
+  .barra-lateral-admin-etiqueta-flotante::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-lateral-admin .barra-lateral-admin__icono,
+  .barra-lateral-admin .barra-lateral-admin__opcion { transition: none; }
+  .barra-lateral-admin .barra-lateral-admin__opcion:hover .barra-lateral-admin__icono,
+  .barra-lateral-admin .barra-lateral-admin__opcion:focus-visible .barra-lateral-admin__icono { transform: none; }
+  .barra-lateral-admin-etiqueta-flotante { animation: none; }
+}

@@ -4,7 +4,7 @@ import "../css/bodeguero.css";
 
 function BodegueroLayout() {
   return (
-    <div className="bodeguero-layout">
+    <div className="bodeguero-layout barra-lateral-bodega-estructura">
       <BodegueroSidebar />
 
       <main className="bodeguero-main">

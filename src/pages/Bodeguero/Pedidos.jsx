@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+import iconoCliente from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos__logo_cliente.png";
+import iconoMonto from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_monto.png";
+import iconoProducto from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_producto.png";
+import iconoTrabajador from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_trabajador.png";
+import iconoTransporte from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_transporte.png";
+import iconoUbicacion from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_ubicacion.png";
 import "./css/pedidos-bodeguero.css";
 const ESTADO_CONFIRMADO = 1;
 const ESTADO_PREPARACION = 2;
@@ -562,7 +568,7 @@ function Pedidos() {
             </div>
           </div>
           <div className="pedidos-bodeguero__resumen-card">
-            <span>📦</span>
+            <span><img src={iconoProducto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /></span>
             <div>
               <strong>
                 {pedidos.length}
@@ -794,14 +800,14 @@ function Pedidos() {
                   {/* INFORMACIÓN RESUMIDA */}
                   <div className="pedido-bodeguero-card__resumen">
                     <div>
-                      <span>👤 Cliente</span>
+                      <span><img src={iconoCliente} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Cliente</span>
                       <strong>
                         {pedido.usuario?.nom_user ||
                           "Cliente sin nombre"}
                       </strong>
                     </div>
                     <div>
-                      <span>📦 Productos</span>
+                      <span><img src={iconoProducto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Productos</span>
                       <strong>
                         {obtenerCantidadProductos(
                           pedido
@@ -814,13 +820,13 @@ function Pedidos() {
                       </strong>
                     </div>
                     <div>
-                      <span>👷 Bodeguero responsable</span>
+                      <span><img src={iconoTrabajador} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Bodeguero responsable</span>
                       <strong>
                         {pedido.bodeguero?.nom_user || "Sin asignar"}
                       </strong>
                     </div>
                     <div>
-                      <span>🚚 Tipo de despacho</span>
+                      <span><img src={iconoTransporte} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Tipo de despacho</span>
                       <strong>
                         {obtenerTipoDespacho(
                           pedido
@@ -828,14 +834,14 @@ function Pedidos() {
                       </strong>
                     </div>
                     <div>
-                      <span>📍 Comuna</span>
+                      <span><img src={iconoUbicacion} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Comuna</span>
                       <strong>
                         {despacho?.comuna_despacho ||
                           "No informada"}
                       </strong>
                     </div>
                     <div>
-                      <span>💰 Total</span>
+                      <span><img src={iconoMonto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Total</span>
                       <strong>
                         {formatearPrecio(
                           pedido.total_pedido
@@ -956,7 +962,7 @@ function Pedidos() {
               {/* CLIENTE */}
               <section className="pedido-bodeguero-modal__seccion">
                 <h3>
-                  👤 Información del cliente
+                  <img src={iconoCliente} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Información del cliente
                 </h3>
                 <div className="pedido-bodeguero-modal__grid">
                   <div>
@@ -980,7 +986,7 @@ function Pedidos() {
               {/* DESPACHO DEL CLIENTE */}
               <section className="pedido-bodeguero-modal__seccion">
                 <h3>
-                  📍 Datos de entrega
+                  <img src={iconoUbicacion} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Datos de entrega
                 </h3>
                 <div className="pedido-bodeguero-modal__grid">
                   <div>
@@ -1032,7 +1038,7 @@ function Pedidos() {
               {/* PRODUCTOS */}
               <section className="pedido-bodeguero-modal__seccion">
                 <h3>
-                  📦 Productos del pedido
+                  <img src={iconoProducto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Productos del pedido
                 </h3>
                 <div className="pedido-bodeguero-modal__productos">
                   {pedidoSeleccionado
@@ -1096,7 +1102,7 @@ function Pedidos() {
               {/* INFORMACIÓN DEL DESPACHO */}
               {pedidoSeleccionado.despacho?.length > 0 && (
                 <section className="pedido-bodeguero-modal__seccion">
-                  <h3>🚚 Información del despacho</h3>
+                  <h3><img src={iconoTransporte} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Información del despacho</h3>
                   <div className="pedido-bodeguero-modal__grid">
                     <div>
                       <span>Tipo de despacho</span>
@@ -1258,7 +1264,7 @@ function Pedidos() {
               </div>
               <section className="pedido-bodeguero-modal__seccion">
                 <h3>
-                  🚚 Información del despacho
+                  <img src={iconoTransporte} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Información del despacho
                 </h3>
                 {/* DATOS ELEGIDOS POR EL CLIENTE */}
                 <div className="pedido-bodeguero-modal__grid">

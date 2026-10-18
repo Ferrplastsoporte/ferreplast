@@ -1,8 +1,8 @@
 import "../css/contacto.css";
-import iconoUbicacion from "../../../assets/iconos/home_contacto/ubicacion_logo_contacto.png";
-import iconoTelefono from "../../../assets/iconos/home_contacto/telefono_logo_contacto.png";
-import iconoCorreo from "../../../assets/iconos/home_contacto/correo_logo_contacto.png";
-import iconoHorario from "../../../assets/iconos/home_contacto/horario_logo_contacto.png";
+import iconoUbicacion from "../../../assets/iconos/vista_home/home_contacto/ubicacion_logo_contacto.png";
+import iconoTelefono from "../../../assets/iconos/vista_home/home_contacto/telefono_logo_contacto.png";
+import iconoCorreo from "../../../assets/iconos/vista_home/home_contacto/correo_logo_contacto.png";
+import iconoHorario from "../../../assets/iconos/vista_home/home_contacto/horario_logo_contacto.png";
 function Contacto() {
   return (
     <section className="contacto">

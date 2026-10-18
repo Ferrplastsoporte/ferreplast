@@ -9,9 +9,9 @@ import proyecto2 from "../../../assets/proyectos/proyecto2.png";
 import puertoMontt from "../../../assets/Puerto_Montt.jpeg";
 import localFerreplast from "../../../assets/local_ferreplast.JPEG";
 
-import iconoMision from "../../../assets/iconos/home_mision/mision_logo_contacto.png";
-import iconoVision from "../../../assets/iconos/home_mision/vision_logo_contacto.png";
-import iconoValores from "../../../assets/iconos/home_mision/valores_logo_contacto.png";
+import iconoMision from "../../../assets/iconos/vista_home/home_mision/mision_logo_contacto.png";
+import iconoVision from "../../../assets/iconos/vista_home/home_mision/vision_logo_contacto.png";
+import iconoValores from "../../../assets/iconos/vista_home/home_mision/valores_logo_contacto.png";
 
 const proyectos = [
   {

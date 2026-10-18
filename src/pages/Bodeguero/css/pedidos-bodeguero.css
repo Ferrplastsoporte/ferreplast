@@ -1658,3 +1658,23 @@
     grid-column: auto;
   }
 }
+
+/* Iconos propios de pedidos: etiquetas, resumen y títulos de los detalles. */
+.pedidos-bodega__icono {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  object-fit: contain;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.pedidos-bodeguero__resumen-card > span .pedidos-bodega__icono {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+}
+.pedido-bodeguero-modal__seccion h3 .pedidos-bodega__icono {
+  width: 22px;
+  height: 22px;
+}

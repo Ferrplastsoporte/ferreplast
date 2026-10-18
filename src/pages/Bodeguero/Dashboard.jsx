@@ -11,6 +11,11 @@ import {
   obtenerUltimosProductos,
 } from "../../utils/bodega/panelBodeguero";
 
+import iconoProductos from "../../assets/iconos/vista_bodega/bodega_dashboard/bodega_dashboard_logo_productos.png";
+import iconoPendientes from "../../assets/iconos/vista_bodega/bodega_dashboard/bodega_dashboard_logo_solicitudespendientes.png";
+import iconoStockBajo from "../../assets/iconos/vista_bodega/bodega_dashboard/bodega_dashboard_logo_stockbajo.png";
+import iconoNoDisponibles from "../../assets/iconos/vista_bodega/bodega_dashboard/bodega_dashboard_logo_nodisponibles.png";
+
 import "./css/bodeguero.css";
 import "./css/dashboard.css";
 import "./css/productos-bodeguero.css";
@@ -115,25 +120,25 @@ function BodegueroDashboard() {
           <TarjetaEstadistica
             titulo="Total productos"
             valor={resumen.total}
-            icono="📦"
+            icono={<img src={iconoProductos} alt="" aria-hidden="true" className="bodega-indicador__icono" />}
           />
 
           <TarjetaEstadistica
             titulo="Pendientes"
             valor={resumen.pendientes}
-            icono="⏳"
+            icono={<img src={iconoPendientes} alt="" aria-hidden="true" className="bodega-indicador__icono" />}
           />
 
           <TarjetaEstadistica
             titulo="Stock bajo"
             valor={resumen.stockBajo}
-            icono="⚠️"
+            icono={<img src={iconoStockBajo} alt="" aria-hidden="true" className="bodega-indicador__icono" />}
           />
 
           <TarjetaEstadistica
             titulo="No disponibles"
             valor={resumen.noDisponibles}
-            icono="⛔"
+            icono={<img src={iconoNoDisponibles} alt="" aria-hidden="true" className="bodega-indicador__icono" />}
           />
         </section>
       </div>
@@ -158,7 +163,7 @@ function BodegueroDashboard() {
             {resumen.stockBajo > 0 && (
               <div className="dashboard-attention__item">
                 <div className="dashboard-attention__info">
-                  <span className="dashboard-attention__icon">⚠️</span>
+                  <span className="dashboard-attention__icon"><img src={iconoStockBajo} alt="" aria-hidden="true" className="bodega-indicador__icono" /></span>
 
                   <div>
                     <strong>
@@ -183,7 +188,7 @@ function BodegueroDashboard() {
             {resumen.pendientes > 0 && (
               <div className="dashboard-attention__item">
                 <div className="dashboard-attention__info">
-                  <span className="dashboard-attention__icon">⏳</span>
+                  <span className="dashboard-attention__icon"><img src={iconoPendientes} alt="" aria-hidden="true" className="bodega-indicador__icono" /></span>
 
                   <div>
                     <strong>
@@ -208,7 +213,7 @@ function BodegueroDashboard() {
             {resumen.noDisponibles > 0 && (
               <div className="dashboard-attention__item">
                 <div className="dashboard-attention__info">
-                  <span className="dashboard-attention__icon">⛔</span>
+                  <span className="dashboard-attention__icon"><img src={iconoNoDisponibles} alt="" aria-hidden="true" className="bodega-indicador__icono" /></span>
 
                   <div>
                     <strong>
