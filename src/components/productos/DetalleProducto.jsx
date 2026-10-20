@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAutenticacion } from "../../hooks/useAutenticacion";
 import { FaArrowLeft } from "react-icons/fa";
@@ -15,6 +16,7 @@ const NOMBRES_TIPO_DOCUMENTO = {
 
 function DetalleProducto({ producto }) {
   const { user } = useAutenticacion();
+  const [selectorActivo, setSelectorActivo] = useState(null);
 
   const precioOriginal = Number(producto.precio_prod);
 
@@ -188,10 +190,18 @@ function DetalleProducto({ producto }) {
             producto={producto}
             stockDisponible={Number(producto.stock_prod) || 0}
             className="product-detail__cart-button"
+            mostrarCantidad={selectorActivo === "carrito"}
+            onMostrarCantidadChange={(abierto) =>
+              setSelectorActivo((actual) => abierto ? "carrito" : actual === "carrito" ? null : actual)
+            }
           />
 
           {user && (
             <BotonAgregarCotizacion
+              mostrarCantidad={selectorActivo === "cotizacion"}
+              onMostrarCantidadChange={(abierto) =>
+                setSelectorActivo((actual) => abierto ? "cotizacion" : actual === "cotizacion" ? null : actual)
+              }
               producto={producto}
               stockDisponible={Number(producto.stock_prod) || 0}
             />

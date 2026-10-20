@@ -1,3 +1,4 @@
+import iconoNuevo from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_nuevo.png";
 import { useEffect, useMemo, useState } from "react";
 import {
   LONGITUD_MAXIMA_BUSQUEDA,
@@ -394,7 +395,8 @@ const DocumentosProductos = () => {
                     setMensaje("");
                   }}
                 >
-                  + Agregar documento
+                  <img className="documentos-icono-agregar" src={iconoNuevo} alt="" aria-hidden="true" />
+                  Agregar documento
                 </button>
               </div>
 

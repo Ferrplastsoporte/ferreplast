@@ -4,6 +4,8 @@
 
 .add-to-cart {
   width: 100%;
+  position: relative;
+  margin-top: 8px;
 }
 
 
@@ -120,6 +122,11 @@
 .add-to-cart__modal {
   position: relative;
   z-index: 1200;
+
+  left: 0;
+  right: 0;
+
+  bottom: calc(100% + 12px);
 }
 
 

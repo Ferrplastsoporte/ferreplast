@@ -1,3 +1,4 @@
+import iconoNuevo from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_nuevo.png";
 import { useEffect, useMemo, useState } from "react";
 import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
@@ -754,10 +755,11 @@ function BodegueroProductos() {
       <div className="productos-toolbar">
         <button
           type="button"
-          className="btn-add"
+          className="bodeguero-boton-agregar"
           onClick={abrirNuevoProducto}
           disabled={guardando}
         >
+          <img className="bodeguero-boton-agregar__icono" src={iconoNuevo} alt="" aria-hidden="true" />
           Nuevo producto
         </button>
       </div>

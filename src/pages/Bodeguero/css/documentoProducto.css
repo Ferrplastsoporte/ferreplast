@@ -281,6 +281,10 @@
 ========================================================= */
 
 .documentos-btn-agregar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   flex-shrink: 0;
 
   min-height: 40px;
@@ -715,4 +719,11 @@
   .documentos-tabla {
     min-width: 800px;
   }
+}
+.documentos-icono-agregar {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) invert(1);
 }

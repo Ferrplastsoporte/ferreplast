@@ -105,7 +105,7 @@ function BotonAgregarCarrito({
 
   return (
     <div
-      className="add-to-cart add-cotizacion"
+      className="add-to-cart"
       onClick={(evento) =>
         evento.stopPropagation()
       }

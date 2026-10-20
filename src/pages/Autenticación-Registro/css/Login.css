@@ -1249,3 +1249,76 @@
     transition: none;
   }
 }
+
+/* Correo del login: conserva el diseño anterior sin depender de Registro.css. */
+.login-correo {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.login-correo label {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #273142;
+}
+
+/* ============================
+   CAMPOS DE ENTRADA
+============================ */
+.login-correo__campo {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  border: 1px solid #cbd1d8;
+  border-radius: 9px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #1f2937;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.login-correo__campo::placeholder {
+  color: #98a2b3;
+}
+
+.login-correo__campo:hover {
+  border-color: #98a2b3;
+}
+
+.login-correo__campo:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.login-correo__campo:disabled {
+  cursor: not-allowed;
+  background: #f2f4f7;
+  color: #98a2b3;
+}
+
+/* ============================
+   ERRORES
+============================ */
+.login-correo__campo--error {
+  border-color: #d92d20;
+  background: #fffafa;
+}
+
+.login-correo__campo--error:focus {
+  border-color: #d92d20;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.12);
+}
+
+.login-correo__error {
+  display: block;
+  margin-top: 6px;
+  color: #d92d20;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+

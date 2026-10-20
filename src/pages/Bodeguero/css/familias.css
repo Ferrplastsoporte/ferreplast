@@ -495,7 +495,7 @@
     flex-direction: column;
   }
 
-  .familias-toolbar .btn-add {
+  .familias-toolbar .bodeguero-boton-agregar {
     width: 100%;
   }
 
@@ -517,4 +517,9 @@
   .familias-form__cancel {
     width: 100%;
   }
+}
+
+/* Icono azul para la acción secundaria sobre fondo blanco. */
+.familias-toolbar__secondary .bodeguero-boton-agregar__icono {
+  filter: brightness(0) saturate(100%) invert(18%) sepia(88%) saturate(2528%) hue-rotate(211deg) brightness(88%) contrast(104%);
 }

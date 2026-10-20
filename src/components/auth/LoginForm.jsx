@@ -11,9 +11,8 @@ import {
   LONGITUD_MAXIMA_CORREO,
   sanitizarCorreo,
 } from "../../utils/comunes/correo";
-import Input from "../ui/Input";
 import Button from "../ui/Button";
-import Modal from "../ui/Modal";
+import ModalAcceso from "./ModalAcceso";
 import LoginMascot from "./LoginMascot";
 import Captcha from "./Captcha";
 import useCaptcha from "../../hooks/useCaptcha";
@@ -203,18 +202,28 @@ const LoginForm = () => {
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate>
       <LoginMascot />
-      <Input
-        label="Correo electrónico"
-        name="email"
-        type="email"
-        value={values.email}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        error={errors.email}
-        placeholder="correo@ejemplo.cl"
-        autoComplete="email"
-        maxLength={LONGITUD_MAXIMA_CORREO}
-      />
+      <div className="login-correo">
+        <label htmlFor="email">Correo electrónico</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          className={`login-correo__campo ${errors.email ? "login-correo__campo--error" : ""}`}
+          value={values.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          placeholder="correo@ejemplo.cl"
+          autoComplete="email"
+          maxLength={LONGITUD_MAXIMA_CORREO}
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "login-correo-error" : undefined}
+        />
+        {errors.email && (
+          <span id="login-correo-error" className="login-correo__error">
+            {errors.email}
+          </span>
+        )}
+      </div>
 
       <div className="login-group">
         <label htmlFor="password">Contraseña</label>
@@ -269,7 +278,7 @@ const LoginForm = () => {
         </button>
       </p>
 
-      <Modal
+      <ModalAcceso
         {...modal}
         onClose={hideModal}
         accionSecundaria={
@@ -299,7 +308,7 @@ const LoginForm = () => {
             />
           </div>
         )}
-      </Modal>
+      </ModalAcceso>
     </form>
   );
 };

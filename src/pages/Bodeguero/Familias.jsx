@@ -1,3 +1,4 @@
+import iconoNuevo from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_nuevo.png";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
@@ -328,21 +329,23 @@ function Familias() {
       <div className="familias-toolbar">
         <button
           type="button"
-          className="btn-add"
+          className="bodeguero-boton-agregar"
           onClick={abrirNuevaFamilia}
           disabled={guardandoFamilia || guardandoSubcategoria}
         >
+          <img className="bodeguero-boton-agregar__icono" src={iconoNuevo} alt="" aria-hidden="true" />
           Nueva familia
         </button>
 
         <button
           type="button"
-          className="btn-add familias-toolbar__secondary"
+          className="bodeguero-boton-agregar familias-toolbar__secondary"
           onClick={abrirNuevaSubcategoria}
           disabled={
             guardandoFamilia || guardandoSubcategoria || familias.length === 0
           }
         >
+          <img className="bodeguero-boton-agregar__icono" src={iconoNuevo} alt="" aria-hidden="true" />
           Nueva subcategoría
         </button>
       </div>

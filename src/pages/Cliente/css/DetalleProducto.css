@@ -949,3 +949,26 @@
   }
 
 }
+/* Una sola separación del selector respecto a su botón, como en el catálogo. */
+.product-detail .add-to-cart__modal {
+  position: absolute;
+  bottom: calc(100% + 6px);
+}
+.product-detail .modal-cantidad {
+  bottom: calc(100% + 6px);
+}
+.product-detail .add-to-cart__modal .modal-cantidad {
+  bottom: 0;
+}
+@media (max-width: 560px) {
+  .product-detail .modal-cantidad,
+  .product-detail .add-to-cart__modal .modal-cantidad {
+    bottom: 16px;
+  }
+}
+@media (max-width: 380px) {
+  .product-detail .modal-cantidad,
+  .product-detail .add-to-cart__modal .modal-cantidad {
+    bottom: 10px;
+  }
+}

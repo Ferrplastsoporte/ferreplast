@@ -1,3 +1,6 @@
+import iconoEditar from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_editar.png";
+import iconoDesactivar from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_desactivar.png";
+import "../css/TablaProductosIconos.css";
 import { supabase } from "../../lib/supabase";
 import { formatPrice } from "../../utils/comunes/formateadores";
 
@@ -214,7 +217,7 @@ function TablaProductos({
                           ? `${producto.nom_prod}: edición bloqueada por revisión pendiente`
                           : `Editar ${producto.nom_prod}`}
                       >
-                        ✏️
+                        <img className="tabla-productos-icono" src={iconoEditar} alt="" aria-hidden="true" />
                       </button>
                     )}
 
@@ -226,7 +229,7 @@ function TablaProductos({
                         title="Deshabilitar producto"
                         aria-label={`Deshabilitar ${producto.nom_prod}`}
                       >
-                        ⛔
+                        <img className="tabla-productos-icono" src={iconoDesactivar} alt="" aria-hidden="true" />
                       </button>
                     )}
 

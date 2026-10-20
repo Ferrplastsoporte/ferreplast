@@ -219,13 +219,13 @@
    BOTÓN PRINCIPAL
 ============================ */
 
-.btn-add {
+.bodeguero-boton-agregar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  min-height: 46px;
-  padding: 0 20px;
+  min-height: 40px;
+  padding: 0 14px;
 
   border: none;
   border-radius: 9px;
@@ -234,8 +234,8 @@
   color: #ffffff;
 
   font: inherit;
-  font-size: 0.92rem;
-  font-weight: 800;
+  font-size: 0.875rem;
+  font-weight: 650;
 
   cursor: pointer;
 
@@ -245,14 +245,14 @@
     box-shadow 0.2s ease;
 }
 
-.btn-add:hover:not(:disabled) {
+.bodeguero-boton-agregar:hover:not(:disabled) {
   background: #053a98;
   transform: translateY(-1px);
 
   box-shadow: 0 8px 16px rgba(6, 71, 185, 0.2);
 }
 
-.btn-add:disabled {
+.bodeguero-boton-agregar:disabled {
   background: #94a3b8;
   cursor: not-allowed;
 }
@@ -357,3 +357,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Iconos decorativos de las acciones de creación. */
+.bodeguero-boton-agregar { gap: 8px; }
+.bodeguero-boton-agregar__icono { width: 14px; height: 14px; object-fit: contain; flex-shrink: 0; filter: brightness(0) invert(1); }

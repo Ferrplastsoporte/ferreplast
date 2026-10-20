@@ -1,9 +1,11 @@
 .productos-toolbar {
+  display: flex;
+  justify-content: flex-end;
   margin-bottom: 18px;
 }
 
-.productos-toolbar .btn-add {
-  width: 100%;
+.productos-toolbar .bodeguero-boton-agregar {
+  width: auto;
 }
 
 /* ============================

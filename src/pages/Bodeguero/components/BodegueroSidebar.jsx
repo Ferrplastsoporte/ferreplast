@@ -4,8 +4,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { useAutenticacion } from "../../../hooks/useAutenticacion";
 import "../css/bodeguero.css";
-import "../css/productos-bodeguero.css";
-import "../css/stock.css";
 import "../css/barra-lateral-bodega.css";
 
 const ICONOS = import.meta.glob(

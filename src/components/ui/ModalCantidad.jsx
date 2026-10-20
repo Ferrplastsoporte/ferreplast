@@ -1,5 +1,5 @@
 import SelectorCantidad from "./SelectorCantidad";
-import "../css/BotonAgregarCotizacion.css";
+import "../css/ModalCantidad.css";
 
 function ModalCantidad({
   titulo,
@@ -39,17 +39,17 @@ function ModalCantidad({
 
   return (
     <div
-      className="add-cotizacion__selector"
+      className="modal-cantidad"
       role="dialog"
       aria-modal="false"
       aria-label={`Seleccionar cantidad de ${nombreProducto}`}
       onClick={detenerPropagacion}
     >
-      <p className="add-cotizacion__title">
+      <p className="modal-cantidad__titulo">
         {titulo}
       </p>
 
-      <p className="add-cotizacion__stock">
+      <p className="modal-cantidad__existencias">
         Stock actual: {stock}
       </p>
 
@@ -61,10 +61,10 @@ function ModalCantidad({
         disabled={procesando}
       />
 
-      <div className="add-cotizacion__actions">
+      <div className="modal-cantidad__acciones">
         <button
           type="button"
-          className="add-cotizacion__cancel"
+          className="modal-cantidad__cancelar"
           onClick={manejarCancelar}
           disabled={procesando}
         >
@@ -73,7 +73,7 @@ function ModalCantidad({
 
         <button
           type="button"
-          className="add-cotizacion__confirm"
+          className="modal-cantidad__confirmar"
           onClick={manejarConfirmar}
           disabled={procesando}
         >

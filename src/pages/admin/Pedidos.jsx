@@ -96,7 +96,7 @@ function Pedidos() {
   }, [pedidos, busqueda, estadoFiltro]);
 
   return (
-    <section className="admin-page">
+    <section className="admin-page pedidos-admin-vista">
       <AdminHeader
         titulo="Pedidos"
         descripcion="Consulta los pedidos, clientes, responsables, pagos, despachos y su registro en el ERP."

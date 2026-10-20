@@ -13,11 +13,11 @@
   margin-bottom: 20px;
 }
 
-.marcas-page .marcas-toolbar .btn-add {
+.marcas-page .marcas-toolbar .bodeguero-boton-agregar {
   width: auto;
   flex: 0 0 auto;
-  min-height: 42px;
-  padding: 10px 20px;
+  min-height: 40px;
+  padding: 0 14px;
 }
 
 /* ============================

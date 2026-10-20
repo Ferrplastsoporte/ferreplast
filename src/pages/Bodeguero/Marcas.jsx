@@ -1,3 +1,4 @@
+import iconoNuevo from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_nuevo.png";
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
@@ -267,10 +268,11 @@ function Marcas() {
       <div className="marcas-toolbar">
         <button
           type="button"
-          className="btn-add"
+          className="bodeguero-boton-agregar"
           onClick={abrirFormularioNuevaMarca}
           disabled={guardando}
         >
+          <img className="bodeguero-boton-agregar__icono" src={iconoNuevo} alt="" aria-hidden="true" />
           Nueva marca
         </button>
       </div>
