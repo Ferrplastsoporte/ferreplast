@@ -1,171 +1,500 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap");
+
 /* =========================================================
-   3. MARCAS
+   FERREPLAST · MARCAS
+   Mismo lenguaje visual que Misión: azul + rojo sobre polar
    ========================================================= */
 
 .marcas {
+  --azul: #0b3a68;
+  --azul-profundo: #072847;
+  --azul-claro: #1c5ea3;
+  --rojo: #e4001b;
+  --rojo-oscuro: #b80015;
+  --polar: #f4f8fc;
+  --blanco: #ffffff;
+  --texto: #3d5873;
+  --borde: rgba(11, 58, 104, 0.14);
+
   position: relative;
   isolation: isolate;
-  overflow: hidden;
-  padding: 52px var(--home-section-x);
-  background: var(--home-white);
-  color: var(--home-text);
-  text-align: center;
+  width: 100%;
+  overflow-x: clip;
+  padding: clamp(56px, 7vw, 96px) 0 clamp(40px, 5vw, 64px);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(228, 0, 27, 0.07), transparent 35%),
+    radial-gradient(circle at 100% 100%, rgba(11, 58, 104, 0.1), transparent 45%),
+    var(--polar);
+  color: var(--azul);
+  font-family: "Archivo", "Segoe UI", system-ui, sans-serif;
 }
 
+.marcas *,
+.marcas *::before,
+.marcas *::after {
+  box-sizing: border-box;
+}
+
+/* Bloque azul diagonal, como el hero de Misión */
 .marcas::before {
-  top: -200px;
-  left: -180px;
-  width: 400px;
-  height: 400px;
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: -1;
+  width: 22%;
+  height: clamp(220px, 34%, 320px);
+  background: var(--azul);
+  clip-path: polygon(45% 0, 100% 0, 100% 100%, 0 100%);
+  opacity: 0.96;
+}
+
+.marcas__contenedor {
+  width: min(1360px, 100%);
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+}
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+.marcas__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px 32px;
+  margin-bottom: 32px;
+}
+
+.marcas__ubicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--blanco);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.marcas__punto {
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: rgba(0,87,184,.05);
-  filter: blur(70px);
+  background: var(--rojo);
+  animation: marcas-pulso 2s infinite;
 }
 
-.marcas > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Encabezado: tamaño y separación respecto de los logos. */
-.marcas > span {
-  display: inline-block;
-  margin-bottom: 14px;
-  color: var(--home-primary);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .15em;
-  text-transform: uppercase;
+@keyframes marcas-pulso {
+  0%   { box-shadow: 0 0 0 0 rgba(228, 0, 27, 0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(228, 0, 27, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(228, 0, 27, 0); }
 }
 
 .marcas h2 {
-  max-width: 850px;
-  margin: 0 auto 16px;
-  color: var(--home-dark);
-  font-size: clamp(28px, 2.8vw, 40px);
+  max-width: 16ch;
+  margin: 0;
+  color: var(--azul);
+  font-size: clamp(2.2rem, 4.4vw, 4rem);
   font-weight: 900;
-  letter-spacing: -.045em;
-  line-height: 1.05;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
 }
 
-.marcas > p {
-  max-width: 720px;
-  margin: 0 auto 28px;
-  color: var(--home-muted);
-  font-size: 16px;
-  line-height: 1.75;
+.marcas__marca {
+  display: inline-block;
+  padding: 0 0.14em 0.04em;
+  margin: 0 -0.04em;
+  background: var(--rojo);
+  color: var(--blanco);
+  transform: rotate(-1.5deg);
+  box-shadow: 4px 4px 0 var(--azul);
 }
 
-.marcas .swiper {
-  width: 100%;
-  max-width: var(--home-container);
-  padding: 8px 0 16px;
-  overflow: hidden;
+.marcas__resumen {
+  max-width: 420px;
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  box-shadow: 0 18px 40px rgba(11, 58, 104, 0.12);
 }
 
-/* Tarjetas: logos a color y una altura uniforme. */
+.marcas__resumen p {
+  margin: 0;
+  color: var(--texto);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.marcas__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.marcas__pills b {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--azul);
+  color: var(--blanco);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.marcas__pills b:last-child {
+  background: var(--rojo);
+}
+
+/* =========================================================
+   GRILLA DE MARCAS
+   ========================================================= */
+
+/* Flex centrado: 4 por fila y la última fila queda centrada,
+   así nunca queda una marca sola pegada a la izquierda. */
+.marcas__grilla {
+  --marcas-columnas: 4;
+  --marcas-espacio: 14px;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--marcas-espacio);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marcas__grilla > * {
+  flex: 0 0 calc(
+    (100% - (var(--marcas-columnas) - 1) * var(--marcas-espacio))
+    / var(--marcas-columnas)
+  );
+  min-width: 0;
+}
+
 .tarjeta-marca {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 130px;
-  padding: 16px;
-  font: inherit;
+  height: 150px;
+  padding: 26px 22px 30px;
   overflow: hidden;
-  border: 1px solid var(--home-border);
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: var(--home-shadow-sm);
+  border: 1px solid var(--borde);
+  border-radius: 24px;
+  background: var(--blanco);
+  color: var(--rojo);
+  font: inherit;
   cursor: pointer;
-  opacity: 0;
-  transform: translateY(16px);
-  animation: aparecerTarjetaMarca .55s ease forwards;
+  box-shadow: 0 10px 24px rgba(11, 58, 104, 0.08);
   transition:
-    transform var(--home-transition),
-    border-color var(--home-transition),
-    box-shadow var(--home-transition);
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
+/* Rombo, igual que en "Lo que ofrecemos" */
 .tarjeta-marca::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
   content: "";
-  background: var(--home-primary);
-  opacity: 0;
-  transition: opacity var(--home-transition);
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 10px;
+  height: 10px;
+  background: currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
 }
 
-.tarjeta-marca:hover {
-  border-color: rgba(0,87,184,.35);
-  box-shadow: var(--home-shadow);
-  transform: translateY(-6px);
-}
-
-.tarjeta-marca:hover::before {
-  opacity: 1;
-}
-
+/* Círculo decorativo de esquina */
 .tarjeta-marca::after {
-  display: none;
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(11, 58, 104, 0.05);
+  transition: transform 0.4s ease;
 }
 
 .logo-marca {
   position: relative;
   z-index: 1;
-  width: 80%;
-  max-width: 160px;
-  height: 76px;
+  width: 100%;
+  max-width: 150px;
+  height: 70px;
   object-fit: contain;
-  opacity: 1;
-  transition:
-    transform var(--home-transition),
-    filter var(--home-transition),
-    opacity var(--home-transition);
-}
-
-.tarjeta-marca:hover .logo-marca {
-  filter: grayscale(0%);
-  opacity: 1;
-  transform: scale(1.06);
+  transition: transform 0.3s ease;
 }
 
 .tarjeta-marca__nombre {
-  color: var(--home-primary);
-  font-weight: 700;
+  position: relative;
+  z-index: 1;
+  color: var(--azul);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
   overflow-wrap: anywhere;
+  transition: transform 0.3s ease;
+}
+
+/* Franja roja inferior con la llamada a la acción */
+.tarjeta-marca__cta {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  background: var(--rojo);
+  color: var(--blanco);
+  font-size: 13px;
+  font-weight: 800;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+}
+
+.tarjeta-marca__cta span {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--rojo);
+  font-size: 11px;
+}
+
+.tarjeta-marca:hover,
+.tarjeta-marca:focus-visible {
+  border-color: var(--rojo);
+  box-shadow: 0 20px 40px rgba(11, 58, 104, 0.2);
+  transform: translateY(-6px) rotate(-1deg);
+}
+
+.tarjeta-marca:hover::before,
+.tarjeta-marca:focus-visible::before {
+  transform: rotate(225deg);
+}
+
+.tarjeta-marca:hover::after,
+.tarjeta-marca:focus-visible::after {
+  transform: scale(1.4);
+}
+
+.tarjeta-marca:hover .logo-marca,
+.tarjeta-marca:hover .tarjeta-marca__nombre,
+.tarjeta-marca:focus-visible .logo-marca,
+.tarjeta-marca:focus-visible .tarjeta-marca__nombre {
+  transform: translateY(-10px) scale(1.05);
+}
+
+.tarjeta-marca:hover .tarjeta-marca__cta,
+.tarjeta-marca:focus-visible .tarjeta-marca__cta {
+  transform: translateY(0);
 }
 
 .tarjeta-marca:focus-visible {
-  outline: 3px solid #277ce0;
-  outline-offset: -3px;
+  outline: 3px solid var(--azul-claro);
+  outline-offset: 3px;
 }
 
-.marcas-cargando {
-  padding: 35px;
-  color: var(--home-muted);
+/* Carga y vacío */
+.tarjeta-marca--skeleton {
+  height: 150px;
+  border-radius: 24px;
+  background: rgba(11, 58, 104, 0.07);
+  animation: marcas-carga 1.2s ease-in-out infinite alternate;
 }
 
-@keyframes aparecerTarjetaMarca {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes marcas-carga {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
 }
 
-@media (max-width: 480px) {
-  .marcas { padding: 36px 5%; }
-  .marcas h2 { font-size: 28px; }
-  .marcas > span { font-size: 10px; }
-  .tarjeta-marca { height: 112px; }
-  .logo-marca { width: 100%; height: 62px; }
+.marcas__vacio {
+  margin: 0;
+  padding: 32px;
+  border: 1px dashed var(--borde);
+  border-radius: 24px;
+  background: var(--blanco);
+  color: var(--texto);
+  text-align: center;
+}
+
+/* =========================================================
+   BOTÓN
+   ========================================================= */
+
+.marcas__acciones {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.marcas__accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--rojo);
+  color: var(--blanco);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(228, 0, 27, 0.32);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.marcas__accion span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blanco);
+  color: var(--rojo);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.marcas__accion:hover {
+  background: var(--rojo-oscuro);
+  transform: translateY(-2px);
+}
+
+.marcas__accion:hover span {
+  transform: translateX(3px);
+}
+
+.marcas__accion:focus-visible {
+  outline: 3px solid var(--azul-claro);
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   CINTA DE NOMBRES (igual a la de Misión, en azul)
+   ========================================================= */
+
+.marcas__cinta {
+  position: relative;
+  margin-top: clamp(40px, 5vw, 64px);
+  overflow: hidden;
+  background: var(--azul);
+  color: var(--blanco);
+  transform: rotate(1deg) scale(1.02);
+  box-shadow: 0 10px 30px rgba(11, 58, 104, 0.25);
+}
+
+.marcas__cinta-pista {
+  display: flex;
+  width: max-content;
+  animation: marcas-cinta var(--marcas-duracion, 30s) linear infinite;
+}
+
+.marcas__cinta ul {
+  display: flex;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marcas__cinta li {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.marcas__cinta li::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin: 0 28px;
+  background: var(--rojo);
+  transform: rotate(45deg);
+}
+
+@keyframes marcas-cinta {
+  to { transform: translateX(-50%); }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .marcas::before {
+    width: 34%;
+    height: 200px;
+  }
+}
+
+@media (max-width: 900px) {
+  .marcas__grilla { --marcas-columnas: 3; }
+}
+
+@media (max-width: 600px) {
+  .marcas__cabecera { margin-bottom: 24px; }
+  .marcas__resumen { max-width: none; width: 100%; }
+
+  .marcas__grilla {
+    --marcas-columnas: 2;
+    --marcas-espacio: 10px;
+  }
+
+  .tarjeta-marca,
+  .tarjeta-marca--skeleton {
+    height: 120px;
+    border-radius: 18px;
+  }
+
+  .logo-marca { height: 54px; }
+  .tarjeta-marca__cta { display: none; }
+
+  .tarjeta-marca:hover .logo-marca,
+  .tarjeta-marca:hover .tarjeta-marca__nombre {
+    transform: scale(1.04);
+  }
+
+  .marcas__accion { width: 100%; justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tarjeta-marca { opacity: 1; transform: none; animation: none; }
-  .logo-marca { transition: none; }
+  .marcas__cinta-pista,
+  .marcas__punto,
+  .tarjeta-marca--skeleton {
+    animation: none;
+  }
+
+  .tarjeta-marca,
+  .tarjeta-marca::before,
+  .tarjeta-marca::after,
+  .tarjeta-marca__cta,
+  .logo-marca,
+  .marcas__accion {
+    transition: none;
+  }
 }
-
-

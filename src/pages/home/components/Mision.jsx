@@ -11,7 +11,6 @@ import localFerreplast from "../../../assets/local_ferreplast.JPEG";
 
 import iconoMision from "../../../assets/iconos/vista_home/home_mision/mision_logo_contacto.png";
 import iconoVision from "../../../assets/iconos/vista_home/home_mision/vision_logo_contacto.png";
-import iconoValores from "../../../assets/iconos/vista_home/home_mision/valores_logo_contacto.png";
 
 const proyectos = [
   {
@@ -40,12 +39,6 @@ const etapas = [
     texto:
       "Canales directos para responder a tiempo y según tus necesidades.",
   },
-  {
-    etiqueta: "Después",
-    icono: iconoValores,
-    titulo: "Soporte y seguimiento",
-    texto: "Seguimos acompañándote una vez concretada la compra.",
-  },
 ];
 
 const grupos = [
@@ -67,15 +60,10 @@ const grupos = [
     texto: "Protegen y decoran superficies en entornos exigentes.",
   },
   {
-    tono: "blanco",
-    titulo: "Pallets y bandejas antiderrames",
-    texto: "Manejo y almacenamiento seguro de materiales.",
-  },
-  {
     tono: "azul",
-    titulo: "Grating y ferretería",
+    titulo: "Ferretería",
     texto:
-      "Parrillas grating y artículos de ferretería para usos industriales y comerciales.",
+      "Artículos de ferretería para usos industriales, comerciales y del hogar.",
   },
 ];
 
@@ -88,9 +76,6 @@ const productos = [
   "Solventes industriales",
   "Pinturas náuticas",
   "Pinturas industriales",
-  "Pallets plásticos",
-  "Bandejas antiderrames",
-  "Grating",
   "Ferretería",
 ];
 
@@ -138,11 +123,6 @@ function Mision() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <p className="mision__ubicacion">
-              <span className="mision__punto" aria-hidden="true" />
-              Desde Puerto Montt, Chile
-            </p>
-
             <h1>
               Hacemos que tu <span className="mision__marca">proyecto</span>{" "}
               avance.
@@ -278,8 +258,8 @@ function Mision() {
       ====================================================== */}
       <div className="mision__cinta" aria-label="Principales productos">
         <div className="mision__cinta-pista">
-          {[0, 1].map((copia) => (
-            <ul key={copia} aria-hidden={copia === 1}>
+          {[0, 1, 2, 3].map((copia) => (
+            <ul key={copia} aria-hidden={copia > 0}>
               {productos.map((producto) => (
                 <li key={`${copia}-${producto}`}>{producto}</li>
               ))}

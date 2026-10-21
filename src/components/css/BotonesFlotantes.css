@@ -1,234 +1,183 @@
 /* =========================================================
    BOTONES FLOTANTES - FERREPLAST
+   Mismo lenguaje que Misión / Marcas: azul + rojo, esquinas
+   redondeadas, sombra sólida azul al pasar el mouse.
    ========================================================= */
 
 .floating-buttons {
-  position: fixed;
+  --fb-azul: #0b3a68;
+  --fb-azul-claro: #1c5ea3;
+  --fb-rojo: #e4001b;
+  --fb-rojo-oscuro: #b80015;
+  --fb-verde: #25d366;
+  --fb-verde-oscuro: #1fb457;
+  --fb-blanco: #ffffff;
+  --fb-tam: 58px;
 
-  right: 30px;
-  bottom: 30px;
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 9999;
 
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 12px;
 
-  gap: 15px;
-
-  z-index: 9999;
+  font-family: "Archivo", "Segoe UI", system-ui, sans-serif;
 }
 
+/* Base común: cuadrado redondeado, ícono centrado */
+.top-button,
+.cotizacion-button,
+.whatsapp-button {
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse;   /* el ícono queda fijo a la derecha */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+
+  height: var(--fb-tam);
+  min-width: var(--fb-tam);
+  padding: 0 calc((var(--fb-tam) - 26px) / 2);
+  overflow: hidden;
+
+  border: 0;
+  border-radius: 18px;
+  color: var(--fb-blanco);
+  text-decoration: none;
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    gap 0.3s ease;
+}
+
+/* Íconos (svg de react-icons, emoji o texto) */
+.top-button > svg,
+.cotizacion-button > svg,
+.whatsapp-button > svg {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+}
+
+.cotizacion-button,
+.whatsapp-button {
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* Texto que aparece al pasar el mouse */
+.cotizacion-button span,
+.whatsapp-button span {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition:
+    max-width 0.35s ease,
+    opacity 0.25s ease;
+}
+
+.cotizacion-button:hover,
+.whatsapp-button:hover,
+.cotizacion-button:focus-visible,
+.whatsapp-button:focus-visible {
+  gap: 12px;
+  padding-left: 20px;
+}
+
+.cotizacion-button:hover span,
+.whatsapp-button:hover span,
+.cotizacion-button:focus-visible span,
+.whatsapp-button:focus-visible span {
+  max-width: 190px;
+  opacity: 1;
+}
+
+.top-button:focus-visible,
+.cotizacion-button:focus-visible,
+.whatsapp-button:focus-visible {
+  outline: 3px solid var(--fb-azul-claro);
+  outline-offset: 3px;
+}
 
 /* =========================================================
-   BOTÓN SUBIR
+   BOTÓN SUBIR — blanco con borde azul, más pequeño
    ========================================================= */
 
 .top-button {
-  width: 55px;
-  height: 55px;
+  --fb-tam: 48px;
 
-  border: 1px solid rgba(0, 87, 184, 0.35);
-  border-radius: 50%;
-
-  background: #0b3a70;
-  color: #ffffff;
-
-  font-size: 22px;
-
-  cursor: pointer;
-
-  display: flex;
   justify-content: center;
-  align-items: center;
+  padding: 0;
+  border: 2px solid var(--fb-azul);
+  border-radius: 14px;
+  background: var(--fb-blanco);
+  color: var(--fb-azul);
+  font-size: 20px;
+  box-shadow: 0 10px 24px rgba(11, 58, 104, 0.18);
+}
 
-  box-shadow:
-    0 10px 25px rgba(11, 58, 112, 0.25);
-
-  transition:
-    transform 0.3s ease,
-    background 0.3s ease,
-    box-shadow 0.3s ease;
+.top-button > svg {
+  width: 20px;
+  height: 20px;
 }
 
 .top-button:hover {
-  transform: translateY(-5px);
-
-  background: #0057b8;
-
-  box-shadow:
-    0 14px 30px rgba(11, 58, 112, 0.32);
+  background: var(--fb-azul);
+  color: var(--fb-blanco);
+  transform: translateY(-3px);
+  box-shadow: 4px 4px 0 var(--fb-rojo);
 }
 
-
 /* =========================================================
-   COTIZACIÓN
+   COTIZACIÓN — rojo Ferreplast
    ========================================================= */
 
 .cotizacion-button {
-  width: 65px;
-  height: 65px;
-
-  border-radius: 50px;
-
-  background: linear-gradient(
-    135deg,
-    #0057b8 0%,
-    #0b3a70 100%
-  );
-
-  color: #ffffff;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  flex-shrink: 0;
-  overflow: hidden;
-
-  text-decoration: none;
-
-  font-size: 30px;
-
-  transition:
-    width 0.35s ease,
-    transform 0.35s ease,
-    background 0.35s ease,
-    box-shadow 0.35s ease;
-
-  box-shadow:
-    0 10px 25px rgba(11, 58, 112, 0.25);
+  background: var(--fb-rojo);
+  box-shadow: 0 12px 28px rgba(228, 0, 27, 0.32);
 }
 
-.cotizacion-button span {
-  width: 0;
-  opacity: 0;
-
-  overflow: hidden;
-  white-space: nowrap;
-
-  font-size: 16px;
-  font-weight: 600;
-
-  transition:
-    width 0.35s ease,
-    opacity 0.35s ease;
+.cotizacion-button:hover,
+.cotizacion-button:focus-visible {
+  background: var(--fb-rojo-oscuro);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--fb-azul);
 }
-
-.cotizacion-button:hover {
-  width: 245px;
-
-  justify-content: flex-start;
-
-  padding-left: 18px;
-  gap: 15px;
-
-  background: linear-gradient(
-    135deg,
-    #0a6ed1 0%,
-    #0057b8 100%
-  );
-
-  box-shadow:
-    0 14px 30px rgba(11, 58, 112, 0.32);
-}
-
-.cotizacion-button:hover span {
-  width: auto;
-  opacity: 1;
-}
-
 
 /* =========================================================
-   WHATSAPP
+   WHATSAPP — verde, misma forma
    ========================================================= */
 
 .whatsapp-button {
-  width: 65px;
-  height: 65px;
-
-  border-radius: 50px;
-
-  background: #25d366;
-  color: #ffffff;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  text-decoration: none;
-
-  font-size: 34px;
-
-  overflow: hidden;
-
-  transition:
-    width 0.35s ease,
-    transform 0.35s ease,
-    background 0.35s ease;
-
-  box-shadow:
-    0 10px 25px rgba(37, 211, 102, 0.25);
+  background: var(--fb-verde);
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.3);
+  animation: fb-pulso 2.6s infinite;
 }
 
-.whatsapp-button span {
-  width: 0;
-  opacity: 0;
-
-  white-space: nowrap;
-
-  font-size: 16px;
-  font-weight: 600;
-
-  transition:
-    width 0.35s ease,
-    opacity 0.35s ease;
+.whatsapp-button:hover,
+.whatsapp-button:focus-visible {
+  background: var(--fb-verde-oscuro);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--fb-azul);
+  animation: none;
 }
 
-.whatsapp-button:hover {
-  width: 240px;
-
-  justify-content: flex-start;
-
-  padding-left: 18px;
-
-  gap: 15px;
-
-  background: #20bd5a;
-
-  box-shadow:
-    0 14px 30px rgba(37, 211, 102, 0.32);
+@keyframes fb-pulso {
+  0%   { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5), 0 12px 28px rgba(37, 211, 102, 0.3); }
+  70%  { box-shadow: 0 0 0 14px rgba(37, 211, 102, 0), 0 12px 28px rgba(37, 211, 102, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0), 0 12px 28px rgba(37, 211, 102, 0.3); }
 }
-
-.whatsapp-button:hover span {
-  width: auto;
-  opacity: 1;
-}
-
-
-/* =========================================================
-   PULSO WHATSAPP
-   ========================================================= */
-
-@keyframes pulse {
-  0% {
-    box-shadow:
-      0 0 0 0 rgba(37, 211, 102, 0.5);
-  }
-
-  70% {
-    box-shadow:
-      0 0 0 20px rgba(37, 211, 102, 0);
-  }
-
-  100% {
-    box-shadow:
-      0 0 0 0 rgba(37, 211, 102, 0);
-  }
-}
-
-.whatsapp-button {
-  animation: pulse 2.5s infinite;
-}
-
 
 /* =========================================================
    RESPONSIVE
@@ -236,27 +185,36 @@
 
 @media (max-width: 768px) {
   .floating-buttons {
-    right: 15px;
-    bottom: 20px;
+    --fb-tam: 52px;
+
+    right: 14px;
+    bottom: 18px;
+    gap: 10px;
   }
 
-  .whatsapp-button:hover {
-    width: 65px;
-    padding: 0;
-  }
+  .top-button { --fb-tam: 44px; }
 
+  /* En pantallas táctiles no se expanden */
+  .cotizacion-button span,
   .whatsapp-button span {
     display: none;
   }
 
-  .cotizacion-button:hover {
-    width: 65px;
-    padding: 0;
-
-    justify-content: center;
+  .cotizacion-button:hover,
+  .whatsapp-button:hover {
+    gap: 0;
+    padding-left: calc((var(--fb-tam) - 26px) / 2);
   }
+}
 
-  .cotizacion-button span {
-    display: none;
+@media (prefers-reduced-motion: reduce) {
+  .whatsapp-button { animation: none; }
+
+  .top-button,
+  .cotizacion-button,
+  .whatsapp-button,
+  .cotizacion-button span,
+  .whatsapp-button span {
+    transition: none;
   }
 }

@@ -87,38 +87,8 @@
    TEXTO
    ========================================================= */
 
-.mision__ubicacion {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  padding: 8px 16px;
-  border: 1px solid var(--borde);
-  border-radius: 999px;
-  background: var(--blanco);
-  color: var(--azul);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.mision__punto {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--rojo);
-  box-shadow: 0 0 0 0 rgba(228, 0, 27, 0.5);
-  animation: mision-pulso 2s infinite;
-}
-
-@keyframes mision-pulso {
-  0%   { box-shadow: 0 0 0 0 rgba(228, 0, 27, 0.5); }
-  70%  { box-shadow: 0 0 0 10px rgba(228, 0, 27, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(228, 0, 27, 0); }
-}
-
 .mision__texto h1 {
-  margin: clamp(12px, 2vh, 20px) 0 0;
+  margin: 0;
   max-width: 15ch;
   color: var(--azul);
   font-size: clamp(2.4rem, min(4.6vw, 8.2vh), 4.6rem);
@@ -270,7 +240,6 @@
 
 .mision__visual {
   position: relative;
-  padding-bottom: 11%;
 }
 
 /* Marco rojo desplazado detrás del carrusel */
@@ -287,7 +256,7 @@
 
 .mision__carrusel {
   position: relative;
-  height: clamp(300px, 56vh, 500px);
+  height: clamp(300px, 52vh, 470px);
   overflow: hidden;
   border-radius: 28px;
   background: var(--azul-profundo);
@@ -331,12 +300,14 @@
   );
 }
 
+/* El texto del slide sube para no quedar tapado por las tarjetas */
 .mision__slide figcaption {
   position: absolute;
   left: 0;
   bottom: 0;
-  max-width: 36%;
+  max-width: 60%;
   padding: clamp(16px, 2.2vw, 28px);
+  padding-bottom: calc(var(--mision-solape-mini, 70px) + 18px);
   color: var(--blanco);
 }
 
@@ -407,11 +378,11 @@
   transform: scale(1.08);
 }
 
-/* Puntos de navegación */
+/* Puntos de navegación (arriba de las tarjetas) */
 .mision__puntos {
   position: absolute;
-  right: 20px;
-  bottom: 22px;
+  right: 22px;
+  bottom: calc(var(--mision-solape-mini, 70px) + 22px);
   z-index: 20;
   display: flex;
   gap: 8px;
@@ -436,30 +407,34 @@
 }
 
 /* =========================================================
-   MINI CARDS (flotan sobre el carrusel)
+   MINI CARDS (más grandes, montadas sobre el borde del carrusel)
    ========================================================= */
 
+.mision__visual {
+  --mision-solape-mini: 70px;
+}
+
 .mision__mini {
-  position: absolute;
-  right: -14px;
-  bottom: 0;
+  position: relative;
   z-index: 30;
   display: flex;
-  width: 62%;
-  gap: 14px;
+  gap: 16px;
+  width: 92%;
+  margin: calc(0px - var(--mision-solape-mini)) 0 0 auto;
+  padding-right: 0;
 }
 
 .mision__card {
   position: relative;
   flex: 1;
   min-width: 0;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 11;
   margin: 0;
   overflow: hidden;
   border: 5px solid var(--polar);
-  border-radius: 20px;
+  border-radius: 22px;
   background: var(--azul);
-  box-shadow: 0 18px 36px rgba(7, 40, 71, 0.3);
+  box-shadow: 0 22px 44px rgba(7, 40, 71, 0.35);
   transition: transform 0.3s ease;
 }
 
@@ -473,13 +448,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.mision__card:hover > img {
+  transform: scale(1.06);
 }
 
 .mision__card-overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(to top, rgba(7, 40, 71, 0.9), transparent 65%);
+  background: linear-gradient(to top, rgba(7, 40, 71, 0.9), transparent 60%);
 }
 
 .mision__card figcaption {
@@ -487,26 +467,27 @@
   left: 0;
   bottom: 0;
   z-index: 2;
-  padding: 14px 16px;
+  padding: 18px 20px;
   color: var(--blanco);
 }
 
 .mision__card figcaption p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
   font-weight: 600;
 }
 
 .mision__card figcaption h3 {
-  margin: 3px 0 0;
-  font-size: clamp(14px, 1.4vw, 19px);
+  margin: 4px 0 0;
+  font-size: clamp(17px, 1.8vw, 24px);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 /* =========================================================
-   CINTA DE PRODUCTOS (único movimiento continuo)
+   CINTA DE PRODUCTOS (movimiento continuo, no se detiene)
    ========================================================= */
 
 .mision__cinta {
@@ -523,10 +504,6 @@
   display: flex;
   width: max-content;
   animation: mision-cinta 40s linear infinite;
-}
-
-.mision__cinta:hover .mision__cinta-pista {
-  animation-play-state: paused;
 }
 
 .mision__cinta ul {
@@ -790,15 +767,15 @@
   background: var(--rojo);
 }
 
+/* 4 grupos → grilla 2 × 2 */
 .mision__grupos {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
 .mision__grupo {
   position: relative;
-  grid-column: span 2;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -809,10 +786,6 @@
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
-}
-
-.mision__grupo:nth-child(n + 4) {
-  grid-column: span 3;
 }
 
 .mision__grupo:hover {
@@ -930,19 +903,6 @@
   .mision__carta-grid {
     grid-template-columns: 1fr;
   }
-
-  .mision__grupos {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .mision__grupo,
-  .mision__grupo:nth-child(n + 4) {
-    grid-column: span 1;
-  }
-
-  .mision__grupo:last-child {
-    grid-column: span 2;
-  }
 }
 
 /* =========================================================
@@ -972,8 +932,9 @@
     font-size: 2rem;
   }
 
+  /* En móvil las tarjetas van debajo, sin montarse sobre el carrusel */
   .mision__visual {
-    padding-bottom: 0;
+    --mision-solape-mini: 0px;
   }
 
   .mision__visual::before {
@@ -999,16 +960,19 @@
   }
 
   .mision__mini {
-    position: static;
     width: 100%;
     margin-top: 12px;
+    gap: 10px;
   }
 
   .mision__card {
-    flex: 1;
-    width: auto;
+    aspect-ratio: 1 / 1;
     border-width: 0;
     border-radius: 18px;
+  }
+
+  .mision__card figcaption {
+    padding: 12px 14px;
   }
 
   .mision__etapas::before {
@@ -1028,14 +992,9 @@
     grid-template-columns: 1fr;
   }
 
-  .mision__grupo:last-child {
-    grid-column: span 1;
-  }
-
   .mision__grupo {
     min-height: 170px;
   }
-
 }
 
 /* =========================================================
@@ -1043,13 +1002,13 @@
    ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-  .mision__cinta-pista,
-  .mision__punto {
+  .mision__cinta-pista {
     animation: none;
   }
 
   .mision__slide,
   .mision__card,
+  .mision__card > img,
   .mision__etapa,
   .mision__grupo,
   .mision__accion {
