@@ -8,6 +8,8 @@ function ModalConfirmacion({
   textoConfirmar = "Confirmar",
   variante = "peligro",
   procesando = false,
+  icono,
+  claseAdicional = "",
   onConfirmar,
   onCancelar,
 }) {
@@ -38,16 +40,20 @@ function ModalConfirmacion({
       }}
     >
       <section
-        className="modal-confirmacion"
+        className={`modal-confirmacion ${claseAdicional}`.trim()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-confirmacion-titulo"
         aria-describedby="modal-confirmacion-mensaje"
       >
         <div
-          className={`modal-confirmacion__icono modal-confirmacion__icono--${variante}`}
+          className={
+            icono
+              ? "modal-confirmacion__icono"
+              : `modal-confirmacion__icono modal-confirmacion__icono--${variante}`
+          }
         >
-          <Icono aria-hidden="true" />
+          {icono ?? <Icono aria-hidden="true" />}
         </div>
 
         <div className="modal-confirmacion__contenido">

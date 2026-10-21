@@ -46,6 +46,7 @@ import {
 } from "../../utils/cotizaciones/cotizaciones";
 import AdminHeader from "./components/AdminHeader";
 import ModalConfirmacion from "./components/ModalConfirmacion";
+import iconoConfirmacionCotizacion from "../../assets/iconos/vista_admin/admin_popups/admin_popups_confirmacion.png";
 import "./css/Cotizaciones.css";
 
 // ============================
@@ -83,6 +84,7 @@ function Cotizaciones() {
   const [preciosModificados, setPreciosModificados] = useState({});
   const [mensajeOperacion, setMensajeOperacion] = useState(null);
   const [confirmacionResultado, setConfirmacionResultado] = useState(null);
+  const [confirmacionCompletar, setConfirmacionCompletar] = useState(null);
 
   // ============================
   // CARGA DE COTIZACIONES Y CLIENTES
@@ -395,7 +397,11 @@ function Cotizaciones() {
   }
 
   async function completarCotizacion() {
-    if (!cotizacionSeleccionada) return;
+    if (
+      !cotizacionSeleccionada ||
+      !puedeCompletar ||
+      confirmacionCompletar !== cotizacionSeleccionada.id_cotizacion
+    ) return;
 
     const dias = Number(
       diasValidezPorCotizacion[cotizacionSeleccionada?.id_cotizacion],
@@ -482,6 +488,7 @@ function Cotizaciones() {
       });
     } finally {
       setCompletandoCotizacion(false);
+      setConfirmacionCompletar(null);
     }
   }
 
@@ -1072,6 +1079,9 @@ function Cotizaciones() {
                       const subtotal = esCotizable
                         ? precio * Number(detalle.cantidad || 0)
                         : 0;
+                      const marcaProducto = detalle.es_producto_catalogo
+                        ? detalle.producto?.marca_producto?.nom_marca || "Sin marca"
+                        : detalle.marca_producto_solicitado;
                       return (
                         <div
                           className="cotizacion-productos__fila"
@@ -1088,9 +1098,15 @@ function Cotizaciones() {
                             <strong>
                               {obtenerNombreProductoCotizado(detalle)}
                             </strong>
-                            {detalle.marca_producto_solicitado && (
-                              <small>
-                                Marca: {detalle.marca_producto_solicitado}
+                            {(detalle.es_producto_catalogo || marcaProducto) && (
+                              <small className="cotizacion-producto__referencia">
+                                Marca: {marcaProducto}
+                                {detalle.es_producto_catalogo && detalle.id_prod != null && (
+                                  <>
+                                    <br />
+                                    Item: #{detalle.id_prod}
+                                  </>
+                                )}
                               </small>
                             )}
                             <label className="cotizacion-cotizabilidad">
@@ -1238,7 +1254,11 @@ function Cotizaciones() {
                         <button
                           type="button"
                           className="cotizacion-btn cotizacion-btn--principal"
-                          onClick={completarCotizacion}
+                          onClick={() =>
+                            setConfirmacionCompletar(
+                              cotizacionSeleccionada.id_cotizacion,
+                            )
+                          }
                           disabled={!puedeCompletar}
                         >
                           {completandoCotizacion
@@ -1290,6 +1310,29 @@ function Cotizaciones() {
           </section>
         </div>
       )}
+
+      <ModalConfirmacion
+        abierto={
+          confirmacionCompletar !== null &&
+          confirmacionCompletar === cotizacionSeleccionada?.id_cotizacion
+        }
+        titulo="¿Completar la cotización?"
+        mensaje="Confirma que revisaste los productos, cantidades, precios y vigencia. Al continuar, se completará la cotización y se generará su PDF."
+        claseAdicional="cotizacion-confirmacion-final"
+        icono={
+          <img
+            src={iconoConfirmacionCotizacion}
+            alt=""
+            aria-hidden="true"
+            className="cotizacion-confirmacion-final__icono"
+          />
+        }
+        textoConfirmar="Sí, completar cotización"
+        variante="exito"
+        procesando={completandoCotizacion}
+        onConfirmar={completarCotizacion}
+        onCancelar={() => setConfirmacionCompletar(null)}
+      />
 
       <ModalConfirmacion
         abierto={Boolean(confirmacionResultado)}

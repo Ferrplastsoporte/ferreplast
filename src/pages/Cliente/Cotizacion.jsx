@@ -17,6 +17,11 @@ import "./css/Cotizacion.css";
 const CANTIDAD_MINIMA = 1;
 const CANTIDAD_MAXIMA = 100;
 const LARGO_MAXIMO_MARCA = 32;
+const formatoPrecioReferencia = new Intl.NumberFormat("es-CL", {
+  style: "currency",
+  currency: "CLP",
+  maximumFractionDigits: 0,
+});
 
 const limpiarTexto = (valor = "") => valor.replace(/[^\p{L}\p{N}\s.,]/gu, "");
 
@@ -355,8 +360,17 @@ function Cotizacion() {
                         </Link>
 
                         <p className="cotizacion-item__stock">
-                          Stock actual de referencia:{" "}
-                          {Number(producto.stock_prod) || 0}
+                          Stock de referencia:{" "}
+                          <strong>{Number(producto.stock_prod) || 0}</strong>
+                        </p>
+                        <p className="cotizacion-producto__precio-referencia">
+                          Precio unitario:{" "}
+                          <strong>
+                            {Number.isSafeInteger(Number(producto.precio_act)) &&
+                            Number(producto.precio_act) > 0
+                              ? formatoPrecioReferencia.format(Number(producto.precio_act))
+                              : "Por confirmar"}
+                          </strong>
                         </p>
                       </div>
 
