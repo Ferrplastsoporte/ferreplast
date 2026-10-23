@@ -626,18 +626,15 @@ function BodegueroProductos() {
     setMensajeExito("");
 
     try {
-      const { data, error } = await supabase
-        .from("producto")
-        .update({ est_prod: 2 })
-        .eq("id_prod", productoPorReactivar.id_prod)
-        .eq("est_prod", 3)
-        .gte("stock_prod", 1)
-        .select("id_prod")
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("reactivar_producto", {
+        p_id_prod: productoPorReactivar.id_prod,
+      });
 
       if (error) throw error;
 
-      if (!data) {
+      const estadoProducto = Number(data);
+
+      if (estadoProducto !== 1 && estadoProducto !== 2) {
         throw new Error(
           "El producto ya no cumple las condiciones para ser reactivado.",
         );
@@ -648,7 +645,11 @@ function BodegueroProductos() {
       setProductoPorReactivar(null);
       await cargarProductos();
 
-      setMensajeExito(`El producto "${nombreProducto}" fue reactivado.`);
+      setMensajeExito(
+        estadoProducto === 2
+          ? `El producto "${nombreProducto}" fue reactivado.`
+          : `La reactivación de "${nombreProducto}" quedó pendiente de aprobación del administrador.`,
+      );
     } catch (error) {
       console.error("Error al reactivar el producto:", error);
 
@@ -965,8 +966,9 @@ function BodegueroProductos() {
             </p>
 
             <p className="productos-modal__note productos-modal__note--success">
-              El producto volverá a estar disponible para los clientes porque
-              cuenta con {productoPorReactivar.stock_prod} unidades en stock.
+              Cuenta con {productoPorReactivar.stock_prod} unidades en stock.
+              Si conserva una aprobación válida, volverá a estar disponible.
+              En caso contrario, quedará pendiente de revisión del administrador.
             </p>
 
             <div className="productos-modal__actions">
