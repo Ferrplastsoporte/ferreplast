@@ -1,73 +1,216 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  LuCalendar,
+  LuCircleCheck,
+  LuClock,
+  LuEye,
+  LuFileText,
+  LuImageOff,
+  LuInbox,
+  LuMapPin,
+  LuPackage,
+  LuPackageCheck,
+  LuPhone,
+  LuReceipt,
+  LuRotateCcw,
+  LuSearch,
+  LuStore,
+  LuTriangleAlert,
+  LuTruck,
+  LuUser,
+  LuX,
+} from "react-icons/lu";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
-import iconoCliente from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos__logo_cliente.png";
-import iconoMonto from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_monto.png";
-import iconoProducto from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_producto.png";
-import iconoTrabajador from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_trabajador.png";
-import iconoTransporte from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_transporte.png";
-import iconoUbicacion from "../../assets/iconos/vista_bodega/bodega_pedidos/pedidos_logo_ubicacion.png";
+import {
+  ESTADO_PEDIDO,
+  ESTADOS_LISTOS,
+  ESTADOS_PENDIENTES,
+  esPedidoFinalizado,
+  esPedidoListo,
+  esPedidoPendiente as esPendiente,
+  esRetiroTienda as esRetiro,
+  obtenerDespachoPedido as obtenerDespacho,
+  obtenerMensajePedidoFinalizado,
+  obtenerMensajePedidoListo as obtenerMensajeCliente,
+} from "../../utils/Pedidos/estadoPedido";
 import "./css/pedidos-bodeguero.css";
-const ESTADO_CONFIRMADO = 1;
-const ESTADO_PREPARACION = 2;
-const ESTADO_DESPACHADO = 3;
+
+// ==========================================================
+// ESTADOS DEL PEDIDO (tabla estado_pedido)
+// ==========================================================
+// Estados compartidos: utils/pedidos/estadoPedido.js
+const ESTADO_LISTO_DESPACHO = ESTADO_PEDIDO.LISTO_DESPACHO;
+const ESTADO_LISTO_RETIRO = ESTADO_PEDIDO.LISTO_RETIRO;
+const ESTADO_FINALIZADO = ESTADO_PEDIDO.FINALIZADO;
+const HORAS_ATRASO = 24;
+
+const BUCKET_IMAGENES = "imagenes_productos";
+
+// Vistas que se activan desde los indicadores
+const VISTAS = {
+  pendientes: "Pendientes",
+  atrasados: "Atrasados",
+  retiro: "Retiro en tienda",
+  despacho: "Despacho",
+  listos: "Listos",
+  finalizados: "Finalizados",
+};
+
+const ORDEN_PREDETERMINADO = "recientes";
+
+// ==========================================================
+// UTILIDADES
+// ==========================================================
+function formatearPrecio(valor) {
+  return Number(valor || 0).toLocaleString("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  });
+}
+
+function formatearFechaHora(fecha) {
+  if (!fecha) return "Sin fecha";
+  return new Date(fecha).toLocaleString("es-CL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function horasDesde(fecha) {
+  if (!fecha) return 0;
+  return (Date.now() - new Date(fecha).getTime()) / 36e5;
+}
+
+function textoAntiguedad(fecha) {
+  const horas = horasDesde(fecha);
+  if (horas < 1) return "Hace menos de 1 h";
+  if (horas < 24) return `Hace ${Math.floor(horas)} h`;
+  const dias = Math.floor(horas / 24);
+  return dias === 1 ? "Hace 1 día" : `Hace ${dias} días`;
+}
+
+function obtenerUrlImagen(rutaImagen) {
+  if (!rutaImagen) return null;
+  if (rutaImagen.startsWith("http://") || rutaImagen.startsWith("https://")) {
+    return rutaImagen;
+  }
+  const { data } = supabase.storage.from(BUCKET_IMAGENES).getPublicUrl(rutaImagen);
+  return data?.publicUrl || null;
+}
+
+function esAtrasado(pedido) {
+  return esPendiente(pedido) && horasDesde(pedido.fecha_predido) >= HORAS_ATRASO;
+}
+
+function obtenerIdTipoDespacho(pedido) {
+  return String(obtenerDespacho(pedido)?.id_tipo_despacho ?? "");
+}
+
+// Quita tildes y pasa a minúsculas: "Peñaflor" = "penaflor"
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+// Todo lo que el buscador revisa de un pedido
+function textoBusquedaPedido(pedido) {
+  const despacho = obtenerDespacho(pedido);
+  const telefono = String(pedido.usuario?.phone_user ?? "");
+
+  return normalizarTexto(
+    [
+      pedido.folio_pedido,
+      pedido.id_pedido,
+      pedido.usuario?.nom_user,
+      telefono,
+      telefono.replace(/\D/g, ""),
+      despacho?.direccion_despacho,
+      despacho?.comuna_despacho,
+      despacho?.tipo_despacho?.nom_tipo_despacho,
+      ...(pedido.detalle_pedido || []).flatMap((detalle) => [detalle.nom_prod, detalle.id_prod]),
+    ].join(" "),
+  );
+}
+
+function obtenerFolio(pedido) {
+  return pedido?.folio_pedido || `#${pedido?.id_pedido}`;
+}
+
+function obtenerUnidades(pedido) {
+  return (pedido.detalle_pedido || []).reduce(
+    (total, detalle) => total + Number(detalle.cantidad || 0),
+    0,
+  );
+}
+
+function obtenerEstadoVisual(pedido) {
+  switch (pedido.id_estado) {
+    case ESTADO_FINALIZADO:
+      return { texto: "Finalizado", clase: "pb-estado--finalizado" };
+    case ESTADO_LISTO_RETIRO:
+      return { texto: "Listo para retiro", clase: "pb-estado--listo" };
+    case ESTADO_LISTO_DESPACHO:
+      return { texto: "Listo para despacho", clase: "pb-estado--listo" };
+    default:
+      return esAtrasado(pedido)
+        ? { texto: "Atrasado", clase: "pb-estado--atrasado" }
+        : { texto: "Por preparar", clase: "pb-estado--pendiente" };
+  }
+}
+
+function obtenerTextoBoton(pedido) {
+  return esRetiro(pedido) ? "Marcar listo para retiro" : "Marcar listo para despacho";
+}
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
-  const [pestana, setPestana] = useState("preparar");
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
   const [cargando, setCargando] = useState(true);
-  const [procesando, setProcesando] = useState(null);
   const [error, setError] = useState("");
-  // Filtros del listado
+  const [aviso, setAviso] = useState("");
+
+  const [vista, setVista] = useState("pendientes");
   const [busqueda, setBusqueda] = useState("");
+  const [filtroDocumento, setFiltroDocumento] = useState("todos");
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("todos");
-  const [filtroDocumento, setFiltroDocumento] = useState("todos");
-  const [filtroDespacho, setFiltroDespacho] = useState("todos");
-  const [tiposDespacho, setTiposDespacho] = useState([]);
+  const [filtroTipoDespacho, setFiltroTipoDespacho] = useState("todos");
   const [montoMinimo, setMontoMinimo] = useState("");
   const [montoMaximo, setMontoMaximo] = useState("");
-  const [orden, setOrden] = useState("recientes");
-  // ==========================================
-  // ESTADOS DEL MODAL DE DESPACHO
-  // ==========================================
-  const [mostrarModalDespacho, setMostrarModalDespacho] =
-    useState(false);
-  const [transportista, setTransportista] = useState("");
-  const [numSeguimiento, setNumSeguimiento] = useState("");
-  const [fechaDespacho, setFechaDespacho] = useState(
-    new Date().toISOString().split("T")[0]
-  );
-  const [errorDespacho, setErrorDespacho] = useState("");
-  const [guardandoDatosDespacho, setGuardandoDatosDespacho] = useState(false);
-  const [errorEditarDespacho, setErrorEditarDespacho] = useState("");
-  // ==========================================
-  // CARGAR PEDIDOS
-  // ==========================================
+  const [orden, setOrden] = useState(ORDEN_PREDETERMINADO);
+
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
+  const [confirmando, setConfirmando] = useState(false);
+  const [procesando, setProcesando] = useState(false);
+  const [errorAccion, setErrorAccion] = useState("");
+
+  // ========================================================
+  // CARGA
+  // ========================================================
   useEffect(() => {
     cargarPedidos();
-    cargarTiposDespacho();
   }, []);
 
-  async function cargarTiposDespacho() {
-    const { data, error } = await supabase
-      .from("tipo_despacho")
-      .select("id_tipo_despacho, nom_tipo_despacho")
-      .eq("est_tipo", true)
-      .order("id_tipo_despacho", { ascending: true });
+  useEffect(() => {
+    if (!aviso) return undefined;
+    const temporizador = setTimeout(() => setAviso(""), 5000);
+    return () => clearTimeout(temporizador);
+  }, [aviso]);
 
-    if (error) {
-      console.error("Error al cargar tipos de despacho:", error);
-      return;
-    }
-
-    setTiposDespacho(data || []);
-  }
   async function cargarPedidos() {
     try {
       setCargando(true);
       setError("");
+
       const { data, error: errorPedidos } = await supabase
         .from("pedido")
         .select(`
@@ -80,1348 +223,715 @@ function Pedidos() {
           usuario:id_user (
             id_user,
             nom_user,
-            phone_user,
-            direc_user
+            phone_user
           ),
           detalle_pedido (
             id_detalle,
             id_prod,
+            nom_prod,
             cantidad,
             precio_unitario,
-            nom_prod
+            producto:id_prod (
+              imagen_url
+            )
           ),
           despacho (
             id_despacho,
-            transportista,
-            num_seguimiento,
-            fecha_despacho,
             direccion_despacho,
             comuna_despacho,
             costo_envio,
+            requiere_coordinacion,
             id_tipo_despacho,
             tipo_despacho:id_tipo_despacho (
-              id_tipo_despacho,
-              nom_tipo_despacho,
-              costo,
-              requiere_coordinacion
+              nom_tipo_despacho
             )
           )
         `)
-        .in("id_estado", [
-          ESTADO_CONFIRMADO,
-          ESTADO_PREPARACION,
-          ESTADO_DESPACHADO,
-        ])
-        .order("fecha_predido", {
-          ascending: false,
-        });
-      if (errorPedidos) {
-        throw errorPedidos;
-      }
-      
+        .in("id_estado", [...ESTADOS_PENDIENTES, ...ESTADOS_LISTOS, ESTADO_FINALIZADO])
+        .order("fecha_predido", { ascending: false });
+
+      if (errorPedidos) throw errorPedidos;
       setPedidos(data || []);
-    } catch (error) {
-      console.error("Error al cargar pedidos:", error);
-      setError(
-        error.message ||
-        "No fue posible cargar los pedidos."
-      );
+    } catch (errorCarga) {
+      console.error("Error al cargar pedidos:", errorCarga);
+      setError(errorCarga.message || "No fue posible cargar los pedidos.");
     } finally {
       setCargando(false);
     }
   }
-  // ==========================================
-  // CAMBIAR ESTADO
-  // ==========================================
-  async function cambiarEstado(idPedido, nuevoEstado) {
-    try {
-      setProcesando(idPedido);
-      setError("");
 
-      if (nuevoEstado !== ESTADO_PREPARACION) {
-        setError("Esta operación solo permite iniciar la preparación.");
-        return;
-      }
+  // ========================================================
+  // INDICADORES
+  // ========================================================
+  const indicadores = useMemo(() => {
+    const pendientes = pedidos.filter(esPendiente);
+    return {
+      pendientes: pendientes.length,
+      atrasados: pendientes.filter(esAtrasado).length,
+      retiro: pendientes.filter(esRetiro).length,
+      despacho: pendientes.filter((pedido) => !esRetiro(pedido)).length,
+      listos: pedidos.filter((pedido) => ESTADOS_LISTOS.includes(pedido.id_estado)).length,
+      finalizados: pedidos.filter(esPedidoFinalizado).length,
+    };
+  }, [pedidos]);
 
-      const { error: errorInicio } = await supabase.rpc(
-        "iniciar_preparacion_bodeguero",
-        { p_id_pedido: idPedido }
-      );
-
-      if (errorInicio) throw errorInicio;
-
-      setPedidoSeleccionado(null);
-      await cargarPedidos();
-    } catch (error) {
-      console.error("Error al iniciar preparación:", error);
-
-      setError(
-        error.message ||
-          "No fue posible tomar el pedido. Puede que otro bodeguero ya lo haya tomado."
-      );
-
-      await cargarPedidos();
-    } finally {
-      setProcesando(null);
-    }
-  }
-  // ==========================================
-  // ABRIR MODAL DE DESPACHO
-  // ==========================================
-  function abrirModalDespacho(pedido) {
-    setPedidoSeleccionado(pedido);
-    const despacho = pedido.despacho?.[0];
-    setTransportista(
-      despacho?.transportista || ""
-    );
-    setNumSeguimiento(
-      despacho?.num_seguimiento || ""
-    );
-    setFechaDespacho(
-      despacho?.fecha_despacho
-        ? despacho.fecha_despacho.slice(0, 10)
-        : new Date().toISOString().split("T")[0]
-    );
-    setErrorDespacho("");
-    setMostrarModalDespacho(true);
-  }
-  // ==========================================
-  // CERRAR MODAL DE DESPACHO
-  // ==========================================
-  function cerrarModalDespacho() {
-    if (procesando) return;
-    setMostrarModalDespacho(false);
-    setErrorDespacho("");
-  }
-  // ==========================================
-  // REGISTRAR DESPACHO
-  // ==========================================
-  async function registrarDespacho() {
-    if (!pedidoSeleccionado) {
-      return;
-    }
-    if (!transportista.trim()) {
-      setErrorDespacho(
-        "Debes ingresar un transportista."
-      );
-      return;
-    }
-    if (!fechaDespacho) {
-      setErrorDespacho(
-        "Debes seleccionar una fecha de despacho."
-      );
-      return;
-    }
-    try {
-      setProcesando(
-        pedidoSeleccionado.id_pedido
-      );
-      setErrorDespacho("");
-      const {
-        error: errorRegistro,
-      } = await supabase.rpc(
-        "registrar_despacho_bodeguero",
-        {
-          p_id_pedido:
-            pedidoSeleccionado.id_pedido,
-          p_transportista:
-            transportista.trim(),
-          p_num_seguimiento:
-            numSeguimiento.trim() || null,
-          p_fecha_despacho:
-            fechaDespacho,
-        }
-      );
-      if (errorRegistro) {
-        throw errorRegistro;
-      }
-      // Cerrar modal
-      setMostrarModalDespacho(false);
-      // Cerrar detalle
-      setPedidoSeleccionado(null);
-      // Limpiar formulario
-      setTransportista("");
-      setNumSeguimiento("");
-      setFechaDespacho(
-        new Date().toISOString().split("T")[0]
-      );
-      // Recargar pedidos
-      await cargarPedidos();
-    } catch (error) {
-      console.error(
-        "Error al registrar despacho:",
-        error
-      );
-      setErrorDespacho(
-        error.message ||
-        "No fue posible registrar el despacho."
-      );
-    } finally {
-      setProcesando(null);
-    }
-  }
-  // ==========================================
-  // FILTROS
-  // ==========================================
-  const pedidosPreparar = pedidos.filter(
-    (pedido) =>
-      pedido.id_estado === ESTADO_CONFIRMADO ||
-      pedido.id_estado === ESTADO_PREPARACION
-  );
-  const pedidosEnviados = pedidos.filter(
-    (pedido) =>
-      pedido.id_estado === ESTADO_DESPACHADO
-  );
-  const pedidosBase =
-    pestana === "preparar" ? pedidosPreparar : pedidosEnviados;
-  const pedidosFiltrados = pedidosBase
-    .filter((pedido) => {
-      const texto = busqueda.trim().toLowerCase();
-      const nombreCliente = pedido.usuario?.nom_user || "";
-
-      const folioPedido = pedido.folio_pedido || "";
-      const coincideBusqueda =
-        !texto ||
-        folioPedido.toLowerCase().includes(texto) ||
-        nombreCliente.toLowerCase().includes(texto);
-      const fechaPedido = pedido.fecha_predido
-        ? new Date(pedido.fecha_predido).toISOString().slice(0, 10)
-        : "";
-      const coincideDesde = !fechaDesde || (fechaPedido && fechaPedido >= fechaDesde);
-      const coincideHasta = !fechaHasta || (fechaPedido && fechaPedido <= fechaHasta);
-      const coincideEstado =
-        filtroEstado === "todos" || String(pedido.id_estado) === filtroEstado;
-      const coincideDocumento =
-        filtroDocumento === "todos" ||
-        (filtroDocumento === "factura" && pedido.es_factura === true) ||
-        (filtroDocumento === "boleta" && pedido.es_factura === false);
-      const idTipoDespacho = obtenerDespacho(pedido)?.id_tipo_despacho;
-      const coincideDespacho =
-        filtroDespacho === "todos" ||
-        String(idTipoDespacho ?? "") === filtroDespacho;
-      const total = Number(pedido.total_pedido || 0);
-      const coincideMontoMinimo = montoMinimo === "" || total >= Number(montoMinimo);
-      const coincideMontoMaximo = montoMaximo === "" || total <= Number(montoMaximo);
-      return coincideBusqueda && coincideDesde && coincideHasta &&
-        coincideEstado && coincideDocumento && coincideDespacho &&
-        coincideMontoMinimo && coincideMontoMaximo;
-    })
-    .sort((a, b) => {
-      if (orden === "antiguos") return new Date(a.fecha_predido) - new Date(b.fecha_predido);
-      if (orden === "mayor-monto") return Number(b.total_pedido || 0) - Number(a.total_pedido || 0);
-      if (orden === "menor-monto") return Number(a.total_pedido || 0) - Number(b.total_pedido || 0);
-      return new Date(b.fecha_predido) - new Date(a.fecha_predido);
+  // ========================================================
+  // OPCIONES DE FILTROS (según los pedidos cargados)
+  // ========================================================
+  const opcionesTipoDespacho = useMemo(() => {
+    const tipos = new Map();
+    pedidos.forEach((pedido) => {
+      const id = obtenerIdTipoDespacho(pedido);
+      if (id) tipos.set(id, obtenerDespacho(pedido)?.tipo_despacho?.nom_tipo_despacho || `Tipo ${id}`);
     });
-  const pedidosMostrar = pedidosFiltrados;
+    return [...tipos].sort((a, b) => Number(a[0]) - Number(b[0]));
+  }, [pedidos]);
+
+  // ========================================================
+  // LISTADO FILTRADO
+  // ========================================================
+  const pedidosMostrar = useMemo(() => {
+    const texto = normalizarTexto(busqueda.trim());
+
+    return pedidos
+      .filter((pedido) => {
+        if (vista === "listos") return ESTADOS_LISTOS.includes(pedido.id_estado);
+        if (vista === "finalizados") return esPedidoFinalizado(pedido);
+        if (!esPendiente(pedido)) return false;
+        if (vista === "atrasados") return esAtrasado(pedido);
+        if (vista === "retiro") return esRetiro(pedido);
+        if (vista === "despacho") return !esRetiro(pedido);
+        return true;
+      })
+      .filter((pedido) => {
+        const coincideTexto = !texto || textoBusquedaPedido(pedido).includes(texto);
+
+        const coincideDocumento =
+          filtroDocumento === "todos" ||
+          (filtroDocumento === "factura" && pedido.es_factura === true) ||
+          (filtroDocumento === "boleta" && pedido.es_factura !== true);
+
+        const fecha = pedido.fecha_predido
+          ? new Date(pedido.fecha_predido).toISOString().slice(0, 10)
+          : "";
+        const coincideDesde = !fechaDesde || (fecha && fecha >= fechaDesde);
+        const coincideHasta = !fechaHasta || (fecha && fecha <= fechaHasta);
+
+        const coincideTipo =
+          filtroTipoDespacho === "todos" || obtenerIdTipoDespacho(pedido) === filtroTipoDespacho;
+
+        const total = Number(pedido.total_pedido || 0);
+        const coincideMinimo = montoMinimo === "" || total >= Number(montoMinimo);
+        const coincideMaximo = montoMaximo === "" || total <= Number(montoMaximo);
+
+        return (
+          coincideTexto &&
+          coincideDocumento &&
+          coincideDesde &&
+          coincideHasta &&
+          coincideTipo &&
+          coincideMinimo &&
+          coincideMaximo
+        );
+      })
+      .sort((a, b) => {
+        if (orden === "recientes") return new Date(b.fecha_predido) - new Date(a.fecha_predido);
+        if (orden === "mayor-monto") return Number(b.total_pedido) - Number(a.total_pedido);
+        if (orden === "menor-monto") return Number(a.total_pedido) - Number(b.total_pedido);
+        return new Date(a.fecha_predido) - new Date(b.fecha_predido);
+      });
+  }, [
+    pedidos, vista, busqueda, filtroDocumento, fechaDesde, fechaHasta,
+    filtroTipoDespacho, montoMinimo, montoMaximo, orden,
+  ]);
+
+  const hayFiltros = Boolean(
+    busqueda ||
+      filtroDocumento !== "todos" ||
+      fechaDesde ||
+      fechaHasta ||
+      filtroTipoDespacho !== "todos" ||
+      montoMinimo !== "" ||
+      montoMaximo !== "" ||
+      orden !== ORDEN_PREDETERMINADO,
+  );
+
   function limpiarFiltros() {
     setBusqueda("");
+    setFiltroDocumento("todos");
     setFechaDesde("");
     setFechaHasta("");
-    setFiltroEstado("todos");
-    setFiltroDocumento("todos");
-    setFiltroDespacho("todos");
+    setFiltroTipoDespacho("todos");
     setMontoMinimo("");
     setMontoMaximo("");
-    setOrden("recientes");
+    setOrden(ORDEN_PREDETERMINADO);
   }
-  const pedidosConfirmados = pedidos.filter(
-    (pedido) =>
-      pedido.id_estado === ESTADO_CONFIRMADO
-  );
-  const pedidosEnPreparacion = pedidos.filter(
-    (pedido) =>
-      pedido.id_estado === ESTADO_PREPARACION
-  );
-  // ==========================================
-  // FORMATEAR FECHA
-  // ==========================================
-  function formatearFecha(fecha) {
-    if (!fecha) {
-      return "Sin fecha";
-    }
-    return new Date(fecha).toLocaleDateString(
-      "es-CL",
-      {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }
-    );
-  }
-  // ==========================================
-  // FORMATEAR FECHA Y HORA
-  // ==========================================
-  function formatearFechaHora(fecha) {
-    if (!fecha) {
-      return "Sin fecha";
-    }
-    return new Date(fecha).toLocaleString(
-      "es-CL",
-      {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }
-    );
-  }
-  // ==========================================
-  // FORMATEAR PRECIO
-  // ==========================================
-  function formatearPrecio(valor) {
-    return Number(valor || 0).toLocaleString(
-      "es-CL",
-      {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-      }
-    );
-  }
-  // ==========================================
-  // OBTENER DESPACHO
-  // ==========================================
-  function obtenerDespacho(pedido) {
-    return pedido?.despacho?.[0] || null;
-  }
-  // ==========================================
-  // OBTENER TIPO DE DESPACHO
-  // ==========================================
-  function obtenerTipoDespacho(pedido) {
-    const despacho = obtenerDespacho(pedido);
-    return (
-      despacho?.tipo_despacho
-        ?.nom_tipo_despacho ||
-      "No informado"
-    );
-  }
-  // ==========================================
-  // OBTENER NOMBRE DEL ESTADO
-  // ==========================================
-  function obtenerNombreEstado(idEstado) {
-    if (idEstado === ESTADO_CONFIRMADO) {
-      return "Confirmado";
-    }
-    if (idEstado === ESTADO_PREPARACION) {
-      return "En preparación";
-    }
-    if (idEstado === ESTADO_DESPACHADO) {
-      return "Despachado";
-    }
-    return "Desconocido";
-  }
-  // ==========================================
-  // CLASE DEL ESTADO
-  // ==========================================
-  function obtenerClaseEstado(idEstado) {
-    if (idEstado === ESTADO_DESPACHADO) {
-      return "pedido-bodeguero-card__estado pedido-bodeguero-card__estado--enviado";
-    }
-    if (idEstado === ESTADO_PREPARACION) {
-      return "pedido-bodeguero-card__estado pedido-bodeguero-card__estado--preparacion";
-    }
-    return "pedido-bodeguero-card__estado";
-  }
-  // ==========================================
-  // CANTIDAD DE PRODUCTOS
-  // ==========================================
-  function obtenerCantidadProductos(pedido) {
-    return pedido.detalle_pedido?.length || 0;
-  }
-  // ==========================================
-  // CANTIDAD DE UNIDADES
-  // ==========================================
-  function obtenerCantidadUnidades(pedido) {
-    return (
-      pedido.detalle_pedido?.reduce(
-        (total, detalle) =>
-          total +
-          Number(detalle.cantidad || 0),
-        0
-      ) || 0
-    );
-  }
-  // ==========================================
-  // ABRIR DETALLE
-  // ==========================================
+
+  // ========================================================
+  // DETALLE
+  // ========================================================
   function abrirDetalle(pedido) {
     setPedidoSeleccionado(pedido);
-    const despacho = obtenerDespacho(pedido);
-    setTransportista(despacho?.transportista || "");
-    setNumSeguimiento(despacho?.num_seguimiento || "");
-    setFechaDespacho(
-      despacho?.fecha_despacho
-        ? despacho.fecha_despacho.slice(0, 10)
-        : ""
-    );
-    setErrorEditarDespacho("");
+    setConfirmando(false);
+    setErrorAccion("");
   }
-  async function actualizarDatosDespacho() {
-    const despacho = obtenerDespacho(pedidoSeleccionado);
-    if (!despacho?.id_despacho) {
-      setErrorEditarDespacho("No se encontró el registro de despacho de este pedido.");
-      return;
-    }
-    if (!transportista.trim()) {
-      setErrorEditarDespacho("Debes ingresar un transportista.");
-      return;
-    }
-    if (!fechaDespacho) {
-      setErrorEditarDespacho("Debes seleccionar una fecha de despacho.");
-      return;
-    }
-    try {
-      setGuardandoDatosDespacho(true);
-      setErrorEditarDespacho("");
-      const { error: errorActualizacion } = await supabase.rpc(
-        "actualizar_datos_despacho_bodeguero",
-        {
-          p_id_despacho: despacho.id_despacho,
-          p_transportista: transportista.trim(),
-          p_num_seguimiento: numSeguimiento.trim() || null,
-          p_fecha_despacho: fechaDespacho,
-        }
-      );
-      if (errorActualizacion) throw errorActualizacion;
-      const datosActualizados = {
-        transportista: transportista.trim(),
-        num_seguimiento: numSeguimiento.trim() || null,
-        fecha_despacho: fechaDespacho,
-      };
-      // Reflejar los cambios en el listado sin cambiar el estado del pedido.
-      setPedidos((actuales) => actuales.map((pedido) => {
-        if (pedido.id_pedido !== pedidoSeleccionado.id_pedido) return pedido;
-        return {
-          ...pedido,
-          despacho: (pedido.despacho || []).map((item) =>
-            item.id_despacho === despacho.id_despacho
-              ? { ...item, ...datosActualizados }
-              : item
-          ),
-        };
-      }));
-      setPedidoSeleccionado((actual) => {
-        if (!actual) return actual;
-        return {
-          ...actual,
-          despacho: (actual.despacho || []).map((item) =>
-            item.id_despacho === despacho.id_despacho
-              ? { ...item, ...datosActualizados }
-              : item
-          ),
-        };
-      });
-      setErrorEditarDespacho("");
-    } catch (error) {
-      console.error("Error al actualizar despacho:", error);
-      setErrorEditarDespacho(
-        error.message || "No fue posible guardar los cambios."
-      );
-    } finally {
-      setGuardandoDatosDespacho(false);
-    }
-  }
-  // CERRAR DETALLE
-  // ==========================================
+
   function cerrarDetalle() {
-    if (!procesando) {
+    if (procesando) return;
+    setPedidoSeleccionado(null);
+    setConfirmando(false);
+    setErrorAccion("");
+  }
+
+  useEffect(() => {
+    if (!pedidoSeleccionado) return undefined;
+    function manejarTecla(evento) {
+      if (evento.key === "Escape") cerrarDetalle();
+    }
+    window.addEventListener("keydown", manejarTecla);
+    return () => window.removeEventListener("keydown", manejarTecla);
+  });
+
+  // ========================================================
+  // MARCAR COMO LISTO (RPC segura)
+  // ========================================================
+  async function marcarComoListo() {
+    if (!pedidoSeleccionado) return;
+
+    try {
+      setProcesando(true);
+      setErrorAccion("");
+
+      const { data: nuevoEstado, error: errorRpc } = await supabase.rpc(
+        "marcar_pedido_listo_bodeguero",
+        { p_id_pedido: pedidoSeleccionado.id_pedido },
+      );
+
+      if (errorRpc) throw errorRpc;
+
+      const folio = obtenerFolio(pedidoSeleccionado);
+      const idPedido = pedidoSeleccionado.id_pedido;
+
+      setPedidos((actuales) =>
+        actuales.map((pedido) =>
+          pedido.id_pedido === idPedido
+            ? { ...pedido, id_estado: Number(nuevoEstado) }
+            : pedido,
+        ),
+      );
+
+      setAviso(
+        Number(nuevoEstado) === ESTADO_LISTO_RETIRO
+          ? `Pedido ${folio} listo para retiro.`
+          : `Pedido ${folio} listo para despacho.`,
+      );
       setPedidoSeleccionado(null);
+      setConfirmando(false);
+    } catch (errorMarcar) {
+      console.error("Error al marcar pedido como listo:", errorMarcar);
+      setErrorAccion(errorMarcar.message || "No fue posible actualizar el pedido.");
+      await cargarPedidos();
+    } finally {
+      setProcesando(false);
     }
   }
+
+  // ========================================================
+  // MARCAR COMO FINALIZADO (RPC segura)
+  // Cliente retiró en el local o se le entregó el despacho.
+  // ========================================================
+  async function marcarComoFinalizado() {
+    if (!pedidoSeleccionado) return;
+
+    try {
+      setProcesando(true);
+      setErrorAccion("");
+
+      const { error: errorRpc } = await supabase.rpc(
+        "marcar_pedido_finalizado_bodeguero",
+        { p_id_pedido: pedidoSeleccionado.id_pedido },
+      );
+
+      if (errorRpc) throw errorRpc;
+
+      const folio = obtenerFolio(pedidoSeleccionado);
+      const idPedido = pedidoSeleccionado.id_pedido;
+      const retiro = esRetiro(pedidoSeleccionado);
+
+      setPedidos((actuales) =>
+        actuales.map((pedido) =>
+          pedido.id_pedido === idPedido
+            ? { ...pedido, id_estado: ESTADO_FINALIZADO }
+            : pedido,
+        ),
+      );
+
+      setAviso(
+        retiro
+          ? `Pedido ${folio} finalizado: retirado por el cliente.`
+          : `Pedido ${folio} finalizado: entregado al cliente.`,
+      );
+      setPedidoSeleccionado(null);
+      setConfirmando(false);
+    } catch (errorFinalizar) {
+      console.error("Error al finalizar pedido:", errorFinalizar);
+      setErrorAccion(errorFinalizar.message || "No fue posible finalizar el pedido.");
+      await cargarPedidos();
+    } finally {
+      setProcesando(false);
+    }
+  }
+
+  // ========================================================
+  // RENDER
+  // ========================================================
+  const tarjetasIndicadores = [
+    { clave: "pendientes", valor: indicadores.pendientes, etiqueta: "Pendientes", detalle: "Pagados, por preparar", Icono: LuPackage, tono: "pendiente" },
+    { clave: "atrasados", valor: indicadores.atrasados, etiqueta: "Atrasados", detalle: `Más de ${HORAS_ATRASO} h sin preparar`, Icono: LuTriangleAlert, tono: "atrasado" },
+    { clave: "retiro", valor: indicadores.retiro, etiqueta: "Retiro en tienda", detalle: "Pendientes de retiro", Icono: LuStore, tono: "neutro" },
+    { clave: "despacho", valor: indicadores.despacho, etiqueta: "Despacho", detalle: "Pendientes de envío", Icono: LuTruck, tono: "neutro" },
+    { clave: "listos", valor: indicadores.listos, etiqueta: "Listos", detalle: "Esperando retiro o entrega", Icono: LuPackageCheck, tono: "listo" },
+    { clave: "finalizados", valor: indicadores.finalizados, etiqueta: "Finalizados", detalle: "Retirados o entregados", Icono: LuCircleCheck, tono: "finalizado" },
+  ];
+
   return (
     <div className="pedidos-bodeguero">
       <BodegueroHeader
         titulo="Pedidos"
-        descripcion="Gestiona los pedidos pendientes de preparación y los pedidos enviados."
+        descripcion="Prepara los pedidos pagados y márcalos como listos."
+        acciones={
+          <button type="button" className="pb-boton pb-boton--secundario" onClick={cargarPedidos} disabled={cargando}>
+            <LuRotateCcw aria-hidden="true" />
+            Actualizar
+          </button>
+        }
       />
-      <section className="pedidos-bodeguero__content">
-        {/* =====================================
-            RESUMEN
-        ====================================== */}
-        <div className="pedidos-bodeguero__resumen">
-          <div className="pedidos-bodeguero__resumen-card pedidos-bodeguero__resumen-card--pendiente">
-            <span>🟠</span>
-            <div>
-              <strong>
-                {pedidosConfirmados.length}
-              </strong>
-              <p>Por preparar</p>
-            </div>
-          </div>
-          <div className="pedidos-bodeguero__resumen-card pedidos-bodeguero__resumen-card--preparacion">
-            <span>🔵</span>
-            <div>
-              <strong>
-                {pedidosEnPreparacion.length}
-              </strong>
-              <p>En preparación</p>
-            </div>
-          </div>
-          <div className="pedidos-bodeguero__resumen-card pedidos-bodeguero__resumen-card--enviado">
-            <span>🟢</span>
-            <div>
-              <strong>
-                {pedidosEnviados.length}
-              </strong>
-              <p>Enviados</p>
-            </div>
-          </div>
-          <div className="pedidos-bodeguero__resumen-card">
-            <span><img src={iconoProducto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /></span>
-            <div>
-              <strong>
-                {pedidos.length}
-              </strong>
-              <p>Total</p>
-            </div>
-          </div>
+
+      <section className="pb-contenido">
+        {/* ================= INDICADORES ================= */}
+        <div className="pb-indicadores" role="tablist" aria-label="Filtrar pedidos">
+          {tarjetasIndicadores.map(({ clave, valor, etiqueta, detalle, Icono, tono }) => (
+            <button
+              key={clave}
+              type="button"
+              role="tab"
+              aria-selected={vista === clave}
+              className={`pb-indicador pb-indicador--${tono}${vista === clave ? " pb-indicador--activo" : ""}`}
+              onClick={() => setVista(clave)}
+            >
+              <span className="pb-indicador__icono">
+                <Icono aria-hidden="true" />
+              </span>
+              <span className="pb-indicador__texto">
+                <strong>{cargando ? "–" : valor}</strong>
+                <span>{etiqueta}</span>
+                <small>{detalle}</small>
+              </span>
+            </button>
+          ))}
         </div>
-        {/* =====================================
-            PESTAÑAS
-        ====================================== */}
-        <div className="pedidos-bodeguero__tabs">
-          <button
-            type="button"
-            className={
-              pestana === "preparar"
-                ? "pedidos-bodeguero__tab pedidos-bodeguero__tab--active"
-                : "pedidos-bodeguero__tab"
-            }
-            onClick={() =>
-              setPestana("preparar")
-            }
-          >
-            🟠 A preparar
-            <span>
-              {pedidosPreparar.length}
-            </span>
-          </button>
-          <button
-            type="button"
-            className={
-              pestana === "enviados"
-                ? "pedidos-bodeguero__tab pedidos-bodeguero__tab--active"
-                : "pedidos-bodeguero__tab"
-            }
-            onClick={() =>
-              setPestana("enviados")
-            }
-          >
-            🟢 Hechos y enviados
-            <span>
-              {pedidosEnviados.length}
-            </span>
-          </button>
-        </div>
-        {/* =====================================
-            ERROR GENERAL
-        ====================================== */}
-        {/* FILTROS DEL LISTADO */}
-        <section className="pedidos-bodeguero__filtros" aria-label="Filtros de pedidos">
-          <div className="pedidos-bodeguero__filtros-header">
-            <div><h2>Filtrar pedidos</h2><p>Busca y ordena los pedidos de esta pestaña.</p></div>
-            <button type="button" onClick={limpiarFiltros} className="pedidos-bodeguero__limpiar">Limpiar filtros</button>
-          </div>
-          <div className="pedidos-bodeguero__filtros-grid">
-            <label className="pedidos-bodeguero__campo pedidos-bodeguero__campo--busqueda">
-              <span>Buscar pedido o cliente</span>
+
+        {/* ================= FILTROS ================= */}
+        <div className="pb-filtros">
+          <div className="pb-filtros__fila">
+            <label className="pb-buscador">
+              <LuSearch aria-hidden="true" />
               <input
                 type="search"
                 value={busqueda}
-                onChange={(event) => setBusqueda(event.target.value)}
-                placeholder="Folio del pedido o nombre del cliente"
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por folio, cliente, teléfono, producto, código, dirección o comuna"
+                aria-label="Buscar pedidos"
               />
             </label>
-            <label className="pedidos-bodeguero__campo"><span>Estado</span>
-              <select value={filtroEstado} onChange={(event) => setFiltroEstado(event.target.value)}>
-                <option value="todos">Todos los estados</option>
-                <option value={String(ESTADO_CONFIRMADO)}>Confirmado</option>
-                <option value={String(ESTADO_PREPARACION)}>En preparación</option>
-                <option value={String(ESTADO_DESPACHADO)}>Despachado</option>
+
+            <label className="pb-campo pb-campo--orden">
+              <span>Ordenar</span>
+              <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+                <option value="recientes">Más recientes primero</option>
+                <option value="antiguos">Más antiguos primero</option>
+                <option value="mayor-monto">Mayor monto</option>
+                <option value="menor-monto">Menor monto</option>
               </select>
             </label>
-            <label className="pedidos-bodeguero__campo"><span>Documento</span>
-              <select value={filtroDocumento} onChange={(event) => setFiltroDocumento(event.target.value)}>
-                <option value="todos">Boleta y factura</option><option value="boleta">Boleta</option><option value="factura">Factura</option>
-              </select>
-            </label>
-            <label className="pedidos-bodeguero__campo">
+          </div>
+
+          <div className="pb-filtros__grilla">
+            <label className="pb-campo">
               <span>Tipo de despacho</span>
-              <select
-                value={filtroDespacho}
-                onChange={(event) => setFiltroDespacho(event.target.value)}
-              >
-                <option value="todos">Todos los tipos</option>
-                {tiposDespacho.map((tipo) => (
-                  <option
-                    key={tipo.id_tipo_despacho}
-                    value={String(tipo.id_tipo_despacho)}
-                  >
-                    {tipo.nom_tipo_despacho}
-                  </option>
+              <select value={filtroTipoDespacho} onChange={(e) => setFiltroTipoDespacho(e.target.value)}>
+                <option value="todos">Todos</option>
+                {opcionesTipoDespacho.map(([id, nombre]) => (
+                  <option key={id} value={id}>{nombre}</option>
                 ))}
               </select>
             </label>
-            <label className="pedidos-bodeguero__campo"><span>Fecha desde</span><input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} /></label>
-            <label className="pedidos-bodeguero__campo"><span>Fecha hasta</span><input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} /></label>
-            <label className="pedidos-bodeguero__campo"><span>Monto mínimo (CLP)</span><input type="number" min="0" value={montoMinimo} onChange={(event) => setMontoMinimo(event.target.value)} placeholder="0" /></label>
-            <label className="pedidos-bodeguero__campo"><span>Monto máximo (CLP)</span><input type="number" min="0" value={montoMaximo} onChange={(event) => setMontoMaximo(event.target.value)} placeholder="Sin límite" /></label>
-            <label className="pedidos-bodeguero__campo"><span>Ordenar por</span>
-              <select value={orden} onChange={(event) => setOrden(event.target.value)}>
-                <option value="recientes">Más recientes</option><option value="antiguos">Más antiguos</option><option value="mayor-monto">Mayor monto</option><option value="menor-monto">Menor monto</option>
+
+            <label className="pb-campo">
+              <span>Documento</span>
+              <select value={filtroDocumento} onChange={(e) => setFiltroDocumento(e.target.value)}>
+                <option value="todos">Boleta y factura</option>
+                <option value="boleta">Solo boleta</option>
+                <option value="factura">Solo factura</option>
               </select>
             </label>
+
+            <label className="pb-campo">
+              <span>Desde</span>
+              <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
+            </label>
+
+            <label className="pb-campo">
+              <span>Hasta</span>
+              <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
+            </label>
+
+            <label className="pb-campo">
+              <span>Monto mínimo</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="$0"
+                value={montoMinimo}
+                onChange={(e) => setMontoMinimo(e.target.value)}
+              />
+            </label>
+
+            <label className="pb-campo">
+              <span>Monto máximo</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                placeholder="Sin límite"
+                value={montoMaximo}
+                onChange={(e) => setMontoMaximo(e.target.value)}
+              />
+            </label>
           </div>
-          <p className="pedidos-bodeguero__resultados">Mostrando <strong>{pedidosMostrar.length}</strong> de <strong>{pedidosBase.length}</strong> pedidos</p>
-        </section>
-        {error && (
-          <div
-            className="pedidos-bodeguero__error"
-            role="alert"
-          >
-            {error}
-          </div>
+
+          {hayFiltros && (
+            <div className="pb-filtros__pie">
+              <button type="button" className="pb-boton pb-boton--texto" onClick={limpiarFiltros}>
+                Limpiar filtros
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="pb-resultado">
+          <h2>{VISTAS[vista]}</h2>
+          <span>{pedidosMostrar.length} {pedidosMostrar.length === 1 ? "pedido" : "pedidos"}</span>
+        </div>
+
+        {aviso && (
+          <p className="pb-alerta pb-alerta--ok" role="status">
+            <LuCircleCheck aria-hidden="true" />
+            {aviso}
+          </p>
         )}
-        {/* =====================================
-            LISTADO
-        ====================================== */}
+
+        {error && (
+          <p className="pb-alerta pb-alerta--error" role="alert">
+            <LuTriangleAlert aria-hidden="true" />
+            {error}
+          </p>
+        )}
+
+        {/* ================= LISTADO ================= */}
         {cargando ? (
-          <div className="pedidos-bodeguero__empty">
-            <strong>
-              Cargando pedidos...
-            </strong>
+          <div className="pb-vacio">
+            <span className="pb-spinner" aria-hidden="true" />
+            <p>Cargando pedidos...</p>
           </div>
         ) : pedidosMostrar.length === 0 ? (
-          <div className="pedidos-bodeguero__empty">
-            <strong>
-              {pestana === "preparar"
-                ? "No hay pedidos por preparar"
-                : "No hay pedidos enviados"}
-            </strong>
-            <p>
-              {pestana === "preparar"
-                ? "Cuando llegue un pedido confirmado aparecerá aquí."
-                : "Los pedidos despachados aparecerán aquí."}
-            </p>
+          <div className="pb-vacio">
+            <LuInbox aria-hidden="true" />
+            <p>No hay pedidos en esta vista.</p>
           </div>
         ) : (
-          <div className="pedidos-bodeguero__lista">
+          <ul className="pb-lista">
             {pedidosMostrar.map((pedido) => {
-              const despacho =
-                obtenerDespacho(pedido);
+              const estado = obtenerEstadoVisual(pedido);
+              const despacho = obtenerDespacho(pedido);
+              const retiro = esRetiro(pedido);
+              const atrasado = esAtrasado(pedido);
+              const primerProducto = pedido.detalle_pedido?.[0];
+              const imagen = obtenerUrlImagen(primerProducto?.producto?.imagen_url);
+              const masProductos = (pedido.detalle_pedido?.length || 0) - 1;
+
               return (
-                <article
-                  key={pedido.id_pedido}
-                  className="pedido-bodeguero-card"
-                >
-                  {/* CABECERA */}
-                  <div className="pedido-bodeguero-card__header">
-                    <div>
-                    <span className="pedido-bodeguero-card__label">
-                      FOLIO DEL PEDIDO
+                <li key={pedido.id_pedido} className={`pb-pedido${atrasado ? " pb-pedido--atrasado" : ""}`}>
+                  <div className="pb-pedido__miniatura">
+                    {imagen ? <img src={imagen} alt="" loading="lazy" /> : <LuPackage aria-hidden="true" />}
+                  </div>
+
+                  <div className="pb-pedido__principal">
+                    <div className="pb-pedido__titulo">
+                      <strong>{obtenerFolio(pedido)}</strong>
+                      <span className={`pb-estado ${estado.clase}`}>{estado.texto}</span>
+                    </div>
+                    <p className="pb-pedido__productos">
+                      {primerProducto?.nom_prod || "Sin productos"}
+                      {masProductos > 0 && <span> y {masProductos} más</span>}
+                    </p>
+                    <p className="pb-pedido__meta">
+                      <span><LuUser aria-hidden="true" />{pedido.usuario?.nom_user || "Cliente"}</span>
+                      <span className={atrasado ? "pb-texto-atrasado" : ""}>
+                        <LuClock aria-hidden="true" />
+                        {textoAntiguedad(pedido.fecha_predido)}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="pb-pedido__entrega">
+                    <span className="pb-etiqueta">
+                      {retiro ? <LuStore aria-hidden="true" /> : <LuTruck aria-hidden="true" />}
+                      {despacho?.tipo_despacho?.nom_tipo_despacho || (retiro ? "Retiro en tienda" : "Despacho")}
                     </span>
-                    <h2>
-                      {pedido.folio_pedido || "Folio pendiente"}
-                    </h2>
-                      <span className="pedido-bodeguero-card__fecha">
-                        {formatearFechaHora(
-                          pedido.fecha_predido
-                        )}
-                      </span>
-                    </div>
-                    <span
-                      className={obtenerClaseEstado(
-                        pedido.id_estado
-                      )}
-                    >
-                      {obtenerNombreEstado(
-                        pedido.id_estado
-                      )}
-                    </span>
+                    {!retiro && despacho?.comuna_despacho && (
+                      <small><LuMapPin aria-hidden="true" />{despacho.comuna_despacho}</small>
+                    )}
                   </div>
-                  {/* PROGRESO */}
-                  <div className="pedido-bodeguero-card__progreso">
-                    <div className="pedido-bodeguero-card__paso pedido-bodeguero-card__paso--activo">
-                      <span>✓</span>
-                      <small>Confirmado</small>
-                    </div>
-                    <div
-                      className={
-                        pedido.id_estado >=
-                          ESTADO_PREPARACION
-                          ? "pedido-bodeguero-card__linea pedido-bodeguero-card__linea--activa"
-                          : "pedido-bodeguero-card__linea"
-                      }
-                    />
-                    <div
-                      className={
-                        pedido.id_estado >=
-                          ESTADO_PREPARACION
-                          ? "pedido-bodeguero-card__paso pedido-bodeguero-card__paso--activo"
-                          : "pedido-bodeguero-card__paso"
-                      }
-                    >
-                      <span>
-                        {pedido.id_estado >=
-                          ESTADO_PREPARACION
-                          ? "✓"
-                          : "2"}
-                      </span>
-                      <small>
-                        Preparación
-                      </small>
-                    </div>
-                    <div
-                      className={
-                        pedido.id_estado >=
-                          ESTADO_DESPACHADO
-                          ? "pedido-bodeguero-card__linea pedido-bodeguero-card__linea--activa"
-                          : "pedido-bodeguero-card__linea"
-                      }
-                    />
-                    <div
-                      className={
-                        pedido.id_estado >=
-                          ESTADO_DESPACHADO
-                          ? "pedido-bodeguero-card__paso pedido-bodeguero-card__paso--activo"
-                          : "pedido-bodeguero-card__paso"
-                      }
-                    >
-                      <span>
-                        {pedido.id_estado >=
-                          ESTADO_DESPACHADO
-                          ? "✓"
-                          : "3"}
-                      </span>
-                      <small>Enviado</small>
-                    </div>
+
+                  <div className="pb-pedido__total">
+                    <strong>{formatearPrecio(pedido.total_pedido)}</strong>
+                    <small>{obtenerUnidades(pedido)} {obtenerUnidades(pedido) === 1 ? "unidad" : "unidades"}</small>
                   </div>
-                  {/* INFORMACIÓN RESUMIDA */}
-                  <div className="pedido-bodeguero-card__resumen">
-                    <div>
-                      <span><img src={iconoCliente} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Cliente</span>
-                      <strong>
-                        {pedido.usuario?.nom_user ||
-                          "Cliente sin nombre"}
-                      </strong>
-                    </div>
-                    <div>
-                      <span><img src={iconoProducto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Productos</span>
-                      <strong>
-                        {obtenerCantidadProductos(
-                          pedido
-                        )}{" "}
-                        productos ·{" "}
-                        {obtenerCantidadUnidades(
-                          pedido
-                        )}{" "}
-                        unidades
-                      </strong>
-                    </div>
-                    <div>
-                      <span><img src={iconoTrabajador} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Bodeguero responsable</span>
-                      <strong>
-                        {pedido.bodeguero?.nom_user || "Sin asignar"}
-                      </strong>
-                    </div>
-                    <div>
-                      <span><img src={iconoTransporte} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Tipo de despacho</span>
-                      <strong>
-                        {obtenerTipoDespacho(
-                          pedido
-                        )}
-                      </strong>
-                    </div>
-                    <div>
-                      <span><img src={iconoUbicacion} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Comuna</span>
-                      <strong>
-                        {despacho?.comuna_despacho ||
-                          "No informada"}
-                      </strong>
-                    </div>
-                    <div>
-                      <span><img src={iconoMonto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Total</span>
-                      <strong>
-                        {formatearPrecio(
-                          pedido.total_pedido
-                        )}
-                      </strong>
-                    </div>
-                  </div>
-                  {/* ACCIONES */}
-                  <div className="pedido-bodeguero-card__footer">
-                    <button
-                      type="button"
-                      className="pedido-bodeguero-card__boton-detalle"
-                      onClick={() =>
-                        abrirDetalle(pedido)
-                      }
-                    >
+
+                  <div className="pb-pedido__acciones">
+                    <button type="button" className="pb-boton pb-boton--secundario" onClick={() => abrirDetalle(pedido)}>
+                      <LuEye aria-hidden="true" />
                       Ver pedido
                     </button>
-                    {pedido.id_estado ===
-                      ESTADO_CONFIRMADO && (
-                        <button
-                          type="button"
-                          className="pedido-bodeguero-card__boton-principal"
-                          disabled={
-                            procesando ===
-                            pedido.id_pedido
-                          }
-                          onClick={() =>
-                            cambiarEstado(
-                              pedido.id_pedido,
-                              ESTADO_PREPARACION
-                            )
-                          }
-                        >
-                          {procesando ===
-                            pedido.id_pedido
-                            ? "Actualizando..."
-                            : "Comenzar preparación"}
-                        </button>
-                      )}
-                    {pedido.id_estado ===
-                      ESTADO_PREPARACION && (
-                        <button
-                          type="button"
-                          className="pedido-bodeguero-card__boton-principal"
-                          disabled={
-                            procesando ===
-                            pedido.id_pedido
-                          }
-                          onClick={() =>
-                            abrirModalDespacho(pedido)
-                          }
-                        >
-                          Marcar como enviado
-                        </button>
-                      )}
-                    {pedido.id_estado ===
-                      ESTADO_DESPACHADO && (
-                        <span className="pedido-bodeguero-card__completado">
-                          ✓ Pedido enviado
-                        </span>
-                      )}
                   </div>
-                </article>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
       </section>
-      {/* =====================================
-          MODAL DE DETALLE
-      ====================================== */}
-      {pedidoSeleccionado &&
-        !mostrarModalDespacho && (
-          <div
-            className="pedido-bodeguero-modal"
-            onMouseDown={(event) => {
-              if (
-                event.target ===
-                event.currentTarget
-              ) {
-                cerrarDetalle();
-              }
-            }}
-          >
-            <div className="pedido-bodeguero-modal__contenido">
-              <div className="pedido-bodeguero-modal__header">
-                <div>
-                  <span>FOLIO DEL PEDIDO</span>
-                  <h2>
-                    Pedido {pedidoSeleccionado.folio_pedido || "Folio pendiente"}
-                  </h2>
-                  <p>
-                    {formatearFechaHora(
-                      pedidoSeleccionado.fecha_predido
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <span
-                    className={obtenerClaseEstado(
-                      pedidoSeleccionado.id_estado
-                    )}
-                  >
-                    {obtenerNombreEstado(
-                      pedidoSeleccionado.id_estado
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    className="pedido-bodeguero-modal__cerrar"
-                    onClick={cerrarDetalle}
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              {/* CLIENTE */}
-              <section className="pedido-bodeguero-modal__seccion">
-                <h3>
-                  <img src={iconoCliente} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Información del cliente
-                </h3>
-                <div className="pedido-bodeguero-modal__grid">
-                  <div>
-                    <span>Nombre</span>
-                    <strong>
-                      {pedidoSeleccionado
-                        .usuario?.nom_user ||
-                        "No informado"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>Teléfono</span>
-                    <strong>
-                      {pedidoSeleccionado
-                        .usuario?.phone_user ||
-                        "No informado"}
-                    </strong>
-                  </div>
-                </div>
-              </section>
-              {/* DESPACHO DEL CLIENTE */}
-              <section className="pedido-bodeguero-modal__seccion">
-                <h3>
-                  <img src={iconoUbicacion} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Datos de entrega
-                </h3>
-                <div className="pedido-bodeguero-modal__grid">
-                  <div>
-                    <span>
-                      Tipo de despacho
-                    </span>
-                    <strong>
-                      {obtenerTipoDespacho(
-                        pedidoSeleccionado
-                      )}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>
-                      Comuna
-                    </span>
-                    <strong>
-                      {obtenerDespacho(
-                        pedidoSeleccionado
-                      )?.comuna_despacho ||
-                        "No informada"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>
-                      Dirección
-                    </span>
-                    <strong>
-                      {obtenerDespacho(
-                        pedidoSeleccionado
-                      )?.direccion_despacho ||
-                        "No registrada en el pedido"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>
-                      Costo de envío
-                    </span>
-                    <strong>
-                      {formatearPrecio(
-                        obtenerDespacho(
-                          pedidoSeleccionado
-                        )?.costo_envio
-                      )}
-                    </strong>
-                  </div>
-                </div>
-              </section>
-              {/* PRODUCTOS */}
-              <section className="pedido-bodeguero-modal__seccion">
-                <h3>
-                  <img src={iconoProducto} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Productos del pedido
-                </h3>
-                <div className="pedido-bodeguero-modal__productos">
-                  {pedidoSeleccionado
-                    .detalle_pedido?.length > 0 ? (
-                    pedidoSeleccionado.detalle_pedido.map(
-                      (detalle) => {
-                        const subtotal =
-                          Number(
-                            detalle.precio_unitario ||
-                            0
-                          ) *
-                          Number(
-                            detalle.cantidad || 0
-                          );
-                        return (
-                          <div
-                            key={
-                              detalle.id_detalle
-                            }
-                            className="pedido-bodeguero-modal__producto"
-                          >
-                            <div>
-                              <strong>
-                                {detalle.nom_prod ||
-                                  "Producto"}
-                              </strong>
-                              <span>
-                                {detalle.cantidad}{" "}
-                                ×{" "}
-                                {formatearPrecio(
-                                  detalle.precio_unitario
-                                )}
-                              </span>
-                            </div>
-                            <strong>
-                              {formatearPrecio(
-                                subtotal
-                              )}
-                            </strong>
-                          </div>
-                        );
-                      }
-                    )
-                  ) : (
-                    <p>
-                      No hay productos registrados.
-                    </p>
-                  )}
-                </div>
-                <div className="pedido-bodeguero-modal__total">
-                  <span>
-                    Total del pedido
-                  </span>
-                  <strong>
-                    {formatearPrecio(
-                      pedidoSeleccionado.total_pedido
-                    )}
-                  </strong>
-                </div>
-              </section>
-              {/* INFORMACIÓN DEL DESPACHO */}
-              {pedidoSeleccionado.despacho?.length > 0 && (
-                <section className="pedido-bodeguero-modal__seccion">
-                  <h3><img src={iconoTransporte} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Información del despacho</h3>
-                  <div className="pedido-bodeguero-modal__grid">
-                    <div>
-                      <span>Tipo de despacho</span>
-                      <strong>{obtenerTipoDespacho(pedidoSeleccionado)}</strong>
-                    </div>
-                    <div>
-                      <span>Dirección</span>
-                      <strong>{obtenerDespacho(pedidoSeleccionado)?.direccion_despacho || "No registrada"}</strong>
-                    </div>
-                    <div>
-                      <span>Comuna</span>
-                      <strong>{obtenerDespacho(pedidoSeleccionado)?.comuna_despacho || "No informada"}</strong>
-                    </div>
-                    <div>
-                      <span>Costo de envío</span>
-                      <strong>{formatearPrecio(obtenerDespacho(pedidoSeleccionado)?.costo_envio)}</strong>
-                    </div>
-                  </div>
-                  <div className="pedido-bodeguero-modal__formulario">
-                    <label>
-                      <span>Transportista *</span>
-                      <input
-                        type="text"
-                        value={transportista}
-                        onChange={(event) => setTransportista(event.target.value)}
-                        placeholder="Ej: Starken, Chilexpress..."
-                        disabled={guardandoDatosDespacho || procesando !== null}
-                      />
-                    </label>
-                    <label>
-                      <span>Número de seguimiento</span>
-                      <input
-                        type="text"
-                        value={numSeguimiento}
-                        onChange={(event) => setNumSeguimiento(event.target.value)}
-                        placeholder="Opcional"
-                        disabled={guardandoDatosDespacho || procesando !== null}
-                      />
-                    </label>
-                    <label>
-                      <span>Fecha de despacho *</span>
-                      <input
-                        type="date"
-                        value={fechaDespacho}
-                        onChange={(event) => setFechaDespacho(event.target.value)}
-                        disabled={guardandoDatosDespacho || procesando !== null}
-                      />
-                    </label>
-                  </div>
-                  {errorEditarDespacho && (
-                    <div className="pedidos-bodeguero__error" role="alert">
-                      {errorEditarDespacho}
-                    </div>
-                  )}
-                  <div className="pedido-bodeguero-modal__footer">
-                    <button
-                      type="button"
-                      className="pedido-bodeguero-card__boton-principal"
-                      onClick={actualizarDatosDespacho}
-                      disabled={guardandoDatosDespacho || procesando !== null}
-                    >
-                      {guardandoDatosDespacho ? "Guardando cambios..." : "Guardar cambios"}
-                    </button>
-                  </div>
-                </section>
-              )}
-              {/* FOOTER MODAL */}
-              <div className="pedido-bodeguero-modal__footer">
-                <button
-                  type="button"
-                  className="pedido-bodeguero-card__boton-detalle"
-                  onClick={cerrarDetalle}
-                >
-                  Cerrar
-                </button>
-                {pedidoSeleccionado.id_estado ===
-                  ESTADO_CONFIRMADO && (
-                    <button
-                      type="button"
-                      className="pedido-bodeguero-card__boton-principal"
-                      disabled={
-                        procesando ===
-                        pedidoSeleccionado.id_pedido
-                      }
-                      onClick={() =>
-                        cambiarEstado(
-                          pedidoSeleccionado.id_pedido,
-                          ESTADO_PREPARACION
-                        )
-                      }
-                    >
-                      {procesando ===
-                        pedidoSeleccionado.id_pedido
-                        ? "Actualizando..."
-                        : "Comenzar preparación"}
-                    </button>
-                  )}
-                {pedidoSeleccionado.id_estado ===
-                  ESTADO_PREPARACION && (
-                    <button
-                      type="button"
-                      className="pedido-bodeguero-card__boton-principal"
-                      disabled={
-                        procesando ===
-                        pedidoSeleccionado.id_pedido
-                      }
-                      onClick={() =>
-                        abrirModalDespacho(
-                          pedidoSeleccionado
-                        )
-                      }
-                    >
-                      Marcar como enviado
-                    </button>
-                  )}
-              </div>
-            </div>
-          </div>
-        )}
-      {/* =====================================
-          MODAL DE DESPACHO
-      ====================================== */}
-      {mostrarModalDespacho &&
-        pedidoSeleccionado && (
-          <div
-            className="pedido-bodeguero-modal pedido-bodeguero-modal--despacho"
-            onMouseDown={(event) => {
-              if (
-                event.target ===
-                event.currentTarget
-              ) {
-                cerrarModalDespacho();
-              }
-            }}
-          >
-            <div className="pedido-bodeguero-modal__contenido pedido-bodeguero-modal__contenido--despacho">
-              <div className="pedido-bodeguero-modal__header">
-                <div>
-                  <span>DESPACHO</span>
-                  <h2>
-                    Pedido #
-                    {pedidoSeleccionado.id_pedido}
-                  </h2>
-                  <p>
-                    Completa los datos para
-                    registrar el despacho.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="pedido-bodeguero-modal__cerrar"
-                  onClick={cerrarModalDespacho}
-                  disabled={
-                    procesando !== null
-                  }
-                >
-                  ×
-                </button>
-              </div>
-              <section className="pedido-bodeguero-modal__seccion">
-                <h3>
-                  <img src={iconoTransporte} alt="" aria-hidden="true" className="pedidos-bodega__icono" /> Información del despacho
-                </h3>
-                {/* DATOS ELEGIDOS POR EL CLIENTE */}
-                <div className="pedido-bodeguero-modal__grid">
-                  <div>
-                    <span>
-                      Tipo de despacho
-                    </span>
-                    <strong>
-                      {obtenerTipoDespacho(
-                        pedidoSeleccionado
-                      )}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>
-                      Comuna
-                    </span>
-                    <strong>
-                      {obtenerDespacho(
-                        pedidoSeleccionado
-                      )?.comuna_despacho ||
-                        "No informada"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>
-                      Dirección
-                    </span>
-                    <strong>
-                      {obtenerDespacho(
-                        pedidoSeleccionado
-                      )?.direccion_despacho ||
-                        "No registrada"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>
-                      Costo de envío
-                    </span>
-                    <strong>
-                      {formatearPrecio(
-                        obtenerDespacho(
-                          pedidoSeleccionado
-                        )?.costo_envio
-                      )}
-                    </strong>
-                  </div>
-                </div>
-                <div className="pedido-bodeguero-modal__formulario">
-                  {/* TRANSPORTISTA */}
-                  <label>
-                    <span>
-                      Transportista *
-                    </span>
-                    <input
-                      type="text"
-                      value={transportista}
-                      onChange={(event) =>
-                        setTransportista(
-                          event.target.value
-                        )
-                      }
-                      placeholder="Ej: Starken, Blue Express, Chilexpress..."
-                      disabled={
-                        procesando !== null
-                      }
-                    />
-                    <small>
-                      Ingresa manualmente el
-                      nombre del transportista.
-                    </small>
-                  </label>
-                  {/* SEGUIMIENTO */}
-                  <label>
-                    <span>
-                      Número de seguimiento
-                    </span>
-                    <input
-                      type="text"
-                      value={numSeguimiento}
-                      onChange={(event) =>
-                        setNumSeguimiento(
-                          event.target.value
-                        )
-                      }
-                      placeholder="Opcional"
-                      disabled={
-                        procesando !== null
-                      }
-                    />
-                    <small>
-                      Puedes dejar este campo
-                      vacío.
-                    </small>
-                  </label>
-                  {/* FECHA */}
-                  <label>
-                    <span>
-                      Fecha de despacho *
-                    </span>
-                    <input
-                      type="date"
-                      value={fechaDespacho}
-                      onChange={(event) =>
-                        setFechaDespacho(
-                          event.target.value
-                        )
-                      }
-                      disabled={
-                        procesando !== null
-                      }
-                    />
-                  </label>
-                </div>
-                {errorDespacho && (
-                  <div
-                    className="pedidos-bodeguero__error"
-                    role="alert"
-                  >
-                    {errorDespacho}
-                  </div>
-                )}
-              </section>
-              <div className="pedido-bodeguero-modal__footer">
-                <button
-                  type="button"
-                  className="pedido-bodeguero-card__boton-detalle"
-                  onClick={
-                    cerrarModalDespacho
-                  }
-                  disabled={
-                    procesando !== null
-                  }
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="pedido-bodeguero-card__boton-principal"
-                  onClick={
-                    registrarDespacho
-                  }
-                  disabled={
-                    procesando ===
-                    pedidoSeleccionado.id_pedido
-                  }
-                >
-                  {procesando ===
-                    pedidoSeleccionado.id_pedido
-                    ? "Registrando..."
-                    : "Confirmar despacho"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+
+      {/* ================= DETALLE ================= */}
+      {pedidoSeleccionado && (
+        <DetallePedidoModal
+          pedido={pedidoSeleccionado}
+          confirmando={confirmando}
+          procesando={procesando}
+          errorAccion={errorAccion}
+          onCerrar={cerrarDetalle}
+          onPedirConfirmacion={() => setConfirmando(true)}
+          onCancelarConfirmacion={() => setConfirmando(false)}
+          onConfirmar={esPendiente(pedidoSeleccionado) ? marcarComoListo : marcarComoFinalizado}
+        />
+      )}
     </div>
   );
 }
+
+// ==========================================================
+// MODAL DE DETALLE
+// ==========================================================
+function DetallePedidoModal({
+  pedido,
+  confirmando,
+  procesando,
+  errorAccion,
+  onCerrar,
+  onPedirConfirmacion,
+  onCancelarConfirmacion,
+  onConfirmar,
+}) {
+  const despacho = obtenerDespacho(pedido);
+  const retiro = esRetiro(pedido);
+  const pendiente = esPendiente(pedido);
+  const listo = esPedidoListo(pedido);
+  const finalizado = esPedidoFinalizado(pedido);
+
+  // Acción disponible según el estado: preparar → listo → finalizado
+  const accion = pendiente
+    ? {
+        pregunta: "¿Confirmas que el pedido está preparado?",
+        mensaje: obtenerMensajeCliente(pedido),
+        boton: obtenerTextoBoton(pedido),
+        confirmar: "Sí, está listo",
+        Icono: LuPackageCheck,
+      }
+    : {
+        pregunta: retiro
+          ? "¿Confirmas que el cliente retiró el pedido?"
+          : "¿Confirmas que el pedido fue entregado al cliente?",
+        mensaje: obtenerMensajePedidoFinalizado(pedido),
+        boton: retiro ? "Confirmar retiro" : "Confirmar entrega",
+        confirmar: "Sí, finalizar",
+        Icono: LuCircleCheck,
+      };
+  const estado = obtenerEstadoVisual(pedido);
+  const subtotal = (pedido.detalle_pedido || []).reduce(
+    (total, detalle) => total + Number(detalle.cantidad || 0) * Number(detalle.precio_unitario || 0),
+    0,
+  );
+
+  return (
+    <div className="pb-modal" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}>
+      <section className="pb-modal__panel" role="dialog" aria-modal="true" aria-labelledby="pb-modal-titulo">
+        <header className="pb-modal__encabezado">
+          <div>
+            <span className="pb-modal__eyebrow">Pedido</span>
+            <h2 id="pb-modal-titulo">{obtenerFolio(pedido)}</h2>
+            <p>
+              <LuCalendar aria-hidden="true" />
+              {formatearFechaHora(pedido.fecha_predido)} · {textoAntiguedad(pedido.fecha_predido)}
+            </p>
+          </div>
+          <div className="pb-modal__encabezado-derecha">
+            <span className={`pb-estado ${estado.clase}`}>{estado.texto}</span>
+            <button type="button" className="pb-icono-boton" onClick={onCerrar} aria-label="Cerrar" disabled={procesando}>
+              <LuX aria-hidden="true" />
+            </button>
+          </div>
+        </header>
+
+        <div className="pb-modal__cuerpo">
+          {/* CLIENTE Y ENTREGA */}
+          <div className="pb-bloques">
+            <div className="pb-bloque">
+              <h3><LuUser aria-hidden="true" />Cliente</h3>
+              <p className="pb-bloque__dato">{pedido.usuario?.nom_user || "Sin nombre"}</p>
+              {pedido.usuario?.phone_user && (
+                <a className="pb-bloque__enlace" href={`tel:${pedido.usuario.phone_user}`}>
+                  <LuPhone aria-hidden="true" />
+                  {pedido.usuario.phone_user}
+                </a>
+              )}
+            </div>
+
+            <div className="pb-bloque">
+              <h3>
+                {retiro ? <LuStore aria-hidden="true" /> : <LuTruck aria-hidden="true" />}
+                Entrega
+              </h3>
+              <p className="pb-bloque__dato">
+                {despacho?.tipo_despacho?.nom_tipo_despacho || (retiro ? "Retiro en tienda" : "Despacho")}
+              </p>
+              {retiro ? (
+                <p className="pb-bloque__secundario">El cliente retira en el local de ventas.</p>
+              ) : (
+                <p className="pb-bloque__secundario">
+                  <LuMapPin aria-hidden="true" />
+                  {despacho?.direccion_despacho || "Sin dirección"}
+                  {despacho?.comuna_despacho ? `, ${despacho.comuna_despacho}` : ""}
+                </p>
+              )}
+            </div>
+
+            <div className="pb-bloque">
+              <h3>
+                {pedido.es_factura ? <LuFileText aria-hidden="true" /> : <LuReceipt aria-hidden="true" />}
+                Documento
+              </h3>
+              <p className="pb-bloque__dato">{pedido.es_factura ? "Factura" : "Boleta"}</p>
+            </div>
+          </div>
+
+          {/* PRODUCTOS */}
+          <h3 className="pb-subtitulo">Productos ({pedido.detalle_pedido?.length || 0})</h3>
+          <ul className="pb-productos">
+            {(pedido.detalle_pedido || []).map((detalle) => {
+              const imagen = obtenerUrlImagen(detalle.producto?.imagen_url);
+              return (
+                <li key={detalle.id_detalle} className="pb-producto">
+                  <div className="pb-producto__imagen">
+                    {imagen ? (
+                      <img src={imagen} alt={detalle.nom_prod} loading="lazy" />
+                    ) : (
+                      <LuImageOff aria-label="Sin imagen" />
+                    )}
+                  </div>
+                  <div className="pb-producto__info">
+                    <strong>{detalle.nom_prod}</strong>
+                    <span>Código {detalle.id_prod}</span>
+                  </div>
+                  <div className="pb-producto__cantidad">
+                    <span>Cantidad</span>
+                    <strong>{detalle.cantidad}</strong>
+                  </div>
+                  <div className="pb-producto__precio">
+                    <span>{formatearPrecio(detalle.precio_unitario)} c/u</span>
+                    <strong>{formatearPrecio(Number(detalle.cantidad) * Number(detalle.precio_unitario))}</strong>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <dl className="pb-totales">
+            <div><dt>Productos</dt><dd>{formatearPrecio(subtotal)}</dd></div>
+            <div>
+              <dt>Envío</dt>
+              <dd>
+                {despacho?.requiere_coordinacion
+                  ? "A coordinar"
+                  : Number(despacho?.costo_envio || 0) === 0
+                    ? "Gratis"
+                    : formatearPrecio(despacho?.costo_envio)}
+              </dd>
+            </div>
+            <div className="pb-totales__total"><dt>Total</dt><dd>{formatearPrecio(pedido.total_pedido)}</dd></div>
+          </dl>
+        </div>
+
+        {/* ACCIÓN */}
+        <footer className="pb-modal__pie">
+          {errorAccion && (
+            <p className="pb-alerta pb-alerta--error" role="alert">
+              <LuTriangleAlert aria-hidden="true" />
+              {errorAccion}
+            </p>
+          )}
+
+          {finalizado ? (
+            <p className="pb-nota">
+              <LuCircleCheck aria-hidden="true" />
+              Pedido finalizado. El cliente ve: “{obtenerMensajePedidoFinalizado(pedido)}”
+            </p>
+          ) : confirmando ? (
+            <div className="pb-confirmacion">
+              <p>
+                {accion.pregunta} El cliente verá:
+                <em>“{accion.mensaje}”</em>
+              </p>
+              <div className="pb-confirmacion__botones">
+                <button type="button" className="pb-boton pb-boton--secundario" onClick={onCancelarConfirmacion} disabled={procesando}>
+                  Volver
+                </button>
+                <button type="button" className="pb-boton pb-boton--primario" onClick={onConfirmar} disabled={procesando}>
+                  {procesando ? "Guardando..." : accion.confirmar}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="pb-modal__pie-botones">
+              {listo && (
+                <p className="pb-nota pb-nota--suave">
+                  <LuPackageCheck aria-hidden="true" />
+                  Pedido listo. El cliente ve: “{obtenerMensajeCliente(pedido)}”
+                </p>
+              )}
+              <button type="button" className="pb-boton pb-boton--secundario" onClick={onCerrar}>
+                Cerrar
+              </button>
+              <button type="button" className="pb-boton pb-boton--primario" onClick={onPedirConfirmacion}>
+                <accion.Icono aria-hidden="true" />
+                {accion.boton}
+              </button>
+            </div>
+          )}
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 export default Pedidos;

@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import TarjetaPedido from "../../components/pedidos/TarjetaPedido";
+import {
+  esVisibleParaCliente,
+  obtenerNombreEstado,
+} from "../../utils/Pedidos/estadoPedido";
 import "./css/Pedido.css";
 
 function Pedidos() {
@@ -133,25 +137,11 @@ function Pedidos() {
   }
 
   // ==================================================
-  // OBTENER ESTADO DEL PEDIDO
+  // PEDIDOS VISIBLES
   // ==================================================
 
-  function obtenerEstado(pedido) {
-    const estado =
-      pedido?.estado_pedido?.nom_estado;
-
-    if (!estado) {
-      return "pendiente";
-    }
-
-    return estado
-      .toLowerCase()
-      .trim()
-      .replaceAll(" ", "_");
-  }
-  const pedidosConfirmados = pedidos.filter(
-    (pedido) => obtenerEstado(pedido) === "confirmado"
-  );
+  // Qué estados ve el cliente: utils/pedidos/estadoPedido.js
+  const pedidosConfirmados = pedidos.filter(esVisibleParaCliente);
 
   // ==================================================
   // VER DETALLE DEL PEDIDO
@@ -281,7 +271,7 @@ function Pedidos() {
                 </strong>
 
                 <span>
-                  {pedidos.length === 1
+                  {pedidosConfirmados.length === 1
                     ? "pedido"
                     : "pedidos"}
                 </span>
@@ -315,7 +305,7 @@ function Pedidos() {
                   }
 
                   obtenerEstado={
-                    obtenerEstado
+                    obtenerNombreEstado
                   }
 
                   onVerDetalle={() =>

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import {
+  obtenerAvisoCliente,
+  obtenerNombreEstado,
+} from "../../utils/Pedidos/estadoPedido";
 import "./css/DetallePedido.css";
 
 function DetallePedido() {
@@ -179,7 +183,7 @@ function DetallePedido() {
   // ==================================================
 
   function obtenerEstadoPedido() {
-    return pedido?.estado_pedido?.nom_estado || "Pendiente";
+    return obtenerNombreEstado(pedido);
   }
 
   // ==================================================
@@ -278,6 +282,14 @@ function DetallePedido() {
           </div>
 
         </div>
+
+        {/* ================= AVISO PEDIDO LISTO ================= */}
+
+        {obtenerAvisoCliente(pedido) && (
+          <p className="detalle-pedido-aviso-listo" role="status">
+            {obtenerAvisoCliente(pedido)}
+          </p>
+        )}
 
         {/* ================= PRODUCTOS ================= */}
 
