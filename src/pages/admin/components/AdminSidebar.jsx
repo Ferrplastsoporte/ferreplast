@@ -3,9 +3,8 @@ import { createPortal } from "react-dom";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { useAutenticacion } from "../../../hooks/useAutenticacion";
-import "../css/Admin.css";
-import "../css/barra-lateral-admin.css";
-
+import "../Css/admin.css";
+import "../Css/barra-lateral-admin.css";
 const ICONOS = import.meta.glob(
   "../../../assets/iconos/vista_admin/admin_menu/*.png",
   { eager: true, query: "?url", import: "default" },

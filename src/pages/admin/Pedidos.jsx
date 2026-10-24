@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
-import "./css/Pedidos.css";
+import "./Css/Pedidos.css";
 function formatearFecha(fecha) {
   if (!fecha) return "—";
 

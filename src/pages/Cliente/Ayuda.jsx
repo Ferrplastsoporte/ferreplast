@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./css/ayuda.css";
+import "./css/Ayuda.css";
 
 function Ayuda() {
   const [abierta, setAbierta] = useState(null);

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
-import "./css/Pagos.css";
+import "./Css/Pagos.css";
 
 const formatoCLP = (monto) =>
   new Intl.NumberFormat("es-CL", {

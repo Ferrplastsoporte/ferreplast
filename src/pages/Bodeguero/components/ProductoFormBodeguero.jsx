@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import "../css/Productos-bodeguero.css";
+import "../css/productos-bodeguero.css";
 
 import {
   ESTADO_INICIAL_PRODUCTO,

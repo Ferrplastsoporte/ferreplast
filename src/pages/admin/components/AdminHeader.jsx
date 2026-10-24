@@ -1,4 +1,4 @@
-import "../css/Admin.css";
+import "../Css/admin.css";
 
 function AdminHeader({ titulo, descripcion = "", acciones = null }) {
   return (

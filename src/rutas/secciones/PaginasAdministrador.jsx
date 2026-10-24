@@ -27,7 +27,7 @@ export const Configuracion = lazy(() =>
 
 // Reportes se descarga aparte, únicamente cuando se abre esta opción.
 export const Reportes = lazy(() =>
-  import("../../pages/admin/Reportes")
+  import("../../pages/admin/reportes")
 );
 
 export const Aprobaciones = lazy(() =>
