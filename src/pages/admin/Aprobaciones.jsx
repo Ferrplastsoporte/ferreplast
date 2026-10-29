@@ -5,6 +5,8 @@ import {
   NOMBRES_ACCIONES,
   formatearFecha,
   obtenerDetalleCambios,
+  esSolicitudPendiente,
+  esSolicitudStock,
 } from "../../utils/solicitudes/solicitudes";
 import { obtenerNombresReferenciasCambios } from "../../services/solicitudesService";
 import AdminHeader from "./components/AdminHeader";
@@ -35,6 +37,8 @@ function Aprobaciones() {
   const [procesando, setProcesando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
   const [confirmacion, setConfirmacion] = useState(null);
+  const [filtroSolicitudes, setFiltroSolicitudes] = useState("productos");
+  const [comentarioResolucion, setComentarioResolucion] = useState("");
 
   useEffect(() => {
     cargarAprobaciones();
@@ -75,7 +79,7 @@ function Aprobaciones() {
       if (resultadoCambios.error) throw resultadoCambios.error;
       if (resultadoMarcas.error) throw resultadoMarcas.error;
 
-      const cambios = resultadoCambios.data ?? [];
+      const cambios = (resultadoCambios.data ?? []).filter(esSolicitudPendiente);
       const referencias = await obtenerNombresReferenciasCambios(cambios);
       const idsProductos = [...new Set(cambios.map((cambio) => cambio.id_prod))];
       let productosPendientes = [];
@@ -133,19 +137,25 @@ function Aprobaciones() {
     }
   }
 
+  const productosVisibles = productos.filter((producto) =>
+    esSolicitudStock(producto.cambios[0]) === (filtroSolicitudes === "stock"),
+  );
+
   const todosLosProductosSeleccionados =
-    productos.length > 0 && productosSeleccionados.length === productos.length;
+    productosVisibles.length > 0 &&
+    productosVisibles.every((producto) => productosSeleccionados.includes(producto.id_prod));
 
   const todasLasMarcasSeleccionadas =
     marcas.length > 0 && marcasSeleccionadas.length === marcas.length;
 
   const resumen = useMemo(
     () => ({
-      productos: productos.length,
+      productos: productos.filter((producto) => !esSolicitudStock(producto.cambios[0])).length,
+      stock: productos.filter((producto) => esSolicitudStock(producto.cambios[0])).length,
       marcas: marcas.length,
       total: productos.length + marcas.length,
     }),
-    [productos.length, marcas.length],
+    [productos, marcas.length],
   );
 
   function alternarSeleccion(valor, actualizarSeleccionados) {
@@ -170,7 +180,16 @@ function Aprobaciones() {
     );
 
     if (idsValidos.length === 0) return;
-    setConfirmacion({ tipo: "producto", accion, ids: idsValidos });
+    const solicitudes = idsValidos.map((id) =>
+      productos.find((producto) => producto.id_prod === id)?.cambios[0],
+    );
+    if (solicitudes.some((solicitud) => !solicitud?.id_cambio)) return;
+    setComentarioResolucion("");
+    setConfirmacion({
+      tipo: "producto", accion, ids: idsValidos,
+      idsSolicitudes: solicitudes.map((solicitud) => solicitud.id_cambio),
+      esStock: solicitudes.every(esSolicitudStock),
+    });
   }
 
   function solicitarResolucionMarcas(ids, accion) {
@@ -195,12 +214,17 @@ function Aprobaciones() {
           {
             p_ids_productos: confirmacion.ids,
             p_aprobar: confirmacion.accion === "aprobar",
+            p_comentario: comentarioResolucion.trim() || null,
+            p_ids_solicitudes: confirmacion.idsSolicitudes,
           },
         );
 
         if (error) throw error;
 
-        const cantidad = Number(data) || confirmacion.ids.length;
+        const cantidad = Number(data);
+        if (!Number.isInteger(cantidad) || cantidad !== confirmacion.ids.length) {
+          throw new Error("Las solicitudes seleccionadas cambiaron. Actualiza la vista antes de resolverlas.");
+        }
         setMensaje({
           tipo: "success",
           texto: `${cantidad} ${cantidad === 1 ? "producto fue resuelto" : "productos fueron resueltos"} correctamente.`,
@@ -255,14 +279,25 @@ function Aprobaciones() {
     }
 
     const verbo = confirmacion.accion === "aprobar" ? "aprobará" : "rechazará";
-    return `Se ${verbo}${cantidad > 1 ? "n" : ""} ${cantidad} ${cantidad === 1 ? "producto pendiente" : "productos pendientes"}.`;
+    const elementos = confirmacion.esStock
+      ? cantidad === 1 ? "ajuste de stock" : "ajustes de stock"
+      : cantidad === 1 ? "solicitud de producto" : "solicitudes de productos";
+    const detalle = confirmacion.esStock
+      ? confirmacion.accion === "aprobar"
+        ? "Se aplicará el stock propuesto."
+        : "Se conservará el stock real."
+      : confirmacion.accion === "rechazar"
+        ? "Las modificaciones recuperarán sus datos anteriores."
+        : "Se conservarán los cambios revisados.";
+
+    return `Se ${verbo}${cantidad > 1 ? "n" : ""} ${cantidad} ${elementos}. ${detalle}`;
   }
 
   return (
     <section className="admin-page aprobaciones-page">
       <AdminHeader
         titulo="Aprobaciones"
-        descripcion="Revisa y resuelve los cambios de productos y las marcas enviadas por bodega."
+        descripcion="Revisa y resuelve solicitudes de productos, ajustes de stock y marcas enviadas por bodega."
         acciones={
           <button
             type="button"
@@ -280,6 +315,7 @@ function Aprobaciones() {
       <div className="aprobaciones-resumen" aria-label="Resumen de aprobaciones">
         <article><span>Total pendiente</span><strong>{resumen.total}</strong></article>
         <article><span>Cambios de productos</span><strong>{resumen.productos}</strong></article>
+        <article><span>Ajustes de stock</span><strong>{resumen.stock}</strong></article>
         <article><span>Marcas por validar</span><strong>{resumen.marcas}</strong></article>
       </div>
 
@@ -299,11 +335,21 @@ function Aprobaciones() {
         <div className="aprobaciones-cargando">Cargando aprobaciones pendientes…</div>
       ) : (
         <>
+          <div className="aprobaciones-filtros" role="group" aria-label="Tipo de solicitud">
+            <button type="button" aria-pressed={filtroSolicitudes === "productos"}
+              onClick={() => { setFiltroSolicitudes("productos"); setProductosSeleccionados([]); }}>
+              Productos ({resumen.productos})
+            </button>
+            <button type="button" aria-pressed={filtroSolicitudes === "stock"}
+              onClick={() => { setFiltroSolicitudes("stock"); setProductosSeleccionados([]); }}>
+              Stock ({resumen.stock})
+            </button>
+          </div>
           <section className="aprobaciones-panel" aria-labelledby="productos-pendientes">
             <div className="aprobaciones-panel__cabecera">
               <div>
-                <span className="aprobaciones-panel__etiqueta">Productos</span>
-                <h2 id="productos-pendientes">Cambios pendientes</h2>
+                <span className="aprobaciones-panel__etiqueta">{filtroSolicitudes === "stock" ? "Stock" : "Productos"}</span>
+                <h2 id="productos-pendientes">{filtroSolicitudes === "stock" ? "Ajustes de stock pendientes" : "Cambios de productos pendientes"}</h2>
                 <p>Solicitudes realizadas por usuarios de bodega que aún requieren revisión.</p>
               </div>
 
@@ -324,9 +370,9 @@ function Aprobaciones() {
               )}
             </div>
 
-            {productos.length === 0 ? (
+            {productosVisibles.length === 0 ? (
               <div className="aprobaciones-vacio">
-                <strong>No hay cambios de productos pendientes</strong>
+                <strong>{filtroSolicitudes === "stock" ? "No hay ajustes de stock pendientes" : "No hay cambios de productos pendientes"}</strong>
                 <span>Las nuevas solicitudes aparecerán en esta sección.</span>
               </div>
             ) : (
@@ -339,7 +385,7 @@ function Aprobaciones() {
                           type="checkbox"
                           checked={todosLosProductosSeleccionados}
                           onChange={() => setProductosSeleccionados(
-                            todosLosProductosSeleccionados ? [] : productos.map((producto) => producto.id_prod),
+                            todosLosProductosSeleccionados ? [] : productosVisibles.map((producto) => producto.id_prod),
                           )}
                           aria-label="Seleccionar todos los productos"
                         />
@@ -348,7 +394,7 @@ function Aprobaciones() {
                     </tr>
                   </thead>
                   <tbody>
-                    {productos.map((producto) => {
+                    {productosVisibles.map((producto) => {
                       const ultimoCambio = producto.cambios[0];
                       const expandido = productosExpandidos.includes(producto.id_prod);
                       const seleccionado = productosSeleccionados.includes(producto.id_prod);
@@ -373,7 +419,10 @@ function Aprobaciones() {
                               <div>
                                 <strong>{producto.nom_prod}</strong>
                                 <span>{producto.marca_producto?.nom_marca || "Sin marca"} · {producto.subcategoria?.nom_subcategoria || "Sin subcategoría"}</span>
-                                <small>ID #{producto.id_prod}</small>
+                                <small>Item #{producto.id_prod}</small>
+                                {esSolicitudStock(ultimoCambio) && (
+                                  <small>Stock real: {producto.stock_prod ?? "Sin registrar"} · Propuesto: {ultimoCambio.campos_modificados?.stock_prod?.nuevo ?? "Sin registrar"}</small>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -508,8 +557,19 @@ function Aprobaciones() {
           <div className="aprobaciones-modal__contenido" role="dialog" aria-modal="true" aria-labelledby="titulo-confirmacion-aprobacion">
             <span className={`aprobaciones-modal__icono aprobaciones-modal__icono--${confirmacion.accion}`}>{confirmacion.accion === "aprobar" ? "✓" : "!"}</span>
             <h2 id="titulo-confirmacion-aprobacion">{confirmacion.accion === "aprobar" ? "Confirmar aprobación" : "Confirmar rechazo"}</h2>
-            <p>{textoConfirmacion()}</p>
-            <p>Esta acción retirará los elementos de la lista de pendientes.</p>
+            <p className="aprobaciones-modal__descripcion">{textoConfirmacion()}</p>
+            {confirmacion.tipo === "producto" && (
+              <>
+                <label className="aprobaciones-comentario" htmlFor="comentario-resolucion">
+                  Comentario (opcional)
+                  <textarea id="comentario-resolucion" value={comentarioResolucion}
+                    onChange={(evento) => setComentarioResolucion(evento.target.value)}
+                    maxLength={1000} rows={2} disabled={procesando}
+                    placeholder="Observación para bodega…" />
+                  <small>{comentarioResolucion.length}/1000{confirmacion.ids.length > 1 ? " · Se aplicará a todas las solicitudes seleccionadas." : ""}</small>
+                </label>
+              </>
+            )}
             <div className="aprobaciones-modal__acciones">
               <button type="button" className="aprobaciones-btn aprobaciones-btn--secundario" onClick={() => setConfirmacion(null)} disabled={procesando}>Cancelar</button>
               <button type="button" className={`aprobaciones-btn aprobaciones-btn--${confirmacion.accion}`} onClick={confirmarResolucion} disabled={procesando}>

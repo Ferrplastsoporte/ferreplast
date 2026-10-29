@@ -602,7 +602,7 @@
     transform 0.15s ease;
 }
 
-.stock-table__adjust:hover {
+.stock-table__adjust:hover:not(:disabled) {
   border-color: #93c5fd;
   background: #dbeafe;
 
@@ -611,6 +611,18 @@
 
 .stock-table__adjust:active {
   transform: translateY(0);
+}
+
+.stock-page .stock-table__adjust:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.stock-modal__error {
+  color: #b91c1c;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 /* ==========================================================

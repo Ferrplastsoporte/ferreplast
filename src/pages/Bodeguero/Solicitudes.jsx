@@ -9,6 +9,9 @@ import {
   NOMBRES_ACCIONES,
   formatearFecha,
   obtenerDetalleCambios,
+  esSolicitudStock,
+  obtenerEstadoSolicitud,
+  obtenerDatosSolicitud,
 } from "../../utils/solicitudes/solicitudes";
 import { obtenerNombresReferenciasCambios } from "../../services/solicitudesService";
 
@@ -78,7 +81,6 @@ function BodegueroSolicitudes() {
           )
         `,
         )
-        .in("est_prod", [1, 4])
         .order("created_prod", {
           ascending: false,
         });
@@ -91,7 +93,6 @@ function BodegueroSolicitudes() {
         (producto) => producto.id_prod,
       );
 
-      const cambiosMap = new Map();
       let cambiosProductos = [];
 
       if (idsProductos.length > 0) {
@@ -99,10 +100,14 @@ function BodegueroSolicitudes() {
           .from("producto_cambio")
           .select(
             `
+            id_cambio,
             id_prod,
+            id_user,
             tipo_accion,
             campos_modificados,
             fecha_cambio,
+            revisado,
+            comentario,
 
             usuario (
               nom_user
@@ -110,8 +115,9 @@ function BodegueroSolicitudes() {
           `,
           )
           .in("id_prod", idsProductos)
-          .eq("revisado", false)
-          .order("fecha_cambio", {
+          .contains("campos_modificados", { _solicitud: { version: 1 } })
+          .not("id_user", "is", null)
+          .order("id_cambio", {
             ascending: false,
           });
 
@@ -121,51 +127,30 @@ function BodegueroSolicitudes() {
 
         cambiosProductos = cambios ?? [];
 
-        for (const cambio of cambiosProductos) {
-          if (!cambiosMap.has(cambio.id_prod)) {
-            cambiosMap.set(cambio.id_prod, cambio);
-          }
-        }
       }
 
       const referencias = await obtenerNombresReferenciasCambios(
         cambiosProductos,
       );
 
-      const solicitudesProductos = (productos ?? [])
-        .filter((producto) => {
-          if (Number(producto.est_prod) === 1) {
-            return true;
-          }
-
-          if (Number(producto.est_prod) === 4) {
-            return true;
-          }
-
-          return false;
-        })
-        .map((producto) => {
-          const ultimoCambio = cambiosMap.get(producto.id_prod) ?? null;
-
-          const esRechazado = Number(producto.est_prod) === 4;
-
+      const productosPorId = new Map((productos ?? []).map((producto) => [String(producto.id_prod), producto]));
+      // Cada fila es una solicitud, no el estado actual del producto.
+      // Así un rechazo o aprobación anteriores siguen visibles al reenviar.
+      const solicitudesProductos = cambiosProductos
+        .filter((cambio) => obtenerEstadoSolicitud(cambio))
+        .map((cambio) => {
+          const producto = productosPorId.get(String(cambio.id_prod));
           return {
             ...producto,
-            tipo: "producto",
-            id: producto.id_prod,
-
-            fecha: ultimoCambio?.fecha_cambio ?? producto.created_prod,
-
-            titulo: producto.nom_prod,
-
-            subtitulo:
-              producto.subcategoria?.nom_subcategoria || "Sin subcategoría",
-
-            detalle: producto.marca_producto?.nom_marca || "Sin marca",
-
-            estado: esRechazado ? "Rechazado" : "Pendiente",
-
-            ultimoCambio,
+            tipo: esSolicitudStock(cambio) ? "stock" : "producto",
+            id: cambio.id_cambio,
+            idProducto: cambio.id_prod,
+            fecha: cambio.fecha_cambio,
+            titulo: producto?.nom_prod || obtenerDatosSolicitud(cambio)?.datos_propuestos?.nom_prod || `Producto #${cambio.id_prod}`,
+            subtitulo: producto?.subcategoria?.nom_subcategoria || "Sin subcategoría",
+            detalle: producto?.marca_producto?.nom_marca || "Sin marca",
+            estado: obtenerEstadoSolicitud(cambio),
+            ultimoCambio: cambio,
           };
         });
 
@@ -228,6 +213,14 @@ function BodegueroSolicitudes() {
       solicitud.tipo === "producto" && solicitud.estado === "Pendiente",
   ).length;
 
+  const totalStock = solicitudes.filter(
+    (solicitud) => solicitud.tipo === "stock" && solicitud.estado === "Pendiente",
+  ).length;
+
+  const totalAprobados = solicitudes.filter(
+    (solicitud) => solicitud.estado === "Aprobado",
+  ).length;
+
   const totalRechazados = solicitudes.filter(
     (solicitud) => solicitud.estado === "Rechazado",
   ).length;
@@ -254,6 +247,14 @@ function BodegueroSolicitudes() {
       );
     }
 
+    if (filtroTipo === "stock") {
+      return solicitudes.filter((solicitud) => solicitud.tipo === "stock" && solicitud.estado === "Pendiente");
+    }
+
+    if (filtroTipo === "aprobados") {
+      return solicitudes.filter((solicitud) => solicitud.estado === "Aprobado");
+    }
+
     if (filtroTipo === "rechazados") {
       return solicitudes.filter(
         (solicitud) => solicitud.estado === "Rechazado",
@@ -270,7 +271,7 @@ function BodegueroSolicitudes() {
   const encabezado = (
     <BodegueroHeader
       titulo="Solicitudes"
-      descripcion="Consulta el estado de revisión de productos y marcas."
+      descripcion="Consulta solicitudes de productos, ajustes de stock, resultados de revisión y marcas."
       acciones={
         <button
           type="button"
@@ -333,6 +334,12 @@ function BodegueroSolicitudes() {
           Productos ({totalProductos})
         </button>
 
+        <button type="button"
+          className={`solicitudes-filtro ${filtroTipo === "stock" ? "active" : ""}`}
+          onClick={() => setFiltroTipo("stock")}>
+          Stock ({totalStock})
+        </button>
+
         <button
           type="button"
           className={`solicitudes-filtro ${
@@ -341,6 +348,12 @@ function BodegueroSolicitudes() {
           onClick={() => setFiltroTipo("marcas")}
         >
           Marcas ({totalMarcas})
+        </button>
+
+        <button type="button"
+          className={`solicitudes-filtro ${filtroTipo === "aprobados" ? "active" : ""}`}
+          onClick={() => setFiltroTipo("aprobados")}>
+          Aprobados ({totalAprobados})
         </button>
 
         <button
@@ -360,9 +373,13 @@ function BodegueroSolicitudes() {
 
           <p>
             {filtroTipo === "pendientes"
-              ? "No hay productos ni marcas pendientes de revisión."
+              ? "No hay solicitudes pendientes de revisión."
               : filtroTipo === "productos"
                 ? "No hay productos pendientes de revisión."
+                : filtroTipo === "stock"
+                  ? "No hay ajustes de stock pendientes de revisión."
+                  : filtroTipo === "aprobados"
+                    ? "Todavía no hay solicitudes de productos o stock aprobadas."
                 : filtroTipo === "rechazados"
                   ? "No hay solicitudes rechazadas que requieran cambios."
                   : "No hay solicitudes de marcas pendientes ni rechazadas."}
@@ -373,10 +390,14 @@ function BodegueroSolicitudes() {
       ) : (
         <section className="solicitudes-panel" aria-labelledby="titulo-solicitudes-tabla">
           <div className="solicitudes-panel__cabecera">
-            <span className="solicitudes-panel__etiqueta">Productos y marcas</span>
+            <span className="solicitudes-panel__etiqueta">Productos, stock y marcas</span>
             <h2 id="titulo-solicitudes-tabla">
               {filtroTipo === "rechazados"
                 ? "Solicitudes rechazadas"
+                : filtroTipo === "aprobados"
+                  ? "Solicitudes aprobadas"
+                  : filtroTipo === "stock"
+                    ? "Ajustes de stock pendientes"
                 : filtroTipo === "marcas"
                   ? "Solicitudes de marcas"
                   : "Cambios pendientes"}
@@ -398,7 +419,7 @@ function BodegueroSolicitudes() {
 
               <tbody>
                 {solicitudesFiltradas.map((solicitud) => {
-                  const esProducto = solicitud.tipo === "producto";
+                  const esProducto = solicitud.tipo !== "marca";
                   const clave = `${solicitud.tipo}-${solicitud.id}`;
                   const expandido = solicitudesExpandidas.includes(clave);
                   const detalleId = `solicitud-detalle-${clave}`;
@@ -416,14 +437,15 @@ function BodegueroSolicitudes() {
                     : [];
 
                   const esRechazado = solicitud.estado === "Rechazado";
+                  const esAprobado = solicitud.estado === "Aprobado";
 
                   const estadoClase = esRechazado
                     ? "estado-rechazado"
-                    : "estado-pendiente";
+                    : esAprobado ? "solicitudes-estado-aprobado" : "estado-pendiente";
 
                   const estadoTexto = esRechazado
                     ? "Rechazado"
-                    : "Pendiente";
+                    : esAprobado ? "Aprobado" : "Pendiente";
 
                   const nombreAccion = cambio
                     ? NOMBRES_ACCIONES[cambio.tipo_accion] || "Producto modificado"
@@ -457,7 +479,8 @@ function BodegueroSolicitudes() {
                         <div className="solicitudes-table__product">
                           <strong>{solicitud.titulo}</strong>
                           <span>{esProducto ? `${solicitud.detalle} · ${solicitud.subtitulo}` : solicitud.subtitulo}</span>
-                          <small>{esProducto ? "Producto" : "Marca"} #{solicitud.id}</small>
+                          <small>{esProducto ? "Item" : "Marca"} #{esProducto ? solicitud.idProducto : solicitud.id}</small>
+                          {solicitud.tipo === "stock" && <small>Ajuste de stock · Solicitud #{solicitud.id}</small>}
                         </div>
                         </div>
                       </td>
@@ -502,6 +525,28 @@ function BodegueroSolicitudes() {
                               </strong>
                               <span>{formatearFecha(cambio.fecha_cambio)}</span>
                             </header>
+
+                            {solicitud.tipo === "stock" && solicitud.estado === "Pendiente" && (
+                              <p className="solicitudes-aclaracion">La cantidad nueva es una propuesta. Todavía no se ha aplicado al stock real.</p>
+                            )}
+
+                            {obtenerDatosSolicitud(cambio)?.fecha_resolucion && (
+                              <p className="solicitudes-aclaracion">
+                                {estadoTexto} el {formatearFecha(obtenerDatosSolicitud(cambio).fecha_resolucion)}.
+                                {esRechazado && (solicitud.tipo === "stock"
+                                  ? " El ajuste no se aplicó; puedes corregirlo y enviar otra solicitud."
+                                  : obtenerDatosSolicitud(cambio)?.tipo === "modificacion"
+                                    ? " Se restauraron los datos anteriores, excepto imágenes y documentos. Puedes corregir el producto y reenviarlo."
+                                    : " Puedes corregir el producto y reenviarlo.")}
+                              </p>
+                            )}
+
+                            {cambio.comentario && (
+                              <div className="solicitudes-comentario">
+                                <strong>Comentario de administración</strong>
+                                <p>{cambio.comentario}</p>
+                              </div>
+                            )}
 
                             {detalleCambios.length > 0 ? (
                               <ul className="solicitudes-change__details">

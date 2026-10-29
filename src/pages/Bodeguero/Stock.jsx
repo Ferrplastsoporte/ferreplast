@@ -161,6 +161,11 @@ function BodegueroStock() {
   }
 
   function abrirAjusteStock(producto) {
+    if (![2, 3, 4].includes(Number(producto.est_prod))) {
+      setMensajeExito("");
+      setMensajeError("El producto está pendiente de revisión. Espera la resolución del administrador antes de solicitar otro ajuste.");
+      return;
+    }
     setProductoPorAjustar(producto);
     setNuevoStock(String(Number(producto.stock_prod) || 0));
 
@@ -186,10 +191,15 @@ function BodegueroStock() {
 
     const stock = Number(nuevoStock);
 
-    if (!Number.isInteger(stock) || stock < 0) {
+    if (!nuevoStock.trim() || !Number.isInteger(stock) || stock < 0 || stock > 2147483647) {
       setMensajeError(
-        "El stock debe ser un número entero igual o mayor que cero.",
+        "El stock debe ser un número entero entre 0 y 2147483647.",
       );
+      return;
+    }
+
+    if (productoPorAjustar.stock_prod != null && stock === Number(productoPorAjustar.stock_prod)) {
+      setMensajeError("Debes ingresar un stock diferente al actual.");
       return;
     }
 
@@ -213,7 +223,7 @@ function BodegueroStock() {
       await cargarProductos();
 
       setMensajeExito(
-        `El stock de "${nombreProducto}" fue actualizado correctamente.`,
+        `El ajuste de stock de "${nombreProducto}" quedó pendiente de aprobación. Las existencias reales todavía no cambian y el producto queda fuera del catálogo mientras se revisa.`,
       );
     } catch (error) {
       console.error("Error al ajustar el stock:", error);
@@ -229,7 +239,7 @@ function BodegueroStock() {
   const encabezado = (
     <BodegueroHeader
       titulo="Gestión de stock"
-      descripcion="Consulta y actualiza las existencias disponibles de los productos."
+      descripcion="Consulta las existencias y solicita ajustes de stock para aprobación del administrador."
       acciones={
         <button
           type="button"
@@ -274,7 +284,7 @@ function BodegueroStock() {
         </p>
       )}
 
-      {mensajeError && (
+      {mensajeError && !productoPorAjustar && (
         <div
           className="bodeguero-message bodeguero-message--error"
           role="alert"
@@ -400,6 +410,7 @@ function BodegueroStock() {
             ) : (
               productosFiltrados.map((producto) => {
                 const stock = producto.stock_prod == null ? null : Number(producto.stock_prod);
+                const permiteAjuste = [2, 3, 4].includes(Number(producto.est_prod));
 
                 const stockBajo = stock > 0 && stock < LIMITE_STOCK_BAJO;
 
@@ -467,8 +478,10 @@ function BodegueroStock() {
                         type="button"
                         className="stock-table__adjust"
                         onClick={() => abrirAjusteStock(producto)}
+                        disabled={actualizando || !permiteAjuste}
+                        title={permiteAjuste ? "Solicitar un ajuste de stock" : "Espera la resolución de la solicitud pendiente"}
                       >
-                        Ajustar stock
+                        {permiteAjuste ? "Ajustar stock" : "En revisión"}
                       </button>
                     </td>
                   </tr>
@@ -487,10 +500,13 @@ function BodegueroStock() {
         >
           <form
             className="productos-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-ajuste-stock"
             onSubmit={guardarAjusteStock}
             onMouseDown={(evento) => evento.stopPropagation()}
           >
-            <h2>Ajustar stock</h2>
+            <h2 id="titulo-ajuste-stock">Solicitar ajuste de stock</h2>
 
             <p>
               Producto: <strong>{productoPorAjustar.nom_prod}</strong>
@@ -510,8 +526,13 @@ function BodegueroStock() {
               />
             </div>
 
+            {mensajeError && <p className="stock-modal__error" role="alert">{mensajeError}</p>}
+
             <p className="productos-modal__note">
-              Este cambio actualizará las existencias disponibles del producto.
+              Se enviará la cantidad propuesta al administrador sin modificar el
+              stock real. El producto quedará pendiente y fuera del catálogo.
+              Al aprobar, quedará activo con existencias o no disponible con cero.
+              Si se rechaza, conservará el stock real y quedará rechazado.
             </p>
 
             <div className="productos-modal__actions">
@@ -520,7 +541,7 @@ function BodegueroStock() {
                 className="stock-modal__confirm"
                 disabled={actualizando}
               >
-                {actualizando ? "Actualizando..." : "Guardar stock"}
+                {actualizando ? "Enviando..." : "Enviar a aprobación"}
               </button>
 
               <button

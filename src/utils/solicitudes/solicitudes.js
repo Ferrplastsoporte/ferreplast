@@ -19,13 +19,42 @@ export const NOMBRES_CAMPOS = {
 
 export const NOMBRES_ACCIONES = {
   producto_creado: "Producto creado",
+  producto_modificado: "Producto modificado",
   actualizacion: "Producto actualizado",
-  ajuste_stock: "Stock actualizado",
+  ajuste_stock: "Ajuste de stock solicitado",
+  movimiento_stock: "Movimiento de stock",
   enviado_revision: "Enviado a revisión",
   producto_aprobado: "Producto aprobado",
+  producto_rechazado: "Producto rechazado",
+  producto_reactivado: "Producto reactivado",
+  reactivacion_solicitada: "Reactivación solicitada",
   producto_no_disponible: "Marcado como no disponible",
   cambio_estado: "Estado modificado",
 };
+
+export function obtenerDatosSolicitud(cambio) {
+  const datos = cambio?.campos_modificados?._solicitud;
+  return datos && typeof datos === "object" && !Array.isArray(datos)
+    ? datos
+    : null;
+}
+
+export function esSolicitudPendiente(cambio) {
+  return cambio?.revisado === false &&
+    obtenerDatosSolicitud(cambio)?.estado === "pendiente";
+}
+
+export function esSolicitudStock(cambio) {
+  return obtenerDatosSolicitud(cambio)?.tipo === "stock";
+}
+
+export function obtenerEstadoSolicitud(cambio) {
+  return {
+    pendiente: "Pendiente",
+    aprobada: "Aprobado",
+    rechazada: "Rechazado",
+  }[obtenerDatosSolicitud(cambio)?.estado] ?? null;
+}
 
 export function formatearFecha(fecha) {
   if (!fecha) return "";
@@ -42,6 +71,12 @@ function formatearValorCambio(campo, valor, nombresReferencias) {
     return "Sin valor";
   }
 
+  if (["precio_prod", "precio_act"].includes(campo) && Number.isFinite(Number(valor))) {
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency", currency: "CLP", maximumFractionDigits: 0,
+    }).format(Number(valor));
+  }
+
   return nombresReferencias?.[campo]?.[String(valor)] ?? String(valor);
 }
 
@@ -51,6 +86,8 @@ export function obtenerDetalleCambios(campos = {}, nombresReferencias = {}) {
   }
 
   return Object.entries(campos).flatMap(([campo, cambio]) => {
+    // Metadatos del proceso, no campos comparables del producto.
+    if (campo.startsWith("_")) return [];
     if (campo === "peligrosidad") {
       const agregadas = Array.isArray(cambio?.agregadas)
         ? cambio.agregadas
@@ -80,6 +117,9 @@ export function obtenerDetalleCambios(campos = {}, nombresReferencias = {}) {
 
       return detalles;
     }
+
+    if (!cambio || typeof cambio !== "object" ||
+      !("anterior" in cambio) || !("nuevo" in cambio)) return [];
 
     return [
       {
