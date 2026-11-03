@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import { solicitarComprobante } from "../../services/comprobanteService";
 import {
   obtenerAvisoCliente,
   obtenerNombreEstado,
@@ -16,15 +17,11 @@ function DetallePedido() {
   const [error, setError] = useState("");
   const [descargando, setDescargando] = useState(false);
 
-  useEffect(() => {
-    cargarPedido();
-  }, [id]);
-
   // ==================================================
   // OBTENER PEDIDO
   // ==================================================
 
-  async function cargarPedido() {
+  const cargarPedido = useCallback(async () => {
     setCargando(true);
     setError("");
 
@@ -78,12 +75,16 @@ function DetallePedido() {
       // OBTENER FOLIO Y COMPROBANTE
       // ==================================================
 
-      const { data: datosExtra } = await supabase
+      const { data: datosExtra, error: errorExtra } = await supabase
         .from("pedido")
-        .select("folio_pedido, comprobante_path")
+        .select("folio_pedido, comprobante_path, pago(id_estado_pago)")
         .eq("id_pedido", Number(id))
         .single();
 
+      if (errorExtra) throw errorExtra;
+      const pagos = Array.isArray(datosExtra?.pago) ? datosExtra.pago :
+        datosExtra?.pago ? [datosExtra.pago] : [];
+      pedidoData.pago_confirmado = pagos.some((pago) => Number(pago.id_estado_pago) === 2);
       pedidoData.folio_pedido = datosExtra?.folio_pedido || null;
       pedidoData.comprobante_path = datosExtra?.comprobante_path || null;
 
@@ -96,7 +97,11 @@ function DetallePedido() {
     } finally {
       setCargando(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    cargarPedido();
+  }, [cargarPedido]);
 
   // ==================================================
   // FORMATEAR PRECIO
@@ -155,24 +160,15 @@ function DetallePedido() {
   // ==================================================
 
   async function descargarComprobante() {
-    if (!pedido?.comprobante_path) return;
-
+    if (!pedido || descargando) return;
     setDescargando(true);
-
     try {
-      const { data, error: errorDescarga } = await supabase.storage
-        .from("comprobantes")
-        .createSignedUrl(pedido.comprobante_path, 60, {
-          download: `comprobante-${pedido.folio_pedido || pedido.id_pedido}.pdf`,
-        });
-
-      if (errorDescarga) {
-        console.error("Error descargando comprobante:", errorDescarga);
-        alert("No fue posible descargar el comprobante.");
-        return;
-      }
-
-      window.location.href = data.signedUrl;
+      const comprobante = await solicitarComprobante(pedido.id_pedido);
+      setPedido((actual) => ({ ...actual, comprobante_path: comprobante.path }));
+      window.location.href = comprobante.signedUrl;
+    } catch (errorDescarga) {
+      console.error("Error descargando comprobante:", errorDescarga);
+      alert(errorDescarga.message);
     } finally {
       setDescargando(false);
     }
@@ -439,7 +435,7 @@ function DetallePedido() {
             <div>
               <span>Comprobante de pago</span>
 
-              {pedido.comprobante_path ? (
+              {pedido.pago_confirmado ? (
                 <button
                   type="button"
                   className="detalle-pedido-descargar"

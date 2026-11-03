@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase"; // ajusta la ruta si es distinta
+import { solicitarComprobante } from "../../services/comprobanteService";
 import "./css/PagoResultado.css";
 
 const ESTADO_PAGO_APROBADO = 2;
@@ -90,24 +91,15 @@ function PagoResultado() {
   // ==================================================
 
   async function descargarComprobante() {
-    if (!pedido?.comprobante_path) return;
-
+    if (!pedido || descargando) return;
     setDescargando(true);
-
     try {
-      const { data, error } = await supabase.storage
-        .from("comprobantes")
-        .createSignedUrl(pedido.comprobante_path, 60, {
-          download: `comprobante-${pedido.folio_pedido || pedido.id_pedido}.pdf`,
-        });
-
-      if (error) {
-        console.error("Error descargando comprobante:", error);
-        alert("No fue posible descargar el comprobante.");
-        return;
-      }
-
-      window.location.href = data.signedUrl;
+      const comprobante = await solicitarComprobante(pedido.id_pedido);
+      setPedido((actual) => ({ ...actual, comprobante_path: comprobante.path }));
+      window.location.href = comprobante.signedUrl;
+    } catch (errorDescarga) {
+      console.error("Error descargando comprobante:", errorDescarga);
+      alert(errorDescarga.message);
     } finally {
       setDescargando(false);
     }
@@ -166,7 +158,7 @@ function PagoResultado() {
 
           {esAprobado ? (
             <>
-              {pedido?.comprobante_path && pagoConfirmado ? (
+              {pagoConfirmado ? (
                 <button
                   type="button"
                   className="pago-boton"
@@ -183,7 +175,7 @@ function PagoResultado() {
                   className="pago-boton"
                   disabled
                 >
-                  Generando comprobante...
+                  Confirmando pago...
                 </button>
               ) : (
                 <p className="pago-aviso">
