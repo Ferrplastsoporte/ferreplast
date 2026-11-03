@@ -1,0 +1,3 @@
+.grafico-dashboard{width:100%;height:100%;overflow:auto}.grafico-dashboard svg{display:block;width:100%;height:100%;min-width:440px;font-family:Arial,Helvetica,sans-serif}.grafico-dashboard text{fill:#64748b;font-size:11px}.grafico-dashboard .grafico-dashboard__total{fill:#0f172a;font-size:28px;font-weight:800}.grafico-dashboard [role="button"]{cursor:pointer}.grafico-dashboard [role="button"]:hover{filter:brightness(.85)}.grafico-dashboard [role="button"]:focus-visible{outline:2px solid #0b3a68;outline-offset:3px}
+/* El clic no muestra el borde automatico; el teclado conserva su indicador. */
+.grafico-dashboard [role="button"]:focus:not(:focus-visible){outline:none}

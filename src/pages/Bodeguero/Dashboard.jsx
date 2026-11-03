@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ReactECharts from "echarts-for-react";
+import GraficoDashboard from "./components/GraficoDashboard";
 import {
   AlertTriangle,
   BarChart3,
@@ -21,7 +21,7 @@ import {
   Trophy,
   Truck,
   X,
-} from "lucide-react";
+} from "./components/IconosDashboard";
 
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
@@ -90,7 +90,7 @@ function leerPreferencias() {
   }
 }
 
-// Estilo común de los ejes de ECharts
+// Configuración de presentación de los gráficos locales
 const EJE_CATEGORIA = {
   axisTick: { show: false },
   axisLine: { lineStyle: { color: "#cbd5e1" } },
@@ -973,7 +973,7 @@ function BodegueroDashboard() {
             ))}
           >
             <div className="dbb-chart">
-              <ReactECharts option={opcionDia} notMerge style={{ height: "100%" }} onEvents={{ click: clicDia }} />
+              <GraficoDashboard option={opcionDia} style={{ height: "100%" }} onEvents={{ click: clicDia }} />
             </div>
           </ChartPanel>
         )}
@@ -1000,7 +1000,7 @@ function BodegueroDashboard() {
             ))}
           >
             <div className="dbb-chart">
-              <ReactECharts option={opcionEstados} notMerge style={{ height: "100%" }} onEvents={{ click: clicEstado }} />
+              <GraficoDashboard option={opcionEstados} style={{ height: "100%" }} onEvents={{ click: clicEstado }} />
             </div>
           </ChartPanel>
         )}
@@ -1016,7 +1016,7 @@ function BodegueroDashboard() {
             filtros={<span className="dbb-panel__nota">Horas hábiles desde el pago (lun a vie, 10:00 a 17:30)</span>}
           >
             <div className="dbb-chart">
-              <ReactECharts option={opcionAntiguedad} notMerge style={{ height: "100%" }} onEvents={{ click: clicAntiguedad }} />
+              <GraficoDashboard option={opcionAntiguedad} style={{ height: "100%" }} onEvents={{ click: clicAntiguedad }} />
             </div>
           </ChartPanel>
         )}
@@ -1072,7 +1072,7 @@ function BodegueroDashboard() {
           >
             {topVisible.length > 0 ? (
               <div className="dbb-chart dbb-chart--alto">
-                <ReactECharts option={opcionTop} notMerge style={{ height: "100%" }} onEvents={{ click: clicTop }} />
+                <GraficoDashboard option={opcionTop} style={{ height: "100%" }} onEvents={{ click: clicTop }} />
               </div>
             ) : (
               <p className="dbb-vacio">

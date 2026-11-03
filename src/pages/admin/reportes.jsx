@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { reporteComercial, validarRespuestaComercial, VISTAS_COTIZACION } from "../../utils/bodega/bodega-reportes/reportesComerciales";
 import AdminHeader from "./components/AdminHeader";
+import { ayudaReporte } from "../../utils/bodega/bodega-reportes/ayudaReportes";
+import { segmentosAnillo, tarjetasComerciales } from "../../utils/bodega/bodega-reportes/reportesPresentacion";
+import "./Css/reportes-diseno.css";
 import logoFerreplast from "../../assets/logo.png";
 
 // =====================================================================
@@ -13,7 +17,7 @@ import logoFerreplast from "../../assets/logo.png";
 //   · Imprimir: documento HTML con diseño propio y el diálogo de impresión del navegador.
 // - KPI relevantes del período elegido (función SQL reporte_resumen_admin),
 //   comparados con el período anterior de igual duración.
-// - Usa solo las funciones de reportes_admin.sql. No toca el Dashboard.
+// - Los reportes comerciales usan RPC propios con indicadores y detalle.
 // =====================================================================
 
 
@@ -140,7 +144,7 @@ function mensajeErrorReporte(error, funcion) {
     return "Tu usuario no tiene permisos de administrador para ver esta información.";
   }
   if (error?.code === "PGRST202") {
-    return `La función "${funcion}" no existe en Supabase. Ejecuta el archivo supabase/reportes_admin.sql en el SQL Editor.`;
+    return `No está disponible la función "${funcion}". ${funcion.includes("comercial") ? "Instala en Supabase las tres funciones de reportes comerciales entregadas en el chat." : "Revisa la instalación de las funciones de reportes."}`;
   }
   return error?.message || "No se pudo cargar la información.";
 }
@@ -190,16 +194,15 @@ function prepararGrafico(config, filas = []) {
       .sort((a, b) => b.valor - a.valor)
       .slice(0, MAX_BARRAS);
   } else {
-    const grupos = new Map();
+    const grupos = new Map((config.categorias ?? []).map((nombre) => [nombre, 0]));
     for (const fila of filas) {
       const clave = String(fila[config.campo] ?? config.vacio ?? "Sin dato");
       const suma = config.suma ? Number(fila[config.suma]) || 0 : 1;
       grupos.set(clave, (grupos.get(clave) ?? 0) + suma);
     }
 
-    puntos = [...grupos]
-      .map(([etiqueta, valor]) => ({ etiqueta, valor }))
-      .sort((a, b) => b.valor - a.valor);
+    puntos = [...grupos].map(([etiqueta, valor]) => ({ etiqueta, valor }));
+    if (!config.categorias) puntos.sort((a, b) => b.valor - a.valor);
 
     // Más de 10 grupos: se juntan en "Otros" (nunca se inventan colores nuevos)
     if (puntos.length > MAX_BARRAS) {
@@ -336,6 +339,14 @@ function svgColumnas(grafico, agrupacion) {
     : "";
 
   return `<svg viewBox="0 0 ${g.ancho} ${g.alto}" width="100%" xmlns="http://www.w3.org/2000/svg" role="img">${lineas}${barras}${vacio}</svg>`;
+}
+
+function htmlAnillo(grafico) {
+  const { total, segmentos } = segmentosAnillo(grafico.puntos);
+  const arcos = segmentos.filter((p) => p.valor > 0).map((p) =>
+    `<circle cx="80" cy="80" r="62" fill="none" stroke="${p.color}" stroke-width="21" pathLength="100" stroke-dasharray="${p.porcentaje} ${100-p.porcentaje}" stroke-dashoffset="${-p.offset}" transform="rotate(-90 80 80)"/>`
+  ).join('');
+  return `<div style="display:flex;align-items:center;gap:20px"><svg viewBox="0 0 160 160" width="140" height="140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escaparXML(grafico.titulo)}"><circle cx="80" cy="80" r="62" fill="none" stroke="#eef2f7" stroke-width="21"/>${arcos}<text x="80" y="86" text-anchor="middle" font-size="24" font-weight="700" fill="#172033">${total}</text></svg><div>${segmentos.map((p)=>`<p style="font-size:12px;margin:7px 0"><span style="color:${p.color}">●</span> ${escaparHTML(p.etiqueta)} · <strong>${p.valor}</strong> (${formatoNumero.format(p.porcentaje)} %)</p>`).join('')}</div></div>`;
 }
 
 // Barras horizontales (ranking / conteo) como HTML: se imprime nítido y sin cálculos de texto.
@@ -529,7 +540,7 @@ function generarHTMLReporte({
         .map(
           (g) => `<div class="grafico">
             <h3>${escaparHTML(g.titulo)}</h3>
-            ${g.tipo === "serie" ? svgColumnas(g, agrupacion) : htmlBarras(g)}
+            ${g.vista === "anillo" ? htmlAnillo(g) : g.tipo === "serie" ? svgColumnas(g, agrupacion) : htmlBarras(g)}
           </div>`,
         )
         .join("")}</section>`
@@ -668,7 +679,7 @@ function TarjetaKpi({
   return (
     <article className="ind-kpi">
       <p className="ind-kpi__titulo">{titulo}</p>
-      <p className="ind-kpi__valor">{formatearValor(tipo, valor ?? 0)}</p>
+      <p className="ind-kpi__valor">{formatearValor(tipo, valor)}</p>
 
       {anterior !== undefined && (
         <p className={`ind-kpi__cambio ${esBueno === null ? "" : esBueno ? "es-bueno" : "es-malo"}`}>
@@ -778,12 +789,33 @@ function GraficoBarras({ puntos = [], formato = "numero" }) {
   );
 }
 
+function GraficoAnillo({ puntos }) {
+  const { total, segmentos } = segmentosAnillo(puntos);
+  return <div className="ind-anillo">
+    <div className="ind-anillo__figura">
+      <svg viewBox="0 0 160 160" role="img" aria-label={segmentos.map((p) => p.etiqueta + ': ' + p.valor).join(', ') || 'Sin datos'}>
+        <circle cx="80" cy="80" r="62" fill="none" stroke="#eef2f7" strokeWidth="21" />
+        {segmentos.filter((p) => p.valor > 0).map((p) => <circle key={p.etiqueta} cx="80" cy="80" r="62" fill="none"
+          stroke={p.color} strokeWidth="21" pathLength="100" strokeDasharray={p.porcentaje + ' ' + (100-p.porcentaje)} strokeDashoffset={-p.offset} transform="rotate(-90 80 80)">
+          <title>{p.etiqueta}: {p.valor} ({formatoNumero.format(p.porcentaje)} %)</title>
+        </circle>)}
+      </svg>
+      <div className="ind-anillo__centro" aria-hidden="true"><strong>{formatoNumero.format(total)}</strong><span>Total</span></div>
+    </div>
+    <ul className="ind-anillo__leyenda">
+      {segmentos.map((p) => <li key={p.etiqueta}><span className="ind-anillo__punto" style={{background:p.color}} aria-hidden="true" /><span>{p.etiqueta}</span><strong className="ind-anillo__numero">{formatoNumero.format(p.valor)}<small>{formatoNumero.format(p.porcentaje)} %</small></strong></li>)}
+    </ul>
+  </div>;
+}
+
 // Elige el gráfico según la configuración preparada con prepararGrafico()
 function Grafico({ grafico, agrupacion }) {
   return (
     <section className="ind-panel">
       <h3>{grafico.titulo}</h3>
-      {grafico.tipo === "serie" ? (
+      {grafico.vista === "anillo" ? (
+        <GraficoAnillo puntos={grafico.puntos} />
+      ) : grafico.tipo === "serie" ? (
         <GraficoColumnas puntos={grafico.puntos} agrupacion={agrupacion} formato={grafico.formato} />
       ) : (
         <GraficoBarras puntos={grafico.puntos} formato={grafico.formato} />
@@ -915,6 +947,8 @@ const FILTROS_INICIALES = {
   agrupacion: "day",
   agrupacionCategoria: "familia",
   limite: "20",
+  ordenProducto: "monto",
+  vistaCotizacion: "seguimiento",
 };
 
 const CATALOGOS_VACIOS = {
@@ -926,15 +960,6 @@ const CATALOGOS_VACIOS = {
 };
 
 const NOMBRE_AGRUPACION = { day: "día", week: "semana", month: "mes" };
-
-const NIVEL_SITUACION = {
-  "Stock negativo": "alta",
-  "Activo sin stock": "media",
-  "Stock bajo": "media",
-  "Sin ventas en el período": "baja",
-  OK: "ok",
-};
-
 
 const numeroONulo = (valor) => (valor === "" ? null : Number(valor));
 
@@ -970,28 +995,7 @@ const REPORTES = {
     ],
   },
 
-  productos: {
-    titulo: "Productos más vendidos",
-    descripcion: "Ranking por monto vendido, con el stock actual de cada producto.",
-    funcion: "reporte_top_productos_admin",
-    filtros: ["limite"],
-    parametros: (f) => ({ p_limite: Number(f.limite) }),
-    graficos: () => [
-      { tipo: "ranking", titulo: "Top 10 por monto vendido", etiqueta: "producto", valor: "monto", formato: "moneda" },
-      { tipo: "ranking", titulo: "Top 10 por unidades vendidas", etiqueta: "producto", valor: "unidades" },
-    ],
-    columnas: [
-      { c: "producto", t: "Producto" },
-      { c: "familia", t: "Familia" },
-      { c: "marca", t: "Marca" },
-      { c: "unidades", t: "Unidades", tipo: "numero", total: true },
-      { c: "pedidos", t: "Pedidos", tipo: "numero" },
-      { c: "monto", t: "Monto vendido", tipo: "moneda", total: true },
-      { c: "participacion", t: "Participación", tipo: "porcentaje", barra: true },
-      { c: "precio_promedio", t: "Precio promedio", tipo: "moneda" },
-      { c: "stock_actual", t: "Stock actual", tipo: "numero" },
-    ],
-  },
+  productos: { titulo: "Productos más vendidos" },
 
   categorias: {
     titulo: "Categorías y marcas",
@@ -1106,59 +1110,9 @@ const REPORTES = {
     ],
   },
 
-  cotizaciones: {
-    titulo: "Cotizaciones",
-    descripcion: "Solicitudes de cotización, su estado, validez y montos.",
-    funcion: "reporte_cotizaciones_admin",
-    filtros: ["estadoCotizacion", "busqueda"],
-    parametros: (f, busqueda) => ({
-      p_id_estado: numeroONulo(f.estadoCotizacion),
-      p_folio: busqueda || null,
-    }),
-    graficos: () => [
-      { tipo: "conteo", titulo: "Cotizaciones por estado", campo: "estado" },
-      { tipo: "conteo", titulo: "Cotizaciones por medio de contacto", campo: "medio_contacto" },
-    ],
-    columnas: [
-      { c: "folio", t: "Folio" },
-      { c: "fecha_solicitud", t: "Fecha", tipo: "fechahora" },
-      { c: "cliente", t: "Cliente" },
-      { c: "estado", t: "Estado" },
-      { c: "medio_contacto", t: "Medio de contacto" },
-      { c: "fecha_emision", t: "Emitida", tipo: "fecha" },
-      { c: "fecha_validez", t: "Válida hasta", tipo: "fecha" },
-      { c: "vencida", t: "Vencida", tipo: "si_no", resaltar: (v) => v === true },
-      { c: "cant_productos", t: "Ítems", tipo: "numero" },
-      { c: "fuera_catalogo", t: "Fuera de catálogo", tipo: "numero" },
-      { c: "subtotal_neto", t: "Neto", tipo: "moneda", total: true },
-      { c: "monto_iva", t: "IVA", tipo: "moneda", total: true },
-      { c: "total_bruto", t: "Total", tipo: "moneda", total: true },
-    ],
-  },
+  cotizaciones: { titulo: "Cotizaciones" },
 
-  inventario: {
-    titulo: "Inventario",
-    descripcion: "Stock actual valorizado y rotación en el período. Los problemas aparecen primero.",
-    funcion: "reporte_inventario_admin",
-    parametros: () => ({}),
-    graficos: () => [
-      { tipo: "conteo", titulo: "Productos por situación", campo: "situacion" },
-      { tipo: "ranking", titulo: "Top 10 por valor de stock", etiqueta: "producto", valor: "valor_stock", formato: "moneda" },
-    ],
-    columnas: [
-      { c: "situacion", t: "Situación", nivel: (f) => NIVEL_SITUACION[f.situacion] ?? "baja" },
-      { c: "producto", t: "Producto" },
-      { c: "familia", t: "Familia" },
-      { c: "marca", t: "Marca" },
-      { c: "estado", t: "Estado" },
-      { c: "stock", t: "Stock", tipo: "numero" },
-      { c: "unidad", t: "Unidad" },
-      { c: "precio", t: "Precio", tipo: "moneda" },
-      { c: "valor_stock", t: "Valor del stock", tipo: "moneda", total: true },
-      { c: "vendidas_periodo", t: "Vendidas en el período", tipo: "numero", total: true },
-      { c: "ultima_venta", t: "Última venta", tipo: "fecha" },
-    ],
-  },
+  inventario: { titulo: "Inventario" },
 
   alertas: {
     titulo: "Alertas",
@@ -1186,7 +1140,7 @@ const REPORTES = {
 // ==================================================
 
 async function consultarReporte({ tipo, desde, hasta, filtros, busqueda }) {
-  const reporte = REPORTES[tipo];
+  const reporte = reporteComercial(tipo, filtros) ?? REPORTES[tipo];
 
   try {
     const { data, error } = await supabase.rpc(reporte.funcion, {
@@ -1196,6 +1150,7 @@ async function consultarReporte({ tipo, desde, hasta, filtros, busqueda }) {
     });
 
     if (error) return { error: mensajeErrorReporte(error, reporte.funcion) };
+    if (reporte.comercial) return validarRespuestaComercial(data);
     return { datos: Array.isArray(data) ? data : data ? [data] : [] };
   } catch (error) {
     return { error: mensajeErrorReporte(error, reporte.funcion) };
@@ -1252,7 +1207,7 @@ function kpisDelPeriodo(resumen) {
       valor: a.pagos_fallidos,
       anterior: b?.pagos_fallidos,
       menosEsMejor: true,
-      detalle: "Rechazados, anulados o con error",
+      detalle: "Intentos finalizados sin autorización",
     },
   ];
 }
@@ -1270,14 +1225,17 @@ function compararValores(a, b) {
 
 function TablaReporte({ reporte, datos, actualizando, alExportar, generandoPdf }) {
   const [texto, setTexto] = useState("");
+  const [pagina, setPagina] = useState(0);
   const [orden, setOrden] = useState({ campo: null, asc: true });
-  const { columnas } = reporte;
+  const [mostrarDetalle, setMostrarDetalle] = useState(false);
+  const campos = reporte.columnasPrincipales;
+  const columnas = campos && !mostrarDetalle ? reporte.columnas.filter((c) => campos.includes(c.c)) : reporte.columnas;
 
   const filas = useMemo(() => {
     const termino = texto.trim().toLowerCase();
     const filtradas = termino
       ? datos.filter((fila) =>
-          columnas.some((col) => formatearValor(col.tipo, fila[col.c]).toLowerCase().includes(termino)),
+          reporte.columnas.some((col) => formatearValor(col.tipo, fila[col.c]).toLowerCase().includes(termino)),
         )
       : datos;
 
@@ -1290,16 +1248,16 @@ function TablaReporte({ reporte, datos, actualizando, alExportar, generandoPdf }
       if (b === null || b === undefined) return -1;
       return orden.asc ? compararValores(a, b) : -compararValores(a, b);
     });
-  }, [datos, texto, orden, columnas]);
+  }, [datos, texto, orden, reporte.columnas]);
 
   const totales = useMemo(() => {
-    if (!columnas.some((col) => col.total)) return null;
+    if (!reporte.columnas.some((col) => col.total)) return null;
     return Object.fromEntries(
-      columnas
+      reporte.columnas
         .filter((col) => col.total)
         .map((col) => [col.c, filas.reduce((suma, fila) => suma + (Number(fila[col.c]) || 0), 0)]),
     );
-  }, [filas, columnas]);
+  }, [filas, reporte.columnas]);
 
   const ordenarPor = (campo) =>
     setOrden((actual) => (actual.campo === campo ? { campo, asc: !actual.asc } : { campo, asc: false }));
@@ -1310,7 +1268,7 @@ function TablaReporte({ reporte, datos, actualizando, alExportar, generandoPdf }
         <input
           type="search"
           value={texto}
-          onChange={(e) => setTexto(e.target.value)}
+          onChange={(e) => { setTexto(e.target.value); setPagina(0); }}
           placeholder="Filtrar estos resultados..."
           aria-label="Filtrar resultados"
         />
@@ -1319,24 +1277,38 @@ function TablaReporte({ reporte, datos, actualizando, alExportar, generandoPdf }
             ? `${datos.length} ${datos.length === 1 ? "resultado" : "resultados"}`
             : `${filas.length} de ${datos.length} resultados`}
         </span>
+        {campos && <label className="reportes-columnas"><input type="checkbox" checked={mostrarDetalle} onChange={(e) => setMostrarDetalle(e.target.checked)} />Más columnas</label>}
+        <details className="reportes-exportar"><summary>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5" /></svg>
+          <span>Exportar</span>
+          <svg className="reportes-exportar__flecha" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </summary>
         <div className="reportes-tabla-acciones">
-          <button type="button" disabled={!filas.length} onClick={() => alExportar("imprimir", filas, totales, texto)}>
+          <button type="button" disabled={!filas.length || actualizando} onClick={() => alExportar("imprimir", filas, totales, texto)}>
             Imprimir
           </button>
-          <button type="button" disabled={!filas.length} onClick={() => alExportar("csv", filas, totales, texto)}>
-            Descargar CSV
+          <button type="button" disabled={!filas.length || actualizando} onClick={() => alExportar("csv", filas, totales, texto)}>
+            CSV
           </button>
           <button
             type="button"
             className="es-principal"
-            disabled={!filas.length || generandoPdf}
+            disabled={!filas.length || generandoPdf || actualizando}
             onClick={() => alExportar("pdf", filas, totales, texto)}
           >
-            {generandoPdf ? "Generando PDF..." : "Descargar PDF"}
+            {generandoPdf ? "Generando PDF..." : "PDF"}
           </button>
         </div>
+        </details>
       </div>
 
+      {reporte.comercial && filas.length > 50 && <div className="reportes-tabla-barra reportes-paginacion">
+        {filas.length > 50 && <div className="reportes-tabla-acciones">
+          <button type="button" disabled={pagina === 0} onClick={() => setPagina((p) => Math.max(0,p-1))}>Anterior</button>
+          <span>Página {Math.min(pagina+1,Math.ceil(filas.length/50))} de {Math.ceil(filas.length/50)}</span>
+          <button type="button" disabled={(pagina+1)*50>=filas.length} onClick={() => setPagina((p) => p+1)}>Siguiente</button>
+        </div>}
+      </div>}
       <div className="reportes-tabla-scroll">
         <table className="reportes-tabla">
           <thead>
@@ -1364,7 +1336,7 @@ function TablaReporte({ reporte, datos, actualizando, alExportar, generandoPdf }
                 </td>
               </tr>
             ) : (
-              filas.map((fila, indice) => (
+              (reporte.comercial ? filas.slice(Math.min(pagina, Math.max(0, Math.ceil(filas.length / 50)-1))*50, (Math.min(pagina, Math.max(0, Math.ceil(filas.length / 50)-1))+1)*50) : filas).map((fila, indice) => (
                 <tr key={indice}>
                   {columnas.map((col) => {
                     const valor = fila[col.c];
@@ -1432,7 +1404,9 @@ function Reportes() {
   const [errorPdf, setErrorPdf] = useState("");
 
   const rangoValido = Boolean(desde && hasta && desde <= hasta);
-  const reporte = REPORTES[tipo];
+  const reporte = reporteComercial(tipo, filtros) ?? REPORTES[tipo];
+  const esComercial = Boolean(reporte.comercial);
+  const ayuda = ayudaReporte(tipo, filtros.vistaCotizacion);
 
   const consulta = useMemo(
     () => ({ tipo, desde, hasta, filtros, busqueda: busquedaAplicada, recargas }),
@@ -1453,17 +1427,18 @@ function Reportes() {
     };
   }, [consulta, clave, rangoValido]);
 
-  // KPI del período + contador de alertas (solo dependen de las fechas)
+  // Los reportes comerciales incluyen sus propios indicadores en una sola respuesta.
   useEffect(() => {
     if (!rangoValido) return undefined;
     let vigente = true;
+    if (esComercial) return undefined;
     consultarKpis(desde, hasta).then((respuesta) => {
       if (vigente) setKpis({ clave: claveKpis, ...respuesta });
     });
     return () => {
       vigente = false;
     };
-  }, [desde, hasta, claveKpis, rangoValido]);
+  }, [desde, hasta, claveKpis, rangoValido, esComercial]);
 
   // Catálogos de los filtros (estados, métodos de pago, tipos de despacho)
   useEffect(() => {
@@ -1477,16 +1452,18 @@ function Reportes() {
   }, []);
 
   const cargando = rangoValido && resultado.clave !== clave;
-  const mismoTipo = resultado.tipo === tipo;
+  const mismoTipo = resultado.tipo === tipo && (!esComercial || resultado.clave === clave);
   const datos = useMemo(() => (mismoTipo ? resultado.datos ?? [] : []), [mismoTipo, resultado.datos]);
   const periodoTexto = `${formatearFecha(desde)} al ${formatearFecha(hasta)}`;
   const visibles = reporte.filtros ?? [];
-  const listaKpis = kpisDelPeriodo(kpis.resumen);
+  const indicadoresOriginales = esComercial
+    ? (mismoTipo && !resultado.error ? resultado.indicadores ?? [] : [])
+    : kpisDelPeriodo(kpis.resumen);
+  const listaKpis = esComercial
+    ? tarjetasComerciales(tipo, filtros.vistaCotizacion, indicadoresOriginales, datos)
+    : indicadoresOriginales;
 
-  const graficos = useMemo(
-    () => reporte.graficos(filtros).map((config) => prepararGrafico(config, datos)),
-    [reporte, filtros, datos],
-  );
+  const graficos = reporte.graficos(filtros).map((config) => prepararGrafico(config, datos));
 
   const cambiarFiltro = (campo, valor) => setFiltros((previo) => ({ ...previo, [campo]: valor }));
 
@@ -1507,6 +1484,9 @@ function Reportes() {
   const describirFiltros = (textoLocal) => {
     const nombreDe = (lista, id) => lista.find((item) => String(item.id) === String(id))?.nombre;
     const partes = [];
+    if (esComercial) partes.push("Indicadores del conjunto consultado; el filtro de texto de la tabla solo afecta detalle y gráficos exportados.");
+    if (tipo === "productos") partes.push(`Top ${filtros.limite} por ${filtros.ordenProducto}; totales de la tabla limitados al ranking.`);
+    if (tipo === "cotizaciones") partes.push(VISTAS_COTIZACION.find(([id]) => id === filtros.vistaCotizacion)?.[1] ?? "");
     if (visibles.includes("agrupacion")) partes.push(`Agrupado por ${NOMBRE_AGRUPACION[filtros.agrupacion]}`);
     if (visibles.includes("agrupacionCategoria")) partes.push(`Agrupado por ${filtros.agrupacionCategoria}`);
     if (visibles.includes("estadoPedido") && filtros.estadoPedido)
@@ -1533,8 +1513,8 @@ function Reportes() {
       const esBueno = cambio === null || cambio === 0 ? null : cambio > 0 !== Boolean(k.menosEsMejor);
       return {
         titulo: k.titulo,
-        valor: formatearValor(k.tipo, k.valor ?? 0),
-        nota: textoVariacion(k.valor, k.anterior) ?? "Sin datos del período anterior",
+        valor: formatearValor(k.tipo, k.valor),
+        nota: k.anterior === undefined ? "" : textoVariacion(k.valor, k.anterior) ?? "Sin datos del período anterior",
         clase: esBueno === null ? "" : esBueno ? "bueno" : "malo",
         detalle: k.detalle ?? "",
       };
@@ -1649,9 +1629,33 @@ function Reportes() {
       <style>{ESTILOS}</style>
       <AdminHeader
         titulo="Reportes"
-        descripcion="KPI del período, gráficos y detalle de ventas, pedidos, pagos, cotizaciones e inventario. Descarga en CSV o PDF."
+
       />
 
+      {/* PESTAÑAS */}
+      <nav className="reportes-pestanas" aria-label="Tipo de reporte">
+        {Object.entries(REPORTES).map(([claveReporte, r]) => (
+          <button
+            key={claveReporte}
+            type="button"
+            className={tipo === claveReporte ? "es-activa" : ""}
+            aria-current={tipo === claveReporte ? "page" : undefined}
+            onClick={() => cambiarTipo(claveReporte)}
+          >
+            {r.titulo}
+            {claveReporte === "alertas" && !esComercial && kpis.clave === claveKpis && kpis.alertas > 0 && (
+              <span className="reportes-pestanas__contador">{kpis.alertas}</span>
+            )}
+          </button>
+        ))}
+      </nav>
+
+        {tipo === "cotizaciones" && <nav className="reportes-subvistas" aria-label="Enfoque de cotizaciones">
+          {VISTAS_COTIZACION.map(([id, nombre]) => <button key={id} type="button" aria-pressed={filtros.vistaCotizacion === id} onClick={() => {
+            setFiltros((previo) => ({ ...previo, vistaCotizacion: id, estadoCotizacion: "" }));
+            setBusqueda(""); setBusquedaAplicada(""); setErrorPdf("");
+          }}>{nombre}</button>)}
+        </nav>}
       {/* FECHAS Y FILTROS */}
       <form
         className="reportes-filtros"
@@ -1688,6 +1692,20 @@ function Reportes() {
             <input type="date" required value={hasta} min={desde} onChange={(e) => setHasta(e.target.value)} />
           </label>
 
+          {visibles.includes("ordenProducto") && (
+            <label>Orden del ranking
+              <select value={filtros.ordenProducto} onChange={(e) => cambiarFiltro("ordenProducto", e.target.value)}>
+                <option value="monto">Monto vendido</option><option value="unidades">Unidades por presentación</option>
+              </select>
+            </label>
+          )}
+          {visibles.includes("limiteComercial") && (
+            <label>Productos del ranking
+              <select value={filtros.limite} onChange={(e) => cambiarFiltro("limite", e.target.value)}>
+                {[10,20,50,100].map((n) => <option key={n} value={n}>Top {n}</option>)}
+              </select>
+            </label>
+          )}
           {visibles.includes("agrupacion") && (
             <label>
               Agrupar por
@@ -1743,13 +1761,13 @@ function Reportes() {
                 type="search"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Escribe y presiona Buscar"
+                placeholder="Buscar cotización"
               />
             </label>
           )}
 
           <button type="submit" className="reportes-boton-principal" disabled={!rangoValido}>
-            {cargando ? "Consultando..." : "Buscar / actualizar"}
+            {cargando ? "Consultando..." : "Aplicar"}
           </button>
         </div>
       </form>
@@ -1762,7 +1780,7 @@ function Reportes() {
 
       {/* KPI CLAVE DEL PERÍODO */}
       {rangoValido && listaKpis.length > 0 && (
-        <div className={`reportes-kpis ${kpis.clave !== claveKpis ? "esta-actualizando" : ""}`}>
+        <div className={`reportes-kpis ${listaKpis.length === 4 ? "reportes-kpis--cuatro" : ""} ${!esComercial && kpis.clave !== claveKpis ? "esta-actualizando" : ""}`}>
           {listaKpis.map((k) => (
             <TarjetaKpi
               key={k.titulo}
@@ -1777,30 +1795,8 @@ function Reportes() {
         </div>
       )}
 
-      {/* PESTAÑAS */}
-      <nav className="reportes-pestanas" aria-label="Tipo de reporte">
-        {Object.entries(REPORTES).map(([claveReporte, r]) => (
-          <button
-            key={claveReporte}
-            type="button"
-            className={tipo === claveReporte ? "es-activa" : ""}
-            aria-current={tipo === claveReporte ? "page" : undefined}
-            onClick={() => cambiarTipo(claveReporte)}
-          >
-            {r.titulo}
-            {claveReporte === "alertas" && kpis.alertas > 0 && (
-              <span className="reportes-pestanas__contador">{kpis.alertas}</span>
-            )}
-          </button>
-        ))}
-      </nav>
-
       {/* CONTENIDO */}
       <div className="reportes-contenido">
-        <div className="reportes-encabezado">
-          <h2>{reporte.titulo}</h2>
-          <p>{reporte.descripcion}</p>
-        </div>
 
         {rangoValido && mismoTipo && resultado.error && (
           <div role="alert" className="reportes-error">
@@ -1829,7 +1825,7 @@ function Reportes() {
             )}
 
             <TablaReporte
-              key={tipo}
+              key={`${tipo}:${filtros.vistaCotizacion}:${clave}`}
               reporte={reporte}
               datos={datos}
               actualizando={cargando}
@@ -1839,6 +1835,18 @@ function Reportes() {
           </>
         )}
       </div>
+      <details className="reportes-ayuda" key={tipo + filtros.vistaCotizacion}>
+        <summary>Cómo se calculan los datos</summary>
+        <p>{ayuda.alcance}</p>
+        {ayuda.tarjetas.length > 0 && <>
+          <h3>Tarjetas generales</h3>
+          <ul>{ayuda.tarjetas.map(([titulo, texto]) => <li key={titulo}><strong>{titulo}:</strong> {texto}</li>)}</ul>
+        </>}
+        <h3>{esComercial ? "Indicadores y detalle" : "Detalle y gráficos"}</h3>
+        <ul>{ayuda.definiciones.map(([titulo, texto]) => <li key={titulo}><strong>{titulo}:</strong> {texto}</li>)}</ul>
+        <h3>Alcance y lectura</h3>
+        <ul>{ayuda.notas.map((texto) => <li key={texto}>{texto}</li>)}</ul>
+      </details>
     </section>
   );
 }
