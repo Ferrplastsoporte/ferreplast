@@ -66,7 +66,7 @@ function BodegueroProductos() {
     try {
       await Promise.all([cargarProductos(), cargarCatalogos()]);
     } catch (error) {
-      console.error("Error al cargar el módulo de productos:", error);
+      console.error("Error al cargar el módulo de productos:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         "No fue posible cargar la información del módulo de productos.",
@@ -413,7 +413,7 @@ function BodegueroProductos() {
 
       setMensajeExito("El producto fue creado y quedó pendiente de revisión.");
     } catch (error) {
-      console.error("Error al crear el producto:", error);
+      console.error("Error al crear el producto:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(error?.message || "No fue posible crear el producto.");
 
@@ -491,7 +491,7 @@ function BodegueroProductos() {
         await eliminarImagenProducto(rutaImagenNueva);
       }
 
-      console.error("Error al actualizar el producto:", error);
+      console.error("Error al actualizar el producto:", { codigo: error?.code, estado: error?.status });
 
       if (error?.code === "55000") {
         const idPendiente = productoEditando.id_prod;
@@ -593,7 +593,7 @@ function BodegueroProductos() {
 
       setMensajeExito("El producto fue marcado como no disponible.");
     } catch (error) {
-      console.error("Error al deshabilitar el producto:", error);
+      console.error("Error al deshabilitar el producto:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         error?.message ||
@@ -651,7 +651,7 @@ function BodegueroProductos() {
           : `La reactivación de "${nombreProducto}" quedó pendiente de aprobación del administrador.`,
       );
     } catch (error) {
-      console.error("Error al reactivar el producto:", error);
+      console.error("Error al reactivar el producto:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         error?.message ||

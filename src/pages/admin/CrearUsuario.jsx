@@ -31,7 +31,7 @@ function CrearUsuario() {
       if (error) {
         console.error(
           "Error al invocar invitar-usuario:",
-          error
+          { codigo: error?.code, estado: error?.status }
         );
 
         let mensajeFuncion =
@@ -76,7 +76,7 @@ function CrearUsuario() {
     } catch (error) {
       console.error(
         "Error inesperado al invitar usuario:",
-        error
+        { codigo: error?.code, estado: error?.status }
       );
 
       setMensaje(

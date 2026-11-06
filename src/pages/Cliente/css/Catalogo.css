@@ -198,6 +198,10 @@
   border-top: 1px solid #e3e7ec;
 }
 
+.product-filters__error p {
+  margin: 0 0 10px;
+}
+
 .product-filters__apply,
 .product-filters__clear {
   width: 100%;

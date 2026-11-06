@@ -125,7 +125,7 @@ function useVistaCarrito() {
     } catch (errorCarga) {
       console.error(
         "Error al cargar el carrito:",
-        errorCarga
+        { codigo: errorCarga?.code, estado: errorCarga?.status }
       );
 
       setError(
@@ -415,7 +415,7 @@ function useVistaCarrito() {
     } catch (errorActualizacion) {
       console.error(
         "Error al actualizar la cantidad:",
-        errorActualizacion
+        { codigo: errorActualizacion?.code, estado: errorActualizacion?.status }
       );
 
       setError(
@@ -444,7 +444,7 @@ function useVistaCarrito() {
     } catch (errorEliminacion) {
       console.error(
         "Error al eliminar el producto:",
-        errorEliminacion
+        { codigo: errorEliminacion?.code, estado: errorEliminacion?.status }
       );
 
       setError(
@@ -470,7 +470,7 @@ function useVistaCarrito() {
     } catch (errorVaciado) {
       console.error(
         "Error al vaciar el carrito:",
-        errorVaciado
+        { codigo: errorVaciado?.code, estado: errorVaciado?.status }
       );
 
       setError(

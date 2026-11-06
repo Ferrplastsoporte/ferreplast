@@ -33,7 +33,7 @@ function NuevaPassword() {
       if (error) {
         console.error(
           "Error al comprobar sesión para nueva contraseña:",
-          error,
+          { codigo: error?.code, estado: error?.status },
         );
       }
 
@@ -124,7 +124,7 @@ function NuevaPassword() {
       });
 
       if (error) {
-        console.error("Error al actualizar contraseña:", error);
+        console.error("Error al actualizar contraseña:", { codigo: error?.code, estado: error?.status });
 
         setMensaje(
           "No fue posible actualizar la contraseña. El enlace puede haber expirado.",
@@ -154,7 +154,7 @@ function NuevaPassword() {
         });
       }, 1800);
     } catch (error) {
-      console.error("Error inesperado al actualizar contraseña:", error);
+      console.error("Error inesperado al actualizar contraseña:", { codigo: error?.code, estado: error?.status });
 
       setMensaje("Ocurrió un error inesperado. Inténtalo nuevamente.");
 

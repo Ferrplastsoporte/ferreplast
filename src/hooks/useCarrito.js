@@ -71,7 +71,7 @@ function useCarrito() {
     } catch (error) {
       console.error(
         "Error al agregar el producto al carrito:",
-        error
+        { codigo: error?.code, estado: error?.status }
       )
 
       setErrorCarrito(

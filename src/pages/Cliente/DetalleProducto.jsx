@@ -85,7 +85,7 @@ function DetalleProducto() {
       .maybeSingle();
 
     if (error) {
-      console.error("Error al cargar el detalle del producto:", error);
+      console.error("Error al cargar el detalle del producto:", { codigo: error?.code, estado: error?.status });
 
       setErrorCarga("No fue posible cargar la información del producto.");
       setCargando(false);

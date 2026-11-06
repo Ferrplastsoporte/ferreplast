@@ -36,7 +36,7 @@ function Pedidos() {
       if (errorUsuario) {
         console.error(
           "Error obteniendo usuario:",
-          errorUsuario
+          { codigo: errorUsuario?.code, estado: errorUsuario?.status }
         );
 
         setError(
@@ -70,7 +70,7 @@ function Pedidos() {
       if (errorPedidos) {
         console.error(
           "Error cargando pedidos:",
-          errorPedidos
+          { codigo: errorPedidos?.code, estado: errorPedidos?.status }
         );
 
         setError(
@@ -81,16 +81,12 @@ function Pedidos() {
         return;
       }
 
-      console.log(
-        "Pedidos obtenidos:",
-        data
-      );
 
       setPedidos(data || []);
     } catch (errorCarga) {
       console.error(
         "Error inesperado cargando pedidos:",
-        errorCarga
+        { codigo: errorCarga?.code, estado: errorCarga?.status }
       );
 
       setError(

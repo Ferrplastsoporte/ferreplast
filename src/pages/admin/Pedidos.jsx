@@ -44,7 +44,7 @@ function Pedidos() {
 
       setPedidos(data ?? []);
     } catch (errorConsulta) {
-      console.error("Error al cargar pedidos:", errorConsulta);
+      console.error("Error al cargar pedidos:", { codigo: errorConsulta?.code, estado: errorConsulta?.status });
 
       setPedidos([]);
       setError(

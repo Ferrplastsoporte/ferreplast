@@ -9,7 +9,7 @@ export function obtenerCarritoLocal() {
 
     return carritoGuardado ? JSON.parse(carritoGuardado) : [];
   } catch (error) {
-    console.error("Error al leer el carrito local:", error);
+    console.error("Error al leer el carrito local:", { codigo: error?.code, estado: error?.status });
 
     return [];
   }

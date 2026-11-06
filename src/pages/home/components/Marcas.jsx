@@ -56,7 +56,7 @@ function Marcas() {
       });
 
     if (error) {
-      console.error("Error al cargar marcas:", error);
+      console.error("Error al cargar marcas:", { codigo: error?.code, estado: error?.status });
 
       setMarcas([]);
       setLoading(false);

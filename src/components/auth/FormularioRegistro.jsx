@@ -76,7 +76,7 @@ const FormularioRegistro = () => {
         });
 
       if (error) {
-        console.error("Error al cargar regiones:", error);
+        console.error("Error al cargar regiones:", { codigo: error?.code, estado: error?.status });
 
         setRegiones([]);
         return;
@@ -84,7 +84,7 @@ const FormularioRegistro = () => {
 
       setRegiones(data ?? []);
     } catch (error) {
-      console.error("Error inesperado al cargar regiones:", error);
+      console.error("Error inesperado al cargar regiones:", { codigo: error?.code, estado: error?.status });
 
       setRegiones([]);
     } finally {
@@ -110,7 +110,7 @@ const FormularioRegistro = () => {
         });
 
       if (error) {
-        console.error("Error al cargar comunas:", error);
+        console.error("Error al cargar comunas:", { codigo: error?.code, estado: error?.status });
 
         setComunas([]);
         return;
@@ -118,7 +118,7 @@ const FormularioRegistro = () => {
 
       setComunas(data ?? []);
     } catch (error) {
-      console.error("Error inesperado al cargar comunas:", error);
+      console.error("Error inesperado al cargar comunas:", { codigo: error?.code, estado: error?.status });
 
       setComunas([]);
     } finally {

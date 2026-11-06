@@ -9,7 +9,7 @@ import {
   limpiarNombreMarca,
   validarNombreMarca,
   validarLogoMarca,
-} from "../../utils/catalogo/marcas";
+} from "../../utils/bodega/marcas";
 
 import {
   obtenerUrlLogoMarca,
@@ -77,7 +77,7 @@ function Marcas() {
       .order("nom_marca", { ascending: true });
 
     if (error) {
-      console.error("Error al cargar marcas:", error);
+      console.error("Error al cargar marcas:", { codigo: error?.code, estado: error?.status });
       setMarcas([]);
       setMensajeError("No fue posible cargar las marcas.");
     } else {
@@ -215,7 +215,7 @@ function Marcas() {
           : "La marca fue creada y quedó pendiente de aprobación.",
       );
     } catch (error) {
-      console.error("Error al guardar marca:", error);
+      console.error("Error al guardar marca:", { codigo: error?.code, estado: error?.status });
 
       if (error?.code === "55000") {
         const idPendiente = marcaEditando?.id_marca;

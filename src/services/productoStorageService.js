@@ -75,7 +75,7 @@ export async function eliminarImagenProducto(rutaImagen) {
     .remove([rutaImagen]);
 
   if (error) {
-    console.warn("No fue posible eliminar la imagen anterior:", error);
+    console.warn("No fue posible eliminar la imagen anterior:", { codigo: error?.code, estado: error?.status });
   }
 }
 
@@ -140,6 +140,6 @@ export async function eliminarDocumentoProducto(rutaDocumento) {
     .remove([rutaDocumento]);
 
   if (error) {
-    console.warn("No fue posible eliminar el documento:", error);
+    console.warn("No fue posible eliminar el documento:", { codigo: error?.code, estado: error?.status });
   }
 }

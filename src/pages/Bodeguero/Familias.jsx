@@ -8,7 +8,7 @@ import {
   LONGITUD_MAXIMA_FAMILIA,
   limpiarNombreFamilia,
   validarNombreFamilia,
-} from "../../utils/catalogo/familias";
+} from "../../utils/bodega/familias";
 import {
   LONGITUD_MAXIMA_BUSQUEDA,
   sanitizarTerminoBusqueda,
@@ -75,7 +75,7 @@ function Familias() {
     ]);
 
     if (resultadoFamilias.error) {
-      console.error("Error al cargar familias:", resultadoFamilias.error);
+      console.error("Error al cargar familias:", { codigo: resultadoFamilias.error?.code, estado: resultadoFamilias.error?.status });
       setFamilias([]);
       setMensajeError("No fue posible cargar las familias.");
     } else {
@@ -85,7 +85,7 @@ function Familias() {
     if (resultadoSubcategorias.error) {
       console.error(
         "Error al cargar subcategorías:",
-        resultadoSubcategorias.error,
+        { codigo: resultadoSubcategorias.error?.code, estado: resultadoSubcategorias.error?.status },
       );
 
       setSubcategorias([]);
@@ -201,7 +201,7 @@ function Familias() {
           : "La familia fue creada correctamente.",
       );
     } catch (error) {
-      console.error("Error al guardar familia:", error);
+      console.error("Error al guardar familia:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(error?.message || "No fue posible guardar la familia.");
     } finally {
@@ -253,7 +253,7 @@ function Familias() {
           : "La subcategoría fue creada correctamente.",
       );
     } catch (error) {
-      console.error("Error al guardar subcategoría:", error);
+      console.error("Error al guardar subcategoría:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         error?.message || "No fue posible guardar la subcategoría.",

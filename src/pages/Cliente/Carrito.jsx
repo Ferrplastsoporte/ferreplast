@@ -121,7 +121,7 @@ async function cargarMetodosPago() {
     .order("orden", { ascending: true });
 
   if (error) {
-    console.error("Error cargando métodos de pago:", error);
+    console.error("Error cargando métodos de pago:", { codigo: error?.code, estado: error?.status });
     setMetodosPago([]);
   } else {
     setMetodosPago(data ?? []);
@@ -183,7 +183,7 @@ async function cargarMetodosPago() {
       setRegiones(resultadoRegiones.data ?? []);
       setComunas(resultadoComunas.data ?? []);
     } catch (errorCarga) {
-      console.error("Error al cargar regiones y comunas:", errorCarga);
+      console.error("Error al cargar regiones y comunas:", { codigo: errorCarga?.code, estado: errorCarga?.status });
 
       setErrorPago("No fue posible cargar las regiones y comunas.");
     } finally {
@@ -337,8 +337,6 @@ async function cargarMetodosPago() {
       JSON.stringify(datosDespacho),
     );
 
-    console.log("Facturación preparada:", facturacion);
-    console.log("Despacho preparado:", datosDespacho);
 
     // ==================================================
     // INICIAR PAGO
@@ -370,29 +368,12 @@ async function cargarMetodosPago() {
           ? "banchile_create"
           : "webpay-create";
 
-      console.log("Método de pago:", metodoPago);
-      console.log("Edge Function:", funcionPago);
 
       // ==================================================
       // CREAR PEDIDO + DESPACHO + FACTURA + PAGO
       // ==================================================
 
-      console.log("BODY FINAL PAGO:", {
-        userId: usuario.id,
-        accessToken: "RECIBIDO",
-        idTipoDespacho: Number(
-          despachoSeleccionado.id_tipo_despacho
-        ),
-        idComuna: Number(idComunaDespacho),
-        direccionDespacho: direccionDespacho,
-        esFactura: Boolean(esFactura),
-        facturacion: esFactura
-          ? facturacion?.detalle_factura
-          : null,
-      });
 
-      console.log("SESSION USER:", session.user.id);
-      console.log("USUARIO CARRITO:", usuario.id);
 
       const { data, error } =
         await supabase.functions.invoke(
@@ -417,10 +398,6 @@ async function cargarMetodosPago() {
           }
         );
 
-      console.log(
-        `RESPUESTA ${metodoPago}:`,
-        data
-      );
 
       // ==================================================
       // VALIDAR ERROR DE SUPABASE
@@ -429,7 +406,7 @@ async function cargarMetodosPago() {
       if (error) {
         console.error(
           `Error llamando ${funcionPago}:`,
-          error
+          { codigo: error?.code, estado: error?.status }
         );
 
         throw new Error(
@@ -460,17 +437,6 @@ async function cargarMetodosPago() {
           );
         }
 
-        console.log(
-          "Pago Banco de Chile iniciado:",
-          {
-            idPedido: data.idPedido,
-            idPago: data.idPago,
-            requestId: data.requestId,
-            buyOrder: data.buyOrder,
-            monto: data.monto,
-            processUrl: data.processUrl,
-          }
-        );
 
         // Redirigir al checkout de Banco de Chile
         window.location.href =
@@ -489,15 +455,6 @@ async function cargarMetodosPago() {
         );
       }
 
-      console.log(
-        "Pago Webpay iniciado:",
-        {
-          idPedido: data.idPedido,
-          idPago: data.idPago,
-          buyOrder: data.buyOrder,
-          monto: data.monto,
-        }
-      );
 
       // ==================================================
       // REDIRIGIR A WEBPAY
@@ -525,7 +482,7 @@ async function cargarMetodosPago() {
     } catch (errorInicio) {
       console.error(
         `Error iniciando ${metodoPago}:`,
-        errorInicio
+        { codigo: errorInicio?.code, estado: errorInicio?.status }
       );
 
       setErrorPago(

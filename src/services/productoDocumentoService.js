@@ -173,7 +173,7 @@ export async function agregarDocumentoProducto({
     } catch (cleanupError) {
       console.error(
         "No fue posible eliminar el archivo huérfano:",
-        cleanupError,
+        { codigo: cleanupError?.code, estado: cleanupError?.status },
       );
     }
 

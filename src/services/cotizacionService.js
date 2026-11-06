@@ -70,7 +70,7 @@ export function obtenerCotizacionCompleta() {
       ? normalizarCotizacion(JSON.parse(guardada))
       : { ...estadoInicial };
   } catch (error) {
-    console.error("Error al leer la cotización:", error);
+    console.error("Error al leer la cotización:", { codigo: error?.code, estado: error?.status });
 
     return { ...estadoInicial };
   }
@@ -289,7 +289,7 @@ export async function enviarCotizacion({
   if (errorNotificacion) {
     console.error(
       "La cotización fue creada, pero no se pudo enviar la notificación:",
-      errorNotificacion,
+      { codigo: errorNotificacion?.code, estado: errorNotificacion?.status },
     );
   }
 

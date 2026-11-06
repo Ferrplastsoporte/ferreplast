@@ -12,7 +12,7 @@ import {
   validarDocumentosProducto,
   validarFormularioProducto,
   construirDatosProducto,
-} from "../../../utils/catalogo/productos";
+} from "../../../utils/bodega/productos";
 
 function ProductoFormBodeguero({
   productoInicial = null,
@@ -323,7 +323,7 @@ function ProductoFormBodeguero({
 
       await onGuardar(datosProducto);
     } catch (error) {
-      console.error("Error al guardar el producto:", error);
+      console.error("Error al guardar el producto:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(error?.message || "No fue posible guardar el producto.");
     } finally {

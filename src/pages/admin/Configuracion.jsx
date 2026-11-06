@@ -160,7 +160,7 @@ function Configuracion() {
         );
         if (vigente) setUrlsRecursos(urls);
       } catch (error) {
-        console.error("Error al cargar la configuración:", error);
+        console.error("Error al cargar la configuración:", { codigo: error?.code, estado: error?.status });
         if (vigente) {
           setMensaje({
             tipo: "error",
@@ -217,7 +217,7 @@ function Configuracion() {
         texto: "Valores generales actualizados.",
       });
     } catch (error) {
-      console.error("Error al actualizar los valores generales:", error);
+      console.error("Error al actualizar los valores generales:", { codigo: error?.code, estado: error?.status });
       setMensaje({
         tipo: "error",
         texto: error.message || "No fue posible guardar los valores.",
@@ -248,7 +248,7 @@ function Configuracion() {
         texto: "Datos de la plantilla actualizados.",
       });
     } catch (error) {
-      console.error("Error al actualizar la plantilla:", error);
+      console.error("Error al actualizar la plantilla:", { codigo: error?.code, estado: error?.status });
       setMensaje({
         tipo: "error",
         texto: error.message || "No fue posible guardar la plantilla.",
@@ -284,7 +284,7 @@ function Configuracion() {
       }));
       setMensaje({ tipo: "exito", texto: "Imagen actualizada correctamente." });
     } catch (error) {
-      console.error("Error al actualizar el recurso:", error);
+      console.error("Error al actualizar el recurso:", { codigo: error?.code, estado: error?.status });
       setMensaje({
         tipo: "error",
         texto: error.message || "No fue posible actualizar la imagen.",
@@ -304,7 +304,7 @@ function Configuracion() {
       setUrlsRecursos((actuales) => ({ ...actuales, [tipo]: "" }));
       setMensaje({ tipo: "exito", texto: "Imagen eliminada correctamente." });
     } catch (error) {
-      console.error("Error al eliminar el recurso:", error);
+      console.error("Error al eliminar el recurso:", { codigo: error?.code, estado: error?.status });
       setMensaje({
         tipo: "error",
         texto: error.message || "No fue posible eliminar la imagen.",
@@ -322,7 +322,7 @@ async function cargarMetodosPago() {
       const datos = await obtenerMetodosPago();
       setMetodosPago(datos);
     } catch (error) {
-      console.error("Error al cargar métodos de pago:", error);
+      console.error("Error al cargar métodos de pago:", { codigo: error?.code, estado: error?.status });
 
       setMensaje({
         tipo: "error",
@@ -358,7 +358,7 @@ async function cargarMetodosPago() {
         } correctamente.`,
       });
     } catch (error) {
-      console.error("Error al actualizar método de pago:", error);
+      console.error("Error al actualizar método de pago:", { codigo: error?.code, estado: error?.status });
 
       setMensaje({
         tipo: "error",
@@ -382,14 +382,12 @@ async function cargarTiposDespacho() {
       )
       .order("id_tipo_despacho", { ascending: true });
 
-    console.log("Tipos de despacho:", data);
-    console.log("Error de Supabase:", error);
 
     if (error) throw error;
 
     setTiposDespacho(data ?? []);
   } catch (error) {
-    console.error("Error al cargar precios de envío:", error);
+    console.error("Error al cargar precios de envío:", { codigo: error?.code, estado: error?.status });
 
     setMensaje({
       tipo: "error",
@@ -448,7 +446,7 @@ async function guardarCostoDespacho(id, costo, requiereCoordinacion) {
         texto: "Configuración del despacho actualizada correctamente.",
       });
     } catch (error) {
-      console.error("Error al guardar despacho:", error);
+      console.error("Error al guardar despacho:", { codigo: error?.code, estado: error?.status });
       setMensaje({
         tipo: "error",
         texto: error.message || "No fue posible guardar la configuración.",

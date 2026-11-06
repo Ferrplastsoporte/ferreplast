@@ -52,7 +52,7 @@ const DocumentosProductos = () => {
 
       setProductos(data);
     } catch (err) {
-      console.error("Error al cargar productos con documentos:", err);
+      console.error("Error al cargar productos con documentos:", { codigo: err?.code, estado: err?.status });
 
       setError(
         err?.message || "No fue posible cargar los productos con documentos.",
@@ -79,7 +79,7 @@ const DocumentosProductos = () => {
 
       setDocumentos(data);
     } catch (err) {
-      console.error("Error al cargar documentos:", err);
+      console.error("Error al cargar documentos:", { codigo: err?.code, estado: err?.status });
 
       setDocumentos([]);
 
@@ -126,7 +126,7 @@ const DocumentosProductos = () => {
 
       await recargarProductoSeleccionado();
     } catch (err) {
-      console.error("Error al modificar documento:", err);
+      console.error("Error al modificar documento:", { codigo: err?.code, estado: err?.status });
 
       setError(
         err?.message || "No fue posible modificar el estado del documento.",
@@ -145,7 +145,7 @@ const DocumentosProductos = () => {
 
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (err) {
-      console.error("Error al abrir documento:", err);
+      console.error("Error al abrir documento:", { codigo: err?.code, estado: err?.status });
 
       setError(err?.message || "No fue posible abrir el documento.");
     }
@@ -189,7 +189,7 @@ const DocumentosProductos = () => {
 
       setMensaje("Documento agregado correctamente.");
     } catch (err) {
-      console.error("Error al agregar documento:", err);
+      console.error("Error al agregar documento:", { codigo: err?.code, estado: err?.status });
 
       setError(err?.message || "No fue posible agregar el documento.");
     } finally {

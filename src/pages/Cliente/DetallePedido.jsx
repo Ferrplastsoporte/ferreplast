@@ -36,7 +36,7 @@ function DetallePedido() {
       } = await supabase.auth.getUser();
 
       if (errorUsuario) {
-        console.error("Error obteniendo usuario:", errorUsuario);
+        console.error("Error obteniendo usuario:", { codigo: errorUsuario?.code, estado: errorUsuario?.status });
         setError("No fue posible obtener tu sesión.");
         return;
       }
@@ -58,7 +58,7 @@ function DetallePedido() {
       );
 
       if (errorPedido) {
-        console.error("ERROR OBTENIENDO DETALLE DEL PEDIDO:", errorPedido);
+        console.error("ERROR OBTENIENDO DETALLE DEL PEDIDO:", { codigo: errorPedido?.code, estado: errorPedido?.status });
         setError(`No fue posible cargar el pedido: ${errorPedido.message}`);
         return;
       }
@@ -91,7 +91,7 @@ function DetallePedido() {
       setPedido(pedidoData);
 
     } catch (errorCarga) {
-      console.error("Error inesperado:", errorCarga);
+      console.error("Error inesperado:", { codigo: errorCarga?.code, estado: errorCarga?.status });
       setError("Ocurrió un error al cargar el pedido.");
 
     } finally {
@@ -167,7 +167,7 @@ function DetallePedido() {
       setPedido((actual) => ({ ...actual, comprobante_path: comprobante.path }));
       window.location.href = comprobante.signedUrl;
     } catch (errorDescarga) {
-      console.error("Error descargando comprobante:", errorDescarga);
+      console.error("Error descargando comprobante:", { codigo: errorDescarga?.code, estado: errorDescarga?.status });
       alert(errorDescarga.message);
     } finally {
       setDescargando(false);

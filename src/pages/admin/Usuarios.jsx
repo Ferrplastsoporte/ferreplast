@@ -82,7 +82,7 @@ function Usuarios() {
 
       setUsuarios(data ?? []);
     } catch (error) {
-      console.error("Error al cargar los trabajadores:", error);
+      console.error("Error al cargar los trabajadores:", { codigo: error?.code, estado: error?.status });
       setMensaje("No fue posible cargar los trabajadores.");
       setTipoMensaje("error");
     } finally {
@@ -189,7 +189,7 @@ function Usuarios() {
       setUsuarioCambioEstado(null);
       return true;
     } catch (error) {
-      console.error("Error al actualizar el trabajador:", error);
+      console.error("Error al actualizar el trabajador:", { codigo: error?.code, estado: error?.status });
       setMensaje(error?.message || "No fue posible actualizar al trabajador.");
       setTipoMensaje("error");
       return false;

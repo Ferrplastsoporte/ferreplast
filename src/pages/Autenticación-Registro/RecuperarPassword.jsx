@@ -54,7 +54,7 @@ export default function RecuperarPassword() {
         }
         console.error(
           "Error al solicitar recuperación de contraseña:",
-          resetError,
+          { codigo: resetError?.code, estado: resetError?.status },
         );
       }
 
@@ -64,7 +64,7 @@ export default function RecuperarPassword() {
 
       setEmail("");
     } catch (err) {
-      console.error("Error inesperado al recuperar contraseña:", err);
+      console.error("Error inesperado al recuperar contraseña:", { codigo: err?.code, estado: err?.status });
 
       setMensaje(
         "Si existe una cuenta asociada a ese correo, recibirás un enlace para restablecer tu contraseña.",

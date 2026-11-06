@@ -10,10 +10,3 @@ export function sanitizarTerminoBusqueda(valor = "") {
 export function normalizarTerminoBusqueda(valor = "") {
   return sanitizarTerminoBusqueda(valor).replace(/\s{2,}/g, " ").trim();
 }
-
-export function crearPatronBusquedaIlike(valor = "") {
-  const termino = normalizarTerminoBusqueda(valor);
-  const terminoEscapado = termino.replace(/[\\%_]/g, "\\$&");
-
-  return `%${terminoEscapado}%`;
-}

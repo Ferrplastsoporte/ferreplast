@@ -8,7 +8,7 @@ import {
   LONGITUD_MAXIMA_UNIDAD,
   limpiarNombreUnidad,
   validarNombreUnidad,
-} from "../../utils/catalogo/unidadMedida";
+} from "../../utils/bodega/unidadMedida";
 
 import "./css/bodeguero.css";
 import "./css/unidades.css";
@@ -37,7 +37,7 @@ function Unidades() {
       .order("nom_und_medida", { ascending: true });
 
     if (error) {
-      console.error("Error al cargar unidades:", error);
+      console.error("Error al cargar unidades:", { codigo: error?.code, estado: error?.status });
       setUnidades([]);
       setMensajeError("No fue posible cargar las unidades de medida.");
     } else {
@@ -112,7 +112,7 @@ function Unidades() {
           : "La unidad de medida fue creada correctamente.",
       );
     } catch (error) {
-      console.error("Error al guardar unidad:", error);
+      console.error("Error al guardar unidad:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         error?.message || "No fue posible guardar la unidad de medida.",

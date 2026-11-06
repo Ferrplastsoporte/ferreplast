@@ -82,7 +82,7 @@ function ProductosDestacados() {
     if (error) {
       console.error(
         "Error al cargar productos destacados:",
-        error
+        { codigo: error?.code, estado: error?.status }
       );
 
       setProductos([]);

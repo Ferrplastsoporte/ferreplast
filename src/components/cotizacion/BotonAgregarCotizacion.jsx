@@ -81,7 +81,7 @@ function BotonAgregarCotizacion({
     } catch (error) {
       console.error(
         "Error al agregar a la cotización:",
-        error,
+        { codigo: error?.code, estado: error?.status },
       );
     }
   }

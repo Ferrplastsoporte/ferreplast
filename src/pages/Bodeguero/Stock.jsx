@@ -60,7 +60,7 @@ function BodegueroStock() {
     const { data, error } = await supabase.rpc("kpi_alerta_stock");
 
     if (error) {
-      console.error("Error al cargar el stock:", error);
+      console.error("Error al cargar el stock:", { codigo: error?.code, estado: error?.status });
 
       setProductos([]);
       setMensajeError("No fue posible cargar el inventario.");
@@ -226,7 +226,7 @@ function BodegueroStock() {
         `El ajuste de stock de "${nombreProducto}" quedó pendiente de aprobación. Las existencias reales todavía no cambian y el producto queda fuera del catálogo mientras se revisa.`,
       );
     } catch (error) {
-      console.error("Error al ajustar el stock:", error);
+      console.error("Error al ajustar el stock:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         error?.message || "No fue posible actualizar el stock del producto.",

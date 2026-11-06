@@ -121,7 +121,7 @@ export async function eliminarRecursoPlantilla(tipoRecurso, rutaActual) {
       .from(BUCKET_PLANTILLAS)
       .remove([rutaActual]);
     if (error) {
-      console.error("No fue posible limpiar el archivo anterior:", error);
+      console.error("No fue posible limpiar el archivo anterior:", { codigo: error?.code, estado: error?.status });
     }
   }
 }

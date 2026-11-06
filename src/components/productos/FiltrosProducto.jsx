@@ -9,6 +9,8 @@ function FiltrosProducto({
   pesos,
   filtros,
   cargandoOpciones = false,
+  errorOpciones = "",
+  onReintentarOpciones,
   onCambiarFiltro,
   onLimpiarFiltros,
 }) {
@@ -101,10 +103,24 @@ function FiltrosProducto({
         <h2>Filtrar productos</h2>
 
         <p>
-          Selecciona cualquier filtro para comenzar. Las demás opciones se
-          actualizarán según los productos disponibles.
+          Puedes comenzar por cualquier filtro. Las selecciones se combinan
+          para buscar productos.
         </p>
       </div>
+
+      {errorOpciones && (
+        <div className="product-filters__error" role="alert">
+          <p>{errorOpciones}</p>
+          <button
+            type="button"
+            className="product-filters__clear"
+            onClick={onReintentarOpciones}
+            disabled={cargandoOpciones}
+          >
+            Reintentar filtros
+          </button>
+        </div>
+      )}
 
       <div className="product-filters__fields">
         <label className="product-filters__field">
@@ -113,12 +129,14 @@ function FiltrosProducto({
           <select
             value={filtros.familia}
             onChange={(evento) => cambiarFiltro("familia", evento.target.value)}
-            disabled={cargandoOpciones || familias.length === 0}
+            disabled={cargandoOpciones || Boolean(errorOpciones) || familias.length === 0}
           >
             <option value="">
               {cargandoOpciones
                 ? "Cargando familias..."
-                : familias.length === 0
+                : errorOpciones
+                  ? "No disponible"
+                  : familias.length === 0
                   ? "Sin familias disponibles"
                   : "Todas las familias"}
             </option>
@@ -138,12 +156,14 @@ function FiltrosProducto({
             onChange={(evento) =>
               cambiarFiltro("subcategoria", evento.target.value)
             }
-            disabled={cargandoOpciones || subcategorias.length === 0}
+            disabled={cargandoOpciones || Boolean(errorOpciones) || subcategorias.length === 0}
           >
             <option value="">
               {cargandoOpciones
                 ? "Cargando subcategorías..."
-                : subcategorias.length === 0
+                : errorOpciones
+                  ? "No disponible"
+                  : subcategorias.length === 0
                   ? "Sin subcategorías disponibles"
                   : "Todas las subcategorías"}
             </option>
@@ -164,12 +184,14 @@ function FiltrosProducto({
           <select
             value={filtros.marca}
             onChange={(evento) => cambiarFiltro("marca", evento.target.value)}
-            disabled={cargandoOpciones || marcas.length === 0}
+            disabled={cargandoOpciones || Boolean(errorOpciones) || marcas.length === 0}
           >
             <option value="">
               {cargandoOpciones
                 ? "Cargando marcas..."
-                : marcas.length === 0
+                : errorOpciones
+                  ? "No disponible"
+                  : marcas.length === 0
                   ? "Sin marcas disponibles"
                   : "Todas las marcas"}
             </option>
@@ -187,12 +209,14 @@ function FiltrosProducto({
           <select
             value={filtros.color}
             onChange={(evento) => cambiarFiltro("color", evento.target.value)}
-            disabled={cargandoOpciones || colores.length === 0}
+            disabled={cargandoOpciones || Boolean(errorOpciones) || colores.length === 0}
           >
             <option value="">
               {cargandoOpciones
                 ? "Cargando colores..."
-                : colores.length === 0
+                : errorOpciones
+                  ? "No disponible"
+                  : colores.length === 0
                   ? "Sin colores disponibles"
                   : "Todos los colores"}
             </option>
@@ -212,12 +236,14 @@ function FiltrosProducto({
             onChange={(evento) =>
               cambiarFiltro("unidadMedida", evento.target.value)
             }
-            disabled={cargandoOpciones || unidadesMedida.length === 0}
+            disabled={cargandoOpciones || Boolean(errorOpciones) || unidadesMedida.length === 0}
           >
             <option value="">
               {cargandoOpciones
                 ? "Cargando unidades..."
-                : unidadesMedida.length === 0
+                : errorOpciones
+                  ? "No disponible"
+                  : unidadesMedida.length === 0
                   ? "Sin unidades disponibles"
                   : "Todas las unidades"}
             </option>
@@ -230,23 +256,25 @@ function FiltrosProducto({
           </select>
         </label>
         <label className="product-filters__field">
-          <span>Peso</span>
+          <span>Peso o contenido</span>
 
           <select
             value={filtros.peso}
             onChange={(evento) => cambiarFiltro("peso", evento.target.value)}
             disabled={
-              cargandoOpciones || !hayUnidadSeleccionada || pesos.length === 0
+              cargandoOpciones || Boolean(errorOpciones) || !hayUnidadSeleccionada || pesos.length === 0
             }
           >
             <option value="">
               {cargandoOpciones
-                ? "Cargando pesos..."
-                : !hayUnidadSeleccionada
+                ? "Cargando contenidos..."
+                : errorOpciones
+                  ? "No disponible"
+                  : !hayUnidadSeleccionada
                   ? "Selecciona una unidad"
                   : pesos.length === 0
-                    ? "Sin pesos disponibles"
-                    : "Todos los pesos"}
+                    ? "Sin contenidos disponibles"
+                    : "Todos los contenidos"}
             </option>
 
             {pesos.map((peso) => (

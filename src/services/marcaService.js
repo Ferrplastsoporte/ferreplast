@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { obtenerExtensionLogoMarca, validarLogoMarca } from "../utils/catalogo/marcas";
+import { obtenerExtensionLogoMarca, validarLogoMarca } from "../utils/bodega/marcas";
 
 const BUCKET_IMAGENES = "imagenes_productos";
 
@@ -37,7 +37,7 @@ export async function eliminarLogoMarca(rutaLogo) {
     .remove([rutaLogo]);
 
   if (error) {
-    console.warn("No fue posible eliminar el logo anterior:", error);
+    console.warn("No fue posible eliminar el logo anterior:", { codigo: error?.code, estado: error?.status });
   }
 }
 
@@ -116,7 +116,7 @@ export async function guardarMarcaConLogo({
       try {
         await eliminarLogoMarca(marcaActual.logo_url);
       } catch (errorLimpieza) {
-        console.warn("No fue posible eliminar el logo anterior:", errorLimpieza);
+        console.warn("No fue posible eliminar el logo anterior:", { codigo: errorLimpieza?.code, estado: errorLimpieza?.status });
       }
     }
 
@@ -126,7 +126,7 @@ export async function guardarMarcaConLogo({
       try {
         await eliminarLogoMarca(rutaNueva);
       } catch (errorLimpieza) {
-        console.warn("No fue posible retirar el logo no guardado:", errorLimpieza);
+        console.warn("No fue posible retirar el logo no guardado:", { codigo: errorLimpieza?.code, estado: errorLimpieza?.status });
       }
     }
     throw error;

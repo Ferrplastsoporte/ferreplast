@@ -39,7 +39,7 @@ function Navbar() {
       const { data, error } = await supabase.from("usuario")
         .select("nom_user, est_user, rol_user").eq("id_user", idUsuario).single();
       if (!activo) return;
-      if (error) console.error("Error al cargar el perfil:", error);
+      if (error) console.error("Error al cargar el perfil:", { codigo: error?.code, estado: error?.status });
       setUsuario(error ? null : data);
       setCargandoUsuario(false);
     }
@@ -47,7 +47,7 @@ function Navbar() {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (!activo) return;
       if (error) {
-        console.error("Error al obtener la sesión:", error);
+        console.error("Error al obtener la sesión:", { codigo: error?.code, estado: error?.status });
         setCargandoUsuario(false);
         return;
       }
@@ -59,7 +59,7 @@ function Navbar() {
       const { data, error } = await supabase.from("familia")
         .select("id_familia, nom_familia").order("nom_familia", { ascending: true });
       if (!activo) return;
-      if (error) console.error("Error al cargar las categorías:", error);
+      if (error) console.error("Error al cargar las categorías:", { codigo: error?.code, estado: error?.status });
       setCategorias(data || []);
       setCargandoCategorias(false);
     }
@@ -146,7 +146,7 @@ function Navbar() {
     cerrarMenus();
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error("Error al cerrar sesión:", error);
+      console.error("Error al cerrar sesión:", { codigo: error?.code, estado: error?.status });
       return;
     }
     setSesion(null);

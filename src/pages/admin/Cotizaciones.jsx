@@ -146,7 +146,7 @@ function Cotizaciones() {
         });
       } catch (error) {
         if (!vigente) return;
-        console.error("Error al cargar las cotizaciones:", error);
+        console.error("Error al cargar las cotizaciones:", { codigo: error?.code, estado: error?.status });
         setMensajeError(
           error.message || "No fue posible cargar las cotizaciones.",
         );
@@ -386,7 +386,7 @@ function Cotizaciones() {
         texto: "Borrador guardado correctamente.",
       });
     } catch (error) {
-      console.error("Error al guardar el borrador:", error);
+      console.error("Error al guardar el borrador:", { codigo: error?.code, estado: error?.status });
       setMensajeOperacion({
         tipo: "error",
         texto: error.message || "No fue posible guardar el borrador.",
@@ -471,7 +471,7 @@ function Cotizaciones() {
           texto: "Cotización completada y PDF generado correctamente.",
         });
       } catch (errorPdf) {
-        console.error("Error al generar el PDF:", errorPdf);
+        console.error("Error al generar el PDF:", { codigo: errorPdf?.code, estado: errorPdf?.status });
         setMensajeOperacion({
           tipo: "error",
           texto:
@@ -481,7 +481,7 @@ function Cotizaciones() {
         setGenerandoPdf(false);
       }
     } catch (error) {
-      console.error("Error al completar la cotización:", error);
+      console.error("Error al completar la cotización:", { codigo: error?.code, estado: error?.status });
       setMensajeOperacion({
         tipo: "error",
         texto: error.message || "No fue posible completar la cotización.",
@@ -522,7 +522,7 @@ function Cotizaciones() {
         texto: `Cotización marcada como ${nombreResultado}.`,
       });
     } catch (error) {
-      console.error("Error al cambiar el resultado:", error);
+      console.error("Error al cambiar el resultado:", { codigo: error?.code, estado: error?.status });
       setMensajeOperacion({
         tipo: "error",
         texto: error.message || "No fue posible cambiar el resultado.",
@@ -564,7 +564,7 @@ function Cotizaciones() {
         texto: "PDF generado y descargado correctamente.",
       });
     } catch (error) {
-      console.error("Error al generar el PDF:", error);
+      console.error("Error al generar el PDF:", { codigo: error?.code, estado: error?.status });
       setMensajeOperacion({
         tipo: "error",
         texto: error.message || "No fue posible generar el PDF.",
@@ -599,7 +599,7 @@ function Cotizaciones() {
         texto: "Descarga iniciada correctamente.",
       });
     } catch (error) {
-      console.error("Error al descargar el PDF:", error);
+      console.error("Error al descargar el PDF:", { codigo: error?.code, estado: error?.status });
       setMensajeOperacion({
         tipo: "error",
         texto: error.message || "No fue posible descargar el PDF.",

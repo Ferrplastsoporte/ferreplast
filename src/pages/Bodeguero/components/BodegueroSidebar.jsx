@@ -131,7 +131,7 @@ function BodegueroSidebar() {
       if (error) throw error;
       navegar("/", { replace: true });
     } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+      console.error("Error al cerrar sesión:", { codigo: error?.code, estado: error?.status });
       setErrorSesion("No fue posible cerrar sesión. Inténtalo nuevamente.");
     } finally {
       setCerrando(false);

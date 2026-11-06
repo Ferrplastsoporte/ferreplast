@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
-import { reporteComercial, validarRespuestaComercial, VISTAS_COTIZACION } from "../../utils/bodega/bodega-reportes/reportesComerciales";
+import { reporteComercial, validarRespuestaComercial, VISTAS_COTIZACION } from "../../utils/admin/reportes/reportesComerciales";
 import AdminHeader from "./components/AdminHeader";
-import { ayudaReporte } from "../../utils/bodega/bodega-reportes/ayudaReportes";
-import { segmentosAnillo, tarjetasComerciales } from "../../utils/bodega/bodega-reportes/reportesPresentacion";
+import { ayudaReporte } from "../../utils/admin/reportes/ayudaReportes";
+import { segmentosAnillo, tarjetasComerciales } from "../../utils/admin/reportes/reportesPresentacion";
 import "./Css/reportes-diseno.css";
 import logoFerreplast from "../../assets/logo.png";
 
@@ -1603,7 +1603,7 @@ function Reportes() {
         nombreArchivo,
       );
     } catch (err) {
-      console.error("Error al generar el PDF:", err);
+      console.error("Error al generar el PDF:", { codigo: err?.code, estado: err?.status });
       setErrorPdf(err.message || "No se pudo generar el PDF.");
     } finally {
       setGenerandoPdf(false);

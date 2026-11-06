@@ -139,7 +139,7 @@ export const useAutenticacion = () => {
     if (error) {
       console.error(
         'Error al cargar el perfil:',
-        error
+        { codigo: error?.code, estado: error?.status }
       )
 
       setProfile(null)
@@ -164,7 +164,7 @@ export const useAutenticacion = () => {
         if (error) {
           console.error(
             'Error al obtener la sesión:',
-            error
+            { codigo: error?.code, estado: error?.status }
           )
 
           if (mounted) {
@@ -191,7 +191,7 @@ export const useAutenticacion = () => {
       } catch (error) {
         console.error(
           'Error inesperado al iniciar la sesión:',
-          error
+          { codigo: error?.code, estado: error?.status }
         )
 
         if (mounted) {
@@ -324,7 +324,7 @@ export const useAutenticacion = () => {
     } catch (error) {
       console.error(
         'Error inesperado durante el registro:',
-        error
+        { codigo: error?.code, estado: error?.status }
       )
       showModal(
         'error',
@@ -434,7 +434,7 @@ export const useAutenticacion = () => {
     } catch (error) {
       console.error(
         'Error inesperado durante el inicio de sesión:',
-        error
+        { codigo: error?.code, estado: error?.status }
       )
 
       showModal(
@@ -527,7 +527,7 @@ export const useAutenticacion = () => {
          */
         console.warn(
           'La solicitud de reenvío no generó un correo:',
-          error
+          { codigo: error?.code, estado: error?.status }
         )
       }
 
@@ -541,7 +541,7 @@ export const useAutenticacion = () => {
     } catch (error) {
       console.error(
         'Error inesperado al reenviar la confirmación:',
-        error
+        { codigo: error?.code, estado: error?.status }
       )
 
       showModal(
@@ -583,7 +583,7 @@ export const useAutenticacion = () => {
     } catch (error) {
       console.error(
         'Error inesperado al cerrar sesión:',
-        error
+        { codigo: error?.code, estado: error?.status }
       )
 
       showModal(

@@ -253,7 +253,7 @@ function Pedidos() {
       if (errorPedidos) throw errorPedidos;
       setPedidos(data || []);
     } catch (errorCarga) {
-      console.error("Error al cargar pedidos:", errorCarga);
+      console.error("Error al cargar pedidos:", { codigo: errorCarga?.code, estado: errorCarga?.status });
       setError(errorCarga.message || "No fue posible cargar los pedidos.");
     } finally {
       setCargando(false);
@@ -428,7 +428,7 @@ function Pedidos() {
       setPedidoSeleccionado(null);
       setConfirmando(false);
     } catch (errorMarcar) {
-      console.error("Error al marcar pedido como listo:", errorMarcar);
+      console.error("Error al marcar pedido como listo:", { codigo: errorMarcar?.code, estado: errorMarcar?.status });
       setErrorAccion(errorMarcar.message || "No fue posible actualizar el pedido.");
       await cargarPedidos();
     } finally {
@@ -474,7 +474,7 @@ function Pedidos() {
       setPedidoSeleccionado(null);
       setConfirmando(false);
     } catch (errorFinalizar) {
-      console.error("Error al finalizar pedido:", errorFinalizar);
+      console.error("Error al finalizar pedido:", { codigo: errorFinalizar?.code, estado: errorFinalizar?.status });
       setErrorAccion(errorFinalizar.message || "No fue posible finalizar el pedido.");
       await cargarPedidos();
     } finally {

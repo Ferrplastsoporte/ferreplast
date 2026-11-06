@@ -114,12 +114,6 @@ async function listarPagosAdmin(busqueda = "") {
     }
   );
 
-  console.log("[Pagos] Error RPC:", error);
-  console.log("[Pagos] Cantidad recibida:", data?.length ?? 0);
-  console.log(
-    "[Pagos] Folios recibidos:",
-    (data ?? []).map((pago) => pago.folio_pago)
-  );
 
   if (error) {
     throw error;
@@ -152,11 +146,10 @@ function Pagos() {
           pago.folio_pago.trim() !== ""
       );
 
-      console.log("[Pagos] Total tras validar folios:", pagosConFolio.length);
 
       setPagos(pagosConFolio);
     } catch (err) {
-      console.error("[Pagos] Error al cargar:", err);
+      console.error("[Pagos] Error al cargar:", { codigo: err?.code, estado: err?.status });
 
       setError(
         err?.message ||

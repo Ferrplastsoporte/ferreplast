@@ -117,7 +117,7 @@ function AdminDashboard() {
       if (existeError) {
         console.error(
           "Error al cargar el dashboard administrativo:",
-          resultados,
+          resultados.flatMap((resultado, indice) => resultado.error ? [{ consulta: indice + 1, codigo: resultado.error.code, estado: resultado.error.status }] : []),
         );
 
         setMensajeError(
@@ -141,7 +141,7 @@ function AdminDashboard() {
         marcasPendientes: marcasPendientesResultado.count ?? 0,
       });
     } catch (error) {
-      console.error("Error inesperado al cargar el dashboard:", error);
+      console.error("Error inesperado al cargar el dashboard:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError("Ocurrió un error al cargar el resumen administrativo.");
     } finally {

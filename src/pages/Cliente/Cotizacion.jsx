@@ -245,7 +245,7 @@ function Cotizacion() {
 
       setMostrarModal(true);
     } catch (error) {
-      console.error("Error al enviar la cotización:", error);
+      console.error("Error al enviar la cotización:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError(
         error?.message ||

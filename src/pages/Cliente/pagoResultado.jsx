@@ -50,7 +50,7 @@ function PagoResultado() {
           .single();
 
         if (error) {
-          console.error("Error consultando pedido:", error);
+          console.error("Error consultando pedido:", { codigo: error?.code, estado: error?.status });
         }
 
         if (data && !cancelado) {
@@ -98,7 +98,7 @@ function PagoResultado() {
       setPedido((actual) => ({ ...actual, comprobante_path: comprobante.path }));
       window.location.href = comprobante.signedUrl;
     } catch (errorDescarga) {
-      console.error("Error descargando comprobante:", errorDescarga);
+      console.error("Error descargando comprobante:", { codigo: errorDescarga?.code, estado: errorDescarga?.status });
       alert(errorDescarga.message);
     } finally {
       setDescargando(false);

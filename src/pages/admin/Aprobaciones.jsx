@@ -126,7 +126,7 @@ function Aprobaciones() {
       setMarcasSeleccionadas([]);
       setProductosExpandidos([]);
     } catch (error) {
-      console.error("Error al cargar las aprobaciones:", error);
+      console.error("Error al cargar las aprobaciones:", { codigo: error?.code, estado: error?.status });
       setMensaje({
         tipo: "error",
         texto:
@@ -257,7 +257,7 @@ function Aprobaciones() {
       setConfirmacion(null);
       await cargarAprobaciones({ conservarMensaje: true });
     } catch (error) {
-      console.error("Error al resolver las aprobaciones:", error);
+      console.error("Error al resolver las aprobaciones:", { codigo: error?.code, estado: error?.status });
       setConfirmacion(null);
       setMensaje({
         tipo: "error",

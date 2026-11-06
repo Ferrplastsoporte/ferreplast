@@ -198,7 +198,7 @@ function BodegueroSolicitudes() {
       setSolicitudes(todas);
       setNombresReferencias(referencias);
     } catch (error) {
-      console.error("Error al cargar solicitudes:", error);
+      console.error("Error al cargar solicitudes:", { codigo: error?.code, estado: error?.status });
 
       setMensajeError("No fue posible cargar las solicitudes pendientes.");
 
