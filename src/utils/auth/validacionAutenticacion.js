@@ -5,8 +5,21 @@ import {
 
 export const isValidEmail = esCorreoValido;
 
+// El formato se completa al salir del campo o enviar, nunca al escribir.
+export const normalizarRutRegistro = (valor = "") => {
+  const rut = sanitizeRegisterField("rut", String(valor));
+  return /^\d{7,8}[0-9K]$/.test(rut)
+    ? rut.slice(0, -1) + "-" + rut.slice(-1)
+    : rut;
+};
+
+export const normalizarTelefonoRegistro = (valor = "") => {
+  const numero = sanitizeRegisterField("telefono", String(valor));
+  return numero ? "+569" + numero : "";
+};
+
 export const isValidRut = (rut = "") => {
-  const rutLimpio = rut.replace(/\./g, "").replace(/\s/g, "").toUpperCase();
+  const rutLimpio = normalizarRutRegistro(rut);
 
   const partes = rutLimpio.split("-");
 
@@ -16,7 +29,7 @@ export const isValidRut = (rut = "") => {
 
   const [cuerpo, digitoIngresado] = partes;
 
-  if (!/^\d+$/.test(cuerpo)) {
+  if (!/^\d{7,8}$/.test(cuerpo) || Number(cuerpo) === 0) {
     return false;
   }
 
@@ -99,41 +112,22 @@ export const sanitizeRegisterField = (name, value) => {
         .replace(/^\s+/, "")
         .slice(0, 80);
 
-    case "rut": {
-      let rutLimpio = value
+    case "rut":
+      // No recortar: borrar el guion no debe borrar el verificador.
+      return value
         .toUpperCase()
-        .replace(/[.\s]/g, "")
-        .replace(/[^0-9K-]/g, "");
-
-      const posicionGuion = rutLimpio.indexOf("-");
-
-      if (posicionGuion !== -1) {
-        const cuerpo = rutLimpio
-          .slice(0, posicionGuion)
-          .replace(/\D/g, "")
-          .slice(0, 8);
-
-        const digitoVerificador = rutLimpio
-          .slice(posicionGuion + 1)
-          .replace(/[^0-9K]/g, "")
-          .slice(0, 1);
-
-        rutLimpio = `${cuerpo}-${digitoVerificador}`;
-      } else {
-        rutLimpio = rutLimpio.replace(/\D/g, "").slice(0, 8);
-      }
-
-      return rutLimpio;
-    }
+        .replace(/[\u2010-\u2015\u2212\uFE63\uFF0D]/g, "-")
+        .replace(/[.\s]/g, "");
 
     case "email":
       return sanitizarCorreo(value);
 
     case "telefono": {
-      const tienePrefijo = value.startsWith("+");
-      const numeros = value.replace(/\D/g, "").slice(0, 11);
-
-      return tienePrefijo ? `+${numeros}` : numeros;
+      const numero = value.replace(/[\s()-]/g, "");
+      // Aceptar el número completo pegado o autocompletado.
+      if (numero.startsWith("+569")) return numero.slice(4);
+      if (/^569\d{8}$/.test(numero)) return numero.slice(3);
+      return numero;
     }
 
     case "direccion":
@@ -178,8 +172,8 @@ export const validateRegisterField = (name, value, form) => {
         return "Debes ingresar tu RUT.";
       }
 
-      if (!/^\d{7,8}-[\dkK]$/.test(val)) {
-        return "Usa el formato sin puntos y con guion. Ejemplo: 12345678-5.";
+      if (!/^\d{7,8}-[0-9K]$/.test(normalizarRutRegistro(val))) {
+        return "Ingresa el RUT completo con su dígito verificador. Ejemplo: 12345678-5.";
       }
 
       if (!isValidRut(val)) {
@@ -241,8 +235,8 @@ export const validateRegisterField = (name, value, form) => {
         return "Debes ingresar tu número de teléfono.";
       }
 
-      if (!isValidPhone(val)) {
-        return "Usa el formato +56912345678, sin espacios ni guiones.";
+      if (!isValidPhone(normalizarTelefonoRegistro(val))) {
+        return "Ingresa los 8 dígitos de tu celular después de +569.";
       }
 
       return "";

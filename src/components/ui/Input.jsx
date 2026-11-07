@@ -10,12 +10,11 @@ const Input = ({
   maxLength, 
   autoComplete,
   className = '',
+  prefix,
   ...props 
 }) => {
-  return (
-    <div className="form-group">
-      <label htmlFor={name}>{label}</label>
-      <input
+  const campo = (
+    <input
         id={name}
         name={name}
         type={type}
@@ -26,8 +25,20 @@ const Input = ({
         placeholder={placeholder}
         maxLength={maxLength}
         autoComplete={autoComplete}
+        aria-describedby={prefix ? `${name}-prefijo` : undefined}
         {...props}
       />
+  )
+
+  return (
+    <div className="form-group">
+      <label htmlFor={name}>{label}</label>
+      {prefix ? (
+        <div className="input-con-prefijo">
+          <span id={name + "-prefijo"}>{prefix}</span>
+          {campo}
+        </div>
+      ) : campo}
       {error && <span className="campo-error">{error}</span>}
     </div>
   )

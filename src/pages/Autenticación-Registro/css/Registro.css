@@ -255,3 +255,27 @@ select.form-control {
     gap: 17px;
   }
 }
+
+/* El prefijo del celular queda fuera del valor editable. */
+.registro-card .input-con-prefijo {
+  display: flex;
+  align-items: stretch;
+}
+
+.registro-card .input-con-prefijo > span {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid #cbd1d8;
+  border-right: 0;
+  border-radius: 9px 0 0 9px;
+  background: #f4f6f8;
+  color: #475467;
+  font-weight: 600;
+}
+
+.registro-card .input-con-prefijo > input {
+  min-width: 0;
+  flex: 1;
+  border-radius: 0 9px 9px 0;
+}

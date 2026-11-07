@@ -4,6 +4,8 @@ import { supabase } from "../../lib/supabase";
 import { useFormulario } from "../../hooks/useFormulario";
 import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
+  normalizarRutRegistro,
+  normalizarTelefonoRegistro,
   sanitizeRegisterField,
   validateRegisterField,
 } from "../../utils/auth/validacionAutenticacion";
@@ -170,7 +172,11 @@ const FormularioRegistro = () => {
      */
     let resultado;
     try {
-      resultado = await register(values, "client", captcha.token);
+      resultado = await register({
+        ...values,
+        rut: normalizarRutRegistro(values.rut),
+        telefono: normalizarTelefonoRegistro(values.telefono),
+      }, "client", captcha.token);
     } finally {
       captcha.reiniciar();
     }
@@ -217,10 +223,12 @@ const FormularioRegistro = () => {
           type="text"
           value={values.rut}
           onChange={handleChange}
-          onBlur={handleBlur}
+          onBlur={(event) => setFieldValue("rut", normalizarRutRegistro(event.target.value), { validate: true })}
           error={errors.rut}
           placeholder="12345678-5"
-          maxLength={10}
+          maxLength={20}
+          autoCapitalize="characters"
+          spellCheck={false}
         />
 
         <Input
@@ -271,16 +279,18 @@ const FormularioRegistro = () => {
         />
 
         <Input
-          label="Teléfono"
+          label="Celular"
+          prefix="+569"
           name="telefono"
           type="tel"
           value={values.telefono}
           onChange={handleChange}
           onBlur={handleBlur}
           error={errors.telefono}
-          placeholder="+56912345678"
-          autoComplete="tel"
-          maxLength={12}
+          placeholder="12345678"
+          autoComplete="tel-national"
+          inputMode="numeric"
+          maxLength={24}
         />
 
         <Select
