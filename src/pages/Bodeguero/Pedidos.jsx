@@ -916,7 +916,7 @@ function DetallePedidoModal({
               {listo && (
                 <p className="pb-nota pb-nota--suave">
                   <LuPackageCheck aria-hidden="true" />
-                  Pedido listo. El cliente ve: “{obtenerMensajeCliente(pedido)}”
+                  Al confirmar, el cliente verá: “{accion.mensaje}”
                 </p>
               )}
               <button type="button" className="pb-boton pb-boton--secundario" onClick={onCerrar}>
