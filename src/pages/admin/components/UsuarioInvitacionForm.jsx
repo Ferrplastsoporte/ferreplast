@@ -1,10 +1,13 @@
 import { useState } from "react";
 import {
   normalizarUsuarioAdministrativo,
+  normalizarRutUsuario,
+  sanitizarCelularInvitacion,
   sanitizarCorreoUsuario,
   sanitizarNombreUsuario,
   sanitizarRutUsuario,
-  sanitizarTelefonoUsuario,
+  validarRutUsuario,
+  validarTelefonoUsuario,
   validarUsuarioAdministrativo,
 } from "../../../utils/usuarios/validacionUsuarios";
 import { LONGITUD_MAXIMA_CORREO } from "../../../utils/comunes/correo";
@@ -80,10 +83,7 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
       rol_user: Number(valoresNormalizados.rol),
     };
 
-    /*
-     * En el paso 2 esta función
-     * llamará a la Edge Function.
-     */
+    // La vista llama a la Edge Function con los datos normalizados.
     const resultado = await onEnviar?.(datos);
 
     if (resultado === true) {
@@ -144,8 +144,15 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
             onChange={(evento) =>
               actualizarCampo("rut", sanitizarRutUsuario(evento.target.value))
             }
+            onBlur={(evento) => {
+              const rut = normalizarRutUsuario(evento.target.value);
+              actualizarCampo("rut", rut);
+              setErrores((anteriores) => ({ ...anteriores, rut: validarRutUsuario(rut) }));
+            }}
             placeholder="12345678-5"
-            maxLength={10}
+            maxLength={20}
+            autoCapitalize="characters"
+            spellCheck={false}
             disabled={cargando}
             aria-invalid={Boolean(errores.rut)}
             aria-describedby={errores.rut ? "adminRutError" : undefined}
@@ -187,27 +194,32 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
         </div>
 
         <div className="usuario-admin-form__field">
-          <label htmlFor="adminTelefono">Teléfono</label>
+          <label htmlFor="adminTelefono">Celular</label>
 
-          <input
-            id="adminTelefono"
-            type="tel"
-            value={valores.telefono}
-            onChange={(evento) =>
-              actualizarCampo(
-                "telefono",
-                sanitizarTelefonoUsuario(evento.target.value),
-              )
-            }
-            placeholder="+56912345678"
-            maxLength={12}
-            autoComplete="tel"
-            disabled={cargando}
-            aria-invalid={Boolean(errores.telefono)}
-            aria-describedby={
-              errores.telefono ? "adminTelefonoError" : undefined
-            }
-          />
+          <div className="usuario-admin-form__celular">
+            <span id="adminTelefonoPrefijo">+569</span>
+            <input
+              id="adminTelefono"
+              type="tel"
+              value={valores.telefono.replace(/^\+569/, "")}
+              onChange={(evento) => actualizarCampo(
+                "telefono", sanitizarCelularInvitacion(evento.target.value),
+              )}
+              onBlur={() => setErrores((anteriores) => ({
+                ...anteriores,
+                telefono: validarTelefonoUsuario(valores.telefono)
+                  ? "Ingresa los 8 dígitos de tu celular después de +569." : "",
+              }))}
+              placeholder="12345678"
+              maxLength={24}
+              inputMode="numeric"
+              autoComplete="tel-national"
+              disabled={cargando}
+              aria-invalid={Boolean(errores.telefono)}
+              aria-describedby={errores.telefono
+                ? "adminTelefonoPrefijo adminTelefonoError" : "adminTelefonoPrefijo"}
+            />
+          </div>
 
           {errores.telefono && (
             <small

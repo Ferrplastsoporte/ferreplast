@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import Captcha from "../../components/auth/Captcha";
@@ -16,10 +16,11 @@ export default function RecuperarPassword() {
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const envioEnCurso = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (enviando || captcha.pendiente) return;
+    if (envioEnCurso.current || enviando || captcha.pendiente) return;
 
     setMensaje("");
     setError("");
@@ -32,6 +33,7 @@ export default function RecuperarPassword() {
       return;
     }
 
+    envioEnCurso.current = true;
     setEnviando(true);
 
     try {
@@ -43,7 +45,7 @@ export default function RecuperarPassword() {
         },
       );
 
-      if (resetError) {
+      if (resetError && !["user_not_found", "email_not_confirmed"].includes(resetError.code)) {
         if (resetError.code === "captcha_failed" || /captcha/i.test(resetError.message)) {
           setError("La verificación de seguridad falló o venció. Complétala nuevamente.");
           return;
@@ -56,6 +58,8 @@ export default function RecuperarPassword() {
           "Error al solicitar recuperación de contraseña:",
           { codigo: resetError?.code, estado: resetError?.status },
         );
+        setError("No se pudo procesar la solicitud. Revisa tu conexión e inténtalo nuevamente.");
+        return;
       }
 
       setMensaje(
@@ -65,13 +69,11 @@ export default function RecuperarPassword() {
       setEmail("");
     } catch (err) {
       console.error("Error inesperado al recuperar contraseña:", { codigo: err?.code, estado: err?.status });
-
-      setMensaje(
-        "Si existe una cuenta asociada a ese correo, recibirás un enlace para restablecer tu contraseña.",
-      );
+      setError("No se pudo procesar la solicitud. Revisa tu conexión e inténtalo nuevamente.");
     } finally {
       captcha.reiniciar();
       setEnviando(false);
+      envioEnCurso.current = false;
     }
   };
 
@@ -87,7 +89,7 @@ export default function RecuperarPassword() {
           </p>
         </div>
 
-        <form className="recuperar-password-form" onSubmit={handleSubmit}>
+        <form className="recuperar-password-form" onSubmit={handleSubmit} noValidate>
           <div className="recuperar-password-field">
             <label htmlFor="email">Correo electrónico</label>
 
@@ -98,6 +100,7 @@ export default function RecuperarPassword() {
               onChange={(e) => {
                 setEmail(sanitizarCorreo(e.target.value));
                 if (error) setError("");
+                if (mensaje) setMensaje("");
               }}
               placeholder="correo@ejemplo.cl"
               autoComplete="email"

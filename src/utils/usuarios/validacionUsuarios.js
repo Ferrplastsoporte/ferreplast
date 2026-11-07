@@ -22,9 +22,26 @@ export function sanitizarNombreUsuario(valor = "") {
 export function sanitizarRutUsuario(valor = "") {
   return String(valor)
     .toUpperCase()
-    .replace(/[.\s]/g, "")
-    .replace(/[^0-9K-]/g, "")
-    .slice(0, 10);
+    .replace(/[\u2010-\u2015\u2212\uFE63\uFF0D]/g, "-")
+    .replace(/[.\s]/g, "");
+}
+
+// Formatear al salir del campo o enviar, conservando la edición libre.
+export function normalizarRutUsuario(valor = "") {
+  const rut = sanitizarRutUsuario(valor);
+  return /^\d{7,8}[0-9K]$/.test(rut)
+    ? rut.slice(0, -1) + "-" + rut.slice(-1)
+    : rut;
+}
+
+// Solo la invitación muestra +569 fuera del campo editable.
+// Los otros formularios mantienen su sanitizador de teléfono completo.
+export function sanitizarCelularInvitacion(valor = "") {
+  const texto = String(valor).replace(/[\s()-]/g, "");
+  const numero = texto.startsWith("+569")
+    ? texto.slice(4)
+    : /^569\d{8}$/.test(texto) ? texto.slice(3) : texto;
+  return numero ? "+569" + numero : "";
 }
 
 export function sanitizarCorreoUsuario(valor = "") {
@@ -61,13 +78,14 @@ export function validarNombreUsuario(valor = "") {
 }
 
 export function validarRutUsuario(valor = "") {
-  const rut = sanitizarRutUsuario(valor);
+  const rut = normalizarRutUsuario(valor);
 
   if (!PATRON_RUT.test(rut)) {
-    return "Ingresa un RUT válido sin puntos y con guion.";
+    return "Ingresa el RUT completo con su dígito verificador.";
   }
 
   const [numero, digitoIngresado] = rut.split("-");
+  if (Number(numero) === 0) return "El RUT ingresado no es válido.";
   let suma = 0;
   let multiplicador = 2;
 
@@ -134,7 +152,7 @@ export function normalizarUsuarioAdministrativo(valores = {}) {
   return {
     ...valores,
     nombre: sanitizarNombreUsuario(valores.nombre).trim(),
-    rut: sanitizarRutUsuario(valores.rut),
+    rut: normalizarRutUsuario(valores.rut),
     email: sanitizarCorreoUsuario(valores.email),
     telefono: sanitizarTelefonoUsuario(valores.telefono),
     rol: String(valores.rol ?? ""),

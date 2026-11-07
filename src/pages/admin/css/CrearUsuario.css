@@ -386,3 +386,26 @@
     width: 100%;
   }
 }
+
+.usuario-admin-form__celular {
+  display: flex;
+  align-items: stretch;
+}
+
+.usuario-admin-form__celular > span {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-right: 0;
+  border-radius: 10px 0 0 10px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+}
+
+.usuario-admin-form__celular > input {
+  min-width: 0;
+  flex: 1;
+  border-radius: 0 10px 10px 0;
+}
