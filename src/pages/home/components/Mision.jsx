@@ -300,8 +300,8 @@ function Mision() {
               </p>
 
               <footer>
-                <strong>Erwin Fuentes Mayorga</strong>
-                <span>Ventas técnicas · Quedo atento para coordinar una reunión</span>
+                <strong>Equipo de Ferreplast</strong>
+                <span>Ventas técnicas · Quedamos atentos para coordinar una reunión</span>
               </footer>
             </blockquote>
           </motion.div>
