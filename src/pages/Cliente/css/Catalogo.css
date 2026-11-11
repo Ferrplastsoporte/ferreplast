@@ -845,22 +845,91 @@
   outline-offset: 4px;
 }
 
-/* En móvil el selector conserva su posición fija al pie de la pantalla. */
+/* Los selectores se apilan dentro del catálogo, por debajo de la navegación. */
+.catalogo {
+  isolation: isolate;
+  z-index: 0;
+}
+
+/* Mantener estable la capa al entrar o salir el cursor del selector. */
+.catalogo .product-card:has(.modal-cantidad) {
+  transform: none;
+  overflow: visible;
+  z-index: 3;
+}
+
+/* En móvil se conserva el selector anclado al botón y se evita el movimiento de la tarjeta. */
 @media (max-width: 560px) {
   .catalogo .product-card {
     transform: none;
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
   }
   .catalogo .product-card:hover { transform: none; }
-  /* El panel debe quedar por encima de los accesos flotantes. */
-  .catalogo .product-card:has([role="dialog"]) { z-index: 10000; }
-  .catalogo .modal-cantidad,
-  .catalogo .add-to-cart__modal .modal-cantidad {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    width: auto;
-    transform: none;
+
+
+}
+
+/* Filtros plegables en tablet y celular; la consulta conserva su lógica actual. */
+.product-filters__toggle { display: none; }
+.product-filters__body { display: contents; }
+
+@media (max-width: 1024px) {
+  .catalogo__contenido { grid-template-columns: 1fr; gap: 18px; }
+  .catalogo .product-filters {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 12px;
+    gap: 0;
+    border-radius: 12px;
+  }
+  .product-filters__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid #d8e5f4;
+    border-radius: 8px;
+    background: #f0f6ff;
+    color: #0052a4;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 750;
+    cursor: pointer;
+  }
+  .product-filters__toggle:focus-visible { outline: 3px solid #277ce0; outline-offset: 3px; }
+  .product-filters__body { display: none; }
+  .product-filters__body--open { display: grid; gap: 12px; padding-top: 12px; }
+  .product-filters__header { padding-bottom: 10px; }
+  .product-filters__header h2 { display: none; }
+  .product-filters__header p { font-size: 12px; }
+  .catalogo .product-filters__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .product-filters__field { gap: 5px; }
+  .product-filters__field > span { font-size: 12px; letter-spacing: 0; }
+  .product-filters select, .product-filters input {
+    height: 44px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  .catalogo .product-filters__price-group { grid-column: 1 / -1; gap: 12px; }
+  .catalogo .product-filters__actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .product-filters__actions button { min-height: 44px; padding: 9px 12px; font-size: 13px; }
+}
+
+@media (max-width: 520px) {
+  .catalogo .product-filters__fields { grid-template-columns: 1fr; gap: 10px; }
+}
+@media (min-width: 901px) and (max-width: 1024px) {
+  .catalogo .product-filters__price-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

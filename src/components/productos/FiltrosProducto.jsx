@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 function FiltrosProducto({
   familias,
@@ -14,6 +14,11 @@ function FiltrosProducto({
   onCambiarFiltro,
   onLimpiarFiltros,
 }) {
+  const [abiertos, setAbiertos] = useState(false);
+  const idContenido = useId();
+  const cantidadActivos = [filtros.familia, filtros.subcategoria, filtros.marca, filtros.color, filtros.unidadMedida, filtros.peso]
+    .filter((valor) => valor !== '' && valor != null).length
+    + (filtros.precioMinimo !== '' || filtros.precioMaximo !== '' ? 1 : 0);
   const [precioMinimo, setPrecioMinimo] = useState(filtros.precioMinimo);
   const [precioMaximo, setPrecioMaximo] = useState(filtros.precioMaximo);
   const [errorPrecio, setErrorPrecio] = useState("");
@@ -99,6 +104,17 @@ function FiltrosProducto({
 
   return (
     <aside className="product-filters" aria-label="Filtros del catálogo">
+      <button
+        type="button"
+        className="product-filters__toggle"
+        aria-expanded={abiertos}
+        aria-controls={idContenido}
+        onClick={() => setAbiertos((valor) => !valor)}
+      >
+        <span>{abiertos ? "Ocultar filtros" : "Filtros"}{cantidadActivos > 0 ? ` (${cantidadActivos})` : ""}</span>
+        <span aria-hidden="true">{abiertos ? "−" : "+"}</span>
+      </button>
+      <div id={idContenido} className={`product-filters__body${abiertos ? " product-filters__body--open" : ""}`}>
       <div className="product-filters__header">
         <h2>Filtrar productos</h2>
 
@@ -368,6 +384,7 @@ function FiltrosProducto({
         >
           Limpiar filtros
         </button>
+      </div>
       </div>
     </aside>
   );

@@ -960,15 +960,12 @@
 .product-detail .add-to-cart__modal .modal-cantidad {
   bottom: 0;
 }
-@media (max-width: 560px) {
-  .product-detail .modal-cantidad,
-  .product-detail .add-to-cart__modal .modal-cantidad {
-    bottom: 16px;
-  }
-}
-@media (max-width: 380px) {
-  .product-detail .modal-cantidad,
-  .product-detail .add-to-cart__modal .modal-cantidad {
-    bottom: 10px;
-  }
+
+
+
+/* Contener los selectores por debajo de la navegación y el pie de página. */
+.product-detail {
+  isolation: isolate;
+  position: relative;
+  z-index: 0;
 }

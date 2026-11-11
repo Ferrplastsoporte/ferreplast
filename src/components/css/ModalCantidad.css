@@ -100,30 +100,10 @@
     0 9px 20px rgba(8, 100, 210, 0.30); background: #1f6fcb; border-color: #1f6fcb;
 }
 
-@media (max-width: 560px) {
-
-  .modal-cantidad {
-    position: fixed;
-
-    right: 16px;
-    bottom: 16px;
-    left: 16px;
-
-    width: auto;
-
-    transform: none;
-
-    border-radius: 16px;
-  }
-
-}
-
 @media (max-width: 380px) {
 
   .modal-cantidad {
-    right: 10px;
-    bottom: 10px;
-    left: 10px;
+
 
     padding: 17px;
   }

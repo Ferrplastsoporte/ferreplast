@@ -40,7 +40,7 @@ function limpiarContexto() {
 
 function esSesionInvalida(error) {
   return error?.status === 401 || error?.status === 403
-    || CODIGOS_SESION_INVALIDA.includes(error?.code);
+    || CODIGOS_SESION_INVALIDA.includes(error?.code ?? error?.details?.code);
 }
 
 function mensajeErrorPassword(error) {
@@ -98,7 +98,7 @@ function NuevaPassword() {
         const { error: errorInicial } = await supabase.auth.initialize();
         if (!activo) return;
         if (errorInicial || contextoEnlacePassword.error) {
-          if (errorInicial && !esSesionInvalida(errorInicial)
+          if (errorInicial && errorInicial.name !== "AuthImplicitGrantRedirectError" && !esSesionInvalida(errorInicial)
             && (errorInicial.status >= 500 || errorInicial.name === "AuthRetryableFetchError")) {
             throw errorInicial;
           }
@@ -263,7 +263,7 @@ function NuevaPassword() {
       <section className="nueva-password-card nueva-password-card--estado">
         <div className="nueva-password-icon nueva-password-icon--error">!</div>
         <h1>{errorVerificacion ? "No se pudo verificar" : "Enlace no válido"}</h1>
-        <p>{errorVerificacion || "Abre un enlace vigente de recuperación o invitación para establecer tu contraseña."}</p>
+        <p>{errorVerificacion || "El enlace ya fue utilizado, ha expirado o no es válido. Abre un enlace vigente de recuperación o invitación."}</p>
         {errorVerificacion && <button type="button" className="nueva-password-button" onClick={() => window.location.reload()}>Reintentar verificación</button>}
         <button type="button" className="nueva-password-button" onClick={() => navigate("/RecuperarContrasena")}>Solicitar otro enlace</button>
         <div className="nueva-password-footer"><button type="button" onClick={() => navigate("/login")}>Volver al inicio de sesión</button></div>
