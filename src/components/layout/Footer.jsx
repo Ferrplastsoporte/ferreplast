@@ -29,7 +29,7 @@ function Footer() {
               target="_blank" rel="noopener noreferrer">
               <FaInstagram aria-hidden="true" /> Instagram
             </a>
-            <a className="footer__red" href="https://wa.me/56954980237"
+            <a className="footer__red" href="https://wa.me/56955313959"
               target="_blank" rel="noopener noreferrer">
               <FaWhatsapp aria-hidden="true" /> WhatsApp
             </a>
@@ -56,14 +56,14 @@ function Footer() {
               <FaMapMarkerAlt aria-hidden="true" />
               <span><strong>Visítanos</strong>Angelmó 1952<br />Puerto Montt, Región de Los Lagos</span>
             </a>
-            <a href="tel:+56954980237" className="footer__dato">
+            <a href="tel:+56955313959" className="footer__dato">
               <FaPhoneAlt aria-hidden="true" />
-              <span><strong>Llámanos</strong>+56 9 5498 0237</span>
+              <span><strong>Llámanos</strong>+56 9 5531 3959</span>
             </a>
-            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=efuentes.m%40ferreplast.cl"
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=efuentes%40ferreplast.cl"
               target="_blank" rel="noopener noreferrer" className="footer__dato">
               <FaEnvelope aria-hidden="true" />
-              <span><strong>Escríbenos</strong>efuentes.m@ferreplast.cl</span>
+              <span><strong>Escríbenos</strong>efuentes@ferreplast.cl</span>
             </a>
           </address>
         </section>
@@ -80,7 +80,6 @@ function Footer() {
               <h4 className="footer__titulo-pagos">Medios de pago</h4>
               <ul className="footer__medios-pago">
                 <li>Transbank</li>
-                <li>Bci</li>
                 <li>Banco de Chile</li>
               </ul>
             </div>

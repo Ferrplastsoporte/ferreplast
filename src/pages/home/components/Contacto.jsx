@@ -37,7 +37,7 @@ function Contacto() {
               <span className="contacto-icono"><img src={iconoTelefono} alt="" /></span>
               <div>
                 <h4>Teléfono</h4>
-                <p>+56 9 5498 0237</p>
+                <p>+56 9 5531 3959</p>
               </div>
             </div>
 
@@ -45,7 +45,7 @@ function Contacto() {
               <span className="contacto-icono"><img src={iconoCorreo} alt="" /></span>
               <div>
                 <h4>Correo</h4>
-                <p>efuentes.m@ferreplast.cl</p>
+                <p>efuentes@ferreplast.cl</p>
               </div>
             </div>
 

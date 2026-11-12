@@ -243,7 +243,7 @@ function Ayuda() {
         </div>
 
         <a
-          href="mailto:contacto@ferreplast.cl"
+          href="mailto:Ferreplast.soporte@outlook.com"
           className="ayuda-contacto__button"
         >
           Contactarnos

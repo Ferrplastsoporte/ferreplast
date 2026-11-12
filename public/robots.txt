@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Las páginas privadas llevan noindex. No bloquear su rastreo impide
+# que los buscadores vean esa instrucción. Los permisos siguen en Auth/RLS.
+Sitemap: https://ferreplastspa.cl/sitemap.xml

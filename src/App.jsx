@@ -1,6 +1,7 @@
 import { Login, Registro, NuevaContrasena, RecuperarContrasena } from "./rutas/secciones/PaginasAutenticacion";
 import CargaSeccion from "./components/rutas/CargaSeccion";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MetadatosPagina from "./components/layout/MetadatosPagina";
 import ScrollToTop from "./components/layout/ScrollToTop";
 import RutaSoloVisitantes from "./components/rutas/RutaSoloVisitantes";
 import PaginaNoEncontrada from "./pages/Errores/PaginaNoEncontrada";
@@ -12,6 +13,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <MetadatosPagina />
       <Routes>
         {/* Autenticación */}
         <Route element={<RutaSoloVisitantes />}>

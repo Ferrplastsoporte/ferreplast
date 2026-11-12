@@ -63,7 +63,7 @@ function BotonesFlotantes() {
       )}
 
       <a
-        href="https://wa.me/56912345678?text=Hola,%20me%20gustaría%20cotizar%20algunos%20productos."
+        href="https://wa.me/56955313959?text=Hola,%20me%20gustaría%20cotizar%20algunos%20productos."
         target="_blank"
         rel="noreferrer"
         className="whatsapp-button"
