@@ -419,8 +419,9 @@ export const useAutenticacion = () => {
 
         showModal(
           'warning',
-          'Cuenta no habilitada',
-          'Debes confirmar tu correo o esperar a que tu cuenta sea habilitada.'
+          'Cuenta deshabilitada',
+          'Tu cuenta está deshabilitada. Para solicitar ayuda o su reactivación, contacta a soporte.',
+          'account_disabled'
         )
 
         return false

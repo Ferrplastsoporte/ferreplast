@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useFormulario } from "../../hooks/useFormulario";
 import { useAutenticacion } from "../../hooks/useAutenticacion";
 import {
@@ -91,9 +91,31 @@ const LoginForm = () => {
     resendConfirmation,
     loading,
     resendingConfirmation,
-    modal,
+    modal: modalAutenticacion,
     hideModal,
   } = useAutenticacion();
+
+  const [parametros, setParametros] = useSearchParams();
+  const [avisoDeshabilitada, setAvisoDeshabilitada] = useState(
+    () => parametros.get("cuenta") === "deshabilitada",
+  );
+  const modal = avisoDeshabilitada ? {
+    visible: true,
+    tipo: "warning",
+    titulo: "Cuenta deshabilitada",
+    mensaje: "Tu sesión se cerró porque tu cuenta está deshabilitada. Para solicitar ayuda o su reactivación, contacta a soporte.",
+    codigo: "account_disabled",
+  } : modalAutenticacion;
+
+  const cerrarModal = () => {
+    setAvisoDeshabilitada(false);
+    hideModal();
+    if (parametros.get("cuenta") === "deshabilitada") {
+      const restantes = new URLSearchParams(parametros);
+      restantes.delete("cuenta");
+      setParametros(restantes, { replace: true });
+    }
+  };
 
   const [showPassword, setShowPassword] = useState(false);
   const [resendAvailableAt, setResendAvailableAt] = useState(
@@ -280,7 +302,7 @@ const LoginForm = () => {
 
       <ModalAcceso
         {...modal}
-        onClose={hideModal}
+        onClose={cerrarModal}
         accionSecundaria={
           modal.codigo === "email_not_confirmed"
             ? handleResendConfirmation
@@ -299,6 +321,11 @@ const LoginForm = () => {
           resendCaptcha.pendiente
         }
       >
+        {modal.codigo === "account_disabled" && (
+          <p className="login-soporte-cuenta">
+            <a href="mailto:Ferreplast.soporte@outlook.com">Ferreplast.soporte@outlook.com</a>
+          </p>
+        )}
         {modal.codigo === "email_not_confirmed" && (
           <div className="login-resend-captcha">
             <p>Completa la verificación para solicitar un nuevo enlace.</p>

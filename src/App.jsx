@@ -9,9 +9,12 @@ import rutasCliente from "./rutas/RutasCliente";
 import rutasAdministrador from "./rutas/RutasAdministrador";
 import rutasBodega from "./rutas/RutasBodega";
 
+import VigilanciaSesion from "./components/auth/VigilanciaSesion";
+
 function App() {
   return (
     <BrowserRouter>
+      <VigilanciaSesion />
       <ScrollToTop />
       <MetadatosPagina />
       <Routes>

@@ -1322,3 +1322,9 @@
   line-height: 1.35;
 }
 
+
+.login-soporte-cuenta a {
+  color: #0052a4;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
