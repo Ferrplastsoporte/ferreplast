@@ -163,3 +163,25 @@ export function generarPdfCotizacionAdmin(idCotizacion) {
 export function descargarPdfCotizacionAdmin(idCotizacion) {
   return solicitarDocumentoCotizacion(idCotizacion, "descargar");
 }
+
+
+// La Edge valida al administrador y obtiene destinatario y PDF desde el servidor.
+async function solicitarEnvioPdfCotizacion(idCotizacion, accion) {
+  const { data, error } = await supabase.functions.invoke(
+    "enviar-cotizacion-cliente",
+    { body: { idCotizacion, accion } },
+  );
+  if (error) throw new Error(await obtenerMensajeErrorFuncion(error));
+  if (!data?.estado || !Number.isInteger(data.intentos)) {
+    throw new Error("No fue posible verificar el estado del envío.");
+  }
+  return data;
+}
+
+export function consultarEnvioPdfCotizacionAdmin(idCotizacion) {
+  return solicitarEnvioPdfCotizacion(idCotizacion, "consultar");
+}
+
+export function enviarPdfCotizacionClienteAdmin(idCotizacion) {
+  return solicitarEnvioPdfCotizacion(idCotizacion, "enviar");
+}

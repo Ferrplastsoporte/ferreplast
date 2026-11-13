@@ -13,6 +13,8 @@ import {
 import {
   cargarCotizacionesAdmin,
   completarCotizacionAdmin,
+  consultarEnvioPdfCotizacionAdmin,
+  enviarPdfCotizacionClienteAdmin,
   descargarPdfCotizacionAdmin,
   generarPdfCotizacionAdmin,
   guardarBorradorCotizacionAdmin,
@@ -81,6 +83,9 @@ function Cotizaciones() {
   const [generandoPdf, setGenerandoPdf] = useState(false);
   const [descargandoPdf, setDescargandoPdf] = useState(false);
   const [documentosPdf, setDocumentosPdf] = useState({});
+  const [enviosPdf, setEnviosPdf] = useState({});
+  const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+  const [consultaEnvio, setConsultaEnvio] = useState(0);
   const [preciosModificados, setPreciosModificados] = useState({});
   const [mensajeOperacion, setMensajeOperacion] = useState(null);
   const [confirmacionResultado, setConfirmacionResultado] = useState(null);
@@ -160,6 +165,26 @@ function Cotizaciones() {
       vigente = false;
     };
   }, [recarga]);
+
+  const idCotizacionEnvio = cotizacionSeleccionada?.id_cotizacion;
+  const idDocumentoEnvio = documentosPdf[String(idCotizacionEnvio)]?.id_documento;
+
+  useEffect(() => {
+    if (!idCotizacionEnvio || !idDocumentoEnvio || enviandoCorreo) return;
+    let vigente = true;
+    async function consultarEnvio() {
+      try {
+        const envio = await consultarEnvioPdfCotizacionAdmin(idCotizacionEnvio);
+        if (vigente) setEnviosPdf((actuales) => ({ ...actuales, [idCotizacionEnvio]: envio }));
+      } catch {
+        if (vigente) setEnviosPdf((actuales) => ({
+          ...actuales, [idCotizacionEnvio]: { estado: "error_consulta" },
+        }));
+      }
+    }
+    consultarEnvio();
+    return () => { vigente = false; };
+  }, [idCotizacionEnvio, idDocumentoEnvio, enviandoCorreo, consultaEnvio, recarga]);
 
   // ============================
   // RANGO DE FECHAS SELECCIONADO
@@ -396,6 +421,36 @@ function Cotizaciones() {
     }
   }
 
+  async function enviarPdfAlCliente(idCotizacion, contexto = "") {
+    setEnviandoCorreo(true);
+    try {
+      const envio = await enviarPdfCotizacionClienteAdmin(idCotizacion);
+      setEnviosPdf((actuales) => ({ ...actuales, [idCotizacion]: envio }));
+      setMensajeOperacion({
+        tipo: envio.estado === "aceptado" ? "exito" : "error",
+        texto: `${contexto}${envio.mensaje}`,
+      });
+    } catch {
+      // La respuesta puede perderse después del envío: consultar, nunca reenviar a ciegas.
+      try {
+        const envio = await consultarEnvioPdfCotizacionAdmin(idCotizacion);
+        setEnviosPdf((actuales) => ({ ...actuales, [idCotizacion]: envio }));
+        setMensajeOperacion({
+          tipo: envio.estado === "aceptado" ? "exito" : "error",
+          texto: `${contexto}${envio.mensaje}`,
+        });
+      } catch {
+        setEnviosPdf((actuales) => ({ ...actuales, [idCotizacion]: { estado: "error_consulta" } }));
+        setMensajeOperacion({
+          tipo: "error",
+          texto: `${contexto}No fue posible verificar el envío. El PDF guardado se conserva.`,
+        });
+      }
+    } finally {
+      setEnviandoCorreo(false);
+    }
+  }
+
   async function completarCotizacion() {
     if (
       !cotizacionSeleccionada ||
@@ -466,10 +521,10 @@ function Cotizaciones() {
           cotizacionSeleccionada.id_cotizacion,
         );
         registrarDocumentoLocal(resultadoPdf.documento);
-        setMensajeOperacion({
-          tipo: "exito",
-          texto: "Cotización completada y PDF generado correctamente.",
-        });
+        await enviarPdfAlCliente(
+          cotizacionSeleccionada.id_cotizacion,
+          "Cotización completada y PDF guardado. ",
+        );
       } catch (errorPdf) {
         console.error("Error al generar el PDF:", { codigo: errorPdf?.code, estado: errorPdf?.status });
         setMensajeOperacion({
@@ -547,6 +602,11 @@ function Cotizaciones() {
         cotizacionSeleccionada.id_cotizacion,
       );
       const documento = resultado.documento;
+      registrarDocumentoLocal(documento);
+      await enviarPdfAlCliente(
+        cotizacionSeleccionada.id_cotizacion,
+        "PDF guardado. ",
+      );
 
       if (!resultado.urlDescarga) {
         throw new Error(
@@ -558,11 +618,7 @@ function Cotizaciones() {
         resultado.urlDescarga,
         documento.nombre_archivo,
       );
-      registrarDocumentoLocal(documento);
-      setMensajeOperacion({
-        tipo: "exito",
-        texto: "PDF generado y descargado correctamente.",
-      });
+
     } catch (error) {
       console.error("Error al generar el PDF:", { codigo: error?.code, estado: error?.status });
       setMensajeOperacion({
@@ -631,7 +687,8 @@ function Cotizaciones() {
     guardandoBorrador ||
     cambiandoResultado ||
     generandoPdf ||
-    descargandoPdf;
+    descargandoPdf ||
+    enviandoCorreo;
   const fechaEmision =
     cotizacionSeleccionada?.fecha_emision || obtenerFechaActualChile();
   const fechaValidez =
@@ -666,6 +723,15 @@ function Cotizaciones() {
   const documentoPdf =
     documentosPdf[String(cotizacionSeleccionada?.id_cotizacion)] ?? null;
   const puedeDescargarPdf = Boolean(documentoPdf) && !operacionEnCurso;
+  const envioPdf = enviosPdf[cotizacionSeleccionada?.id_cotizacion];
+  const consultarEstadoEnvio = !envioPdf || ["error_consulta", "procesando"].includes(envioPdf.estado);
+  const textoBotonEnvio = enviandoCorreo ? "Enviando…"
+    : envioPdf?.estado === "aceptado" ? "Correo enviado"
+    : consultarEstadoEnvio ? "Consultar envío"
+    : envioPdf.estado === "incierto" ? "Envío por revisar"
+    : envioPdf.intentos >= 3 ? "Límite de envíos"
+    : envioPdf.estado === "pendiente" ? "Enviar PDF por correo"
+    : "Reintentar envío";
 
   return (
     <section className="admin-page cotizaciones-page">
@@ -1207,6 +1273,7 @@ function Cotizaciones() {
 
                 {/* Resultado de la operación y acciones disponibles. */}
                 <footer className="cotizacion-acciones">
+                  <div className="cotizacion-acciones__documento">
                   {documentoPdf ? (
                     <button
                       type="button"
@@ -1228,6 +1295,20 @@ function Cotizaciones() {
                       {generandoPdf ? "Generando…" : "Generar PDF"}
                     </button>
                   )}
+                  {documentoPdf && (
+                    <button
+                      type="button"
+                      className="cotizacion-btn cotizacion-btn--borrador"
+                      onClick={() => consultarEstadoEnvio
+                        ? setConsultaEnvio((actual) => actual + 1)
+                        : enviarPdfAlCliente(cotizacionSeleccionada.id_cotizacion)}
+                      disabled={operacionEnCurso || (!consultarEstadoEnvio && !envioPdf?.puedeEnviar)}
+                      title={envioPdf?.mensaje || "Consultar el estado antes de enviar"}
+                    >
+                      <FiMail /> {textoBotonEnvio}
+                    </button>
+                  )}
+                  </div>
                   {mensajeOperacion && (
                     <p
                       className={`cotizacion-operacion__mensaje cotizacion-operacion__mensaje--${mensajeOperacion.tipo}`}

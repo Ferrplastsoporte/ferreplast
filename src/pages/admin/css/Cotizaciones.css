@@ -867,3 +867,21 @@
   .modal-confirmacion__acciones { grid-column: auto; flex-direction: column-reverse; }
   .modal-confirmacion__acciones button { width: 100%; }
 }
+
+
+/* Descarga y reintento de correo, juntos también en pantallas pequeñas. */
+.cotizacion-acciones > .cotizacion-acciones__documento {
+  flex-wrap: wrap;
+  margin-right: auto;
+  gap: 10px;
+}
+.cotizacion-acciones__documento .cotizacion-btn--documento { margin-right: 0; }
+.cotizacion-acciones__documento .cotizacion-btn--borrador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+@media (max-width: 560px) {
+  .cotizacion-acciones > .cotizacion-acciones__documento { width: 100%; }
+}
