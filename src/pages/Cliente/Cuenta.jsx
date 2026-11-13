@@ -18,6 +18,7 @@ import {
   sanitizarCampoPerfil,
   validarCampoPerfil,
 } from "../../utils/perfil/validacionPerfil";
+import DeshabilitarCuenta from "../../components/auth/DeshabilitarCuenta";
 import "./css/Cuenta.css";
 
 const FORMULARIO_VACIO = {
@@ -311,6 +312,8 @@ function Cuenta() {
           </form>
         )}
       </section>
+
+      <DeshabilitarCuenta bloqueado={editando || editandoCorreo || guardando || cambiandoCorreo} />
     </main>
   );
 }
