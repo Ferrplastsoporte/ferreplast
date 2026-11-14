@@ -9,6 +9,7 @@ import {
   LONGITUD_MAXIMA_BUSQUEDA, normalizarTerminoBusqueda, sanitizarTerminoBusqueda,
 } from "../../utils/comunes/busqueda";
 import "../css/navbar.css";
+import BuscadorInteligente from "./BuscadorInteligente";
 import logo from "../../assets/logo.png";
 
 const OPCIONES_CUENTA = [
@@ -190,12 +191,12 @@ function Navbar() {
         <Link to="/" className="navbar__logo" onClick={cerrarMenus}>
           <img src={logo} alt="Ferreplast" className="navbar__logo-imagen" />
         </Link>
-        <form className="navbar__buscador" onSubmit={buscarProductos} role="search">
-          <input type="search" placeholder="Buscar productos..." aria-label="Buscar productos"
-            value={busqueda} maxLength={LONGITUD_MAXIMA_BUSQUEDA}
-            onChange={(evento) => setBusqueda(sanitizarTerminoBusqueda(evento.target.value))} />
-          <button type="submit" aria-label="Buscar"><FaSearch aria-hidden="true" /></button>
-        </form>
+        <BuscadorInteligente
+          valor={busqueda}
+          onCambiar={setBusqueda}
+          onBuscar={buscarProductos}
+          onNavegar={irA}
+        />
         <div className="navbar__acciones">
           <details className="navbar__categorias" ref={menuCategoriasRef}>
             <summary className="navbar__accion">

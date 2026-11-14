@@ -1,0 +1,105 @@
+/* ============================================================
+   Buscador inteligente (menú de sugerencias del Navbar)
+   Usa los mismos colores del navbar (#155fac, #24364b, #edf5ff).
+   ============================================================ */
+.buscador-inteligente {
+  position: relative;        /* el menú se ubica respecto a este contenedor */
+  min-width: 0;
+}
+.buscador-inteligente .navbar__buscador { width: 100%; }
+
+.buscador-inteligente__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 6px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgb(16 42 76 / 22%);
+  color: #24364b;
+}
+
+.buscador-inteligente__estado {
+  margin: 0;
+  padding: 12px 14px;
+  color: #778397;
+  font-size: 14px;
+}
+
+.buscador-inteligente__categoria {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #edf5ff;
+  color: #155fac;
+  font-size: 14px;
+}
+
+.buscador-inteligente__producto,
+.buscador-inteligente__todos {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.buscador-inteligente__producto.es-activo,
+.buscador-inteligente__todos.es-activo { background: #f2f6fb; }
+
+.buscador-inteligente__producto img,
+.buscador-inteligente__sin-imagen {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #eef1f5;
+}
+
+.buscador-inteligente__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.buscador-inteligente__precio {
+  flex: 0 0 auto;
+  color: #155fac;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.buscador-inteligente__todos {
+  justify-content: center;
+  margin-top: 4px;
+  border-top: 1px solid #e6ebf1;
+  border-radius: 0 0 10px 10px;
+  color: #155fac;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  /* En móvil el buscador va abajo a todo el ancho (antes lo hacía el <form>, ahora el contenedor) */
+  .buscador-inteligente { grid-column: 1 / -1; grid-row: 2; }
+  .buscador-inteligente__menu { max-height: 60vh; }
+  .buscador-inteligente__producto img,
+  .buscador-inteligente__sin-imagen { flex-basis: 36px; width: 36px; height: 36px; }
+}

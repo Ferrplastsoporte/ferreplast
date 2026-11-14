@@ -7,10 +7,40 @@ function numeroOpcional(valor) {
   if (!Number.isFinite(numero)) throw new Error("Hay un filtro numérico inválido.");
   return numero;
 }
+// Búsqueda inteligente (modelo de ML en la Edge Function "buscar-inteligente").
+// sugerencia: true -> la usa el menú del buscador mientras se escribe (no se registra en busqueda_log)
+export async function buscarProductosInteligente({
+  busqueda, pagina = 1, tamanoPagina = 20, sugerencia = false, signal,
+}) {
+  const { data, error } = await supabase.functions.invoke("buscar-inteligente", {
+    body: { busqueda, pagina, tamanoPagina, sugerencia },
+    ...(signal ? { signal } : {}),
+  });
+  if (error) throw error;
+  if (!data || !Array.isArray(data.productos) || !Number.isSafeInteger(data.total)) {
+    throw new Error("La búsqueda inteligente devolvió una respuesta no válida.");
+  }
+  return data; // { productos, total, categoria, probabilidad }
+}
 
 export async function buscarProductosCatalogo({
   filtros = {}, pagina = 1, tamanoPagina = 20, signal,
 } = {}) {
+  // ---- NUEVO: búsqueda inteligente cuando hay texto y no hay otros filtros ----
+  const texto = normalizarTerminoBusqueda(filtros.busqueda);
+  const hayOtrosFiltros = filtros.familia || filtros.subcategoria || filtros.marca ||
+    filtros.color || filtros.unidadMedida || filtros.peso ||
+    filtros.precioMinimo || filtros.precioMaximo;
+  if (texto && !hayOtrosFiltros) {
+    try {
+      return await buscarProductosInteligente({ busqueda: texto, pagina, tamanoPagina, signal });
+    } catch (e) {
+      if (signal?.aborted) throw e;
+      console.warn("Búsqueda inteligente no disponible, se usa la normal.", e?.message);
+    }
+  }
+  // ---- FIN NUEVO ----
+
   let consulta = supabase.rpc("buscar_productos_catalogo", {
     p_busqueda: normalizarTerminoBusqueda(filtros.busqueda),
     p_filtros: {
