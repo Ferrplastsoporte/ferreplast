@@ -1,0 +1,42 @@
+.bodeguero-header button.bodega-boton-actualizar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid #bfd0e5;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #27415f;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.bodeguero-header button.bodega-boton-actualizar:hover:not(:disabled) {
+  border-color: #93b4dd;
+  background: #eff6ff;
+}
+
+.bodeguero-header button.bodega-boton-actualizar:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.bodega-boton-actualizar:focus-visible {
+  outline: 2px solid #0647b9;
+  outline-offset: 3px;
+}
+
+.bodega-boton-actualizar[aria-busy="true"] svg {
+  animation: bodega-actualizar-giro 0.8s linear infinite;
+}
+
+@keyframes bodega-actualizar-giro { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bodega-boton-actualizar[aria-busy="true"] svg { animation: none; }
+}

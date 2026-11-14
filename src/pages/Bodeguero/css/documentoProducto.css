@@ -3,11 +3,9 @@
 ========================================================= */
 
 .documentos-productos-page {
-  width: 100%;
-  min-height: 100vh;
-  padding: 24px;
+  width: min(1220px, 100%);
+  min-width: 0;
   box-sizing: border-box;
-  background: #f5f6f8;
   color: #1f2937;
 }
 
@@ -16,26 +14,8 @@
    ENCABEZADO
 ========================================================= */
 
-.documentos-productos-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 22px;
-}
 
-.documentos-productos-header h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #111827;
-}
 
-.documentos-productos-header p {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: #6b7280;
-}
 
 
 /* =========================================================
@@ -660,9 +640,6 @@
 }
 
 @media (max-width: 900px) {
-  .documentos-productos-page {
-    padding: 16px;
-  }
 
   .documentos-layout {
     grid-template-columns: 1fr;
@@ -686,14 +663,8 @@
 }
 
 @media (max-width: 600px) {
-  .documentos-productos-page {
-    padding: 12px;
-  }
 
-  .documentos-productos-header h1 {
-    font-size: 23px;
-  }
-
+  
   .documentos-productos-listado,
   .documentos-detalle {
     padding: 14px;

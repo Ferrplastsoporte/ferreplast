@@ -15,7 +15,7 @@ function metadatosEstaticos() {
     '/cuenta', '/carrito', '/cotizacion', '/pedidos', '/pago/resultado',
     '/admin', '/admin/usuarios', '/admin/crearUsuario', '/admin/aprobaciones',
     '/admin/cotizaciones', '/admin/pedidos', '/admin/pagos', '/admin/Reportes',
-    '/admin/auditoria', '/admin/configuracion', '/bodeguero',
+    '/admin/auditoria', '/admin/redes-sociales', '/admin/configuracion', '/bodeguero',
     '/bodeguero/productos', '/bodeguero/stock', '/bodeguero/solicitudes',
     '/bodeguero/familias', '/bodeguero/marcas', '/bodeguero/unidades',
     '/bodeguero/documentos', '/bodeguero/pedidos',

@@ -15,7 +15,6 @@ import {
   PackageX,
   Phone,
   PieChart,
-  RefreshCw,
   Store,
   TrendingDown,
   Trophy,
@@ -25,6 +24,7 @@ import {
 
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+import BotonActualizarBodega from "./components/BotonActualizarBodega";
 import {
   ENTREGAS,
   ESTADOS_GRAFICO,
@@ -710,6 +710,14 @@ function BodegueroDashboard() {
       <BodegueroHeader
         titulo="Panel de Bodeguero"
         descripcion="Pedidos por preparar, tiempos y stock en un solo lugar."
+        acciones={
+          <BotonActualizarBodega
+            alActualizar={cargarDatos}
+            cargando={cargando}
+            etiqueta="Actualizar panel de bodega"
+            titulo={actualizado ? `Actualizado a las ${actualizado.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}` : "Actualizar panel de bodega"}
+          />
+        }
       />
 
       {mensajeError && (
@@ -743,15 +751,6 @@ function BodegueroDashboard() {
               {r.label}
             </Chip>
           ))}
-          <button
-            type="button"
-            className="dbb-icon-btn"
-            onClick={cargarDatos}
-            aria-label="Actualizar datos"
-            title={actualizado ? `Actualizado a las ${actualizado.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}` : "Actualizar"}
-          >
-            <RefreshCw size={15} aria-hidden="true" className={cargando ? "dbb-girando" : undefined} />
-          </button>
         </div>
       </div>
 

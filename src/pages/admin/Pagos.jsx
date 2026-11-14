@@ -1,6 +1,7 @@
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { FiSearch } from "react-icons/fi";
 import AdminHeader from "./components/AdminHeader";
 import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import "./Css/Pagos.css";
@@ -22,6 +23,7 @@ const formatoFecha = (fecha) => {
   }
 
   return valor.toLocaleString("es-CL", {
+    timeZone: "America/Santiago",
     dateStyle: "short",
     timeStyle: "short",
   });
@@ -107,101 +109,88 @@ const obtenerDetalleProveedor = (datos) => {
   };
 };
 
-async function listarPagosAdmin(busqueda = "") {
-  const { data, error } = await supabase.rpc(
-    "admin_listar_pagos",
-    {
-      p_busqueda: busqueda.trim() || null,
-    }
-  );
-
-
-  if (error) {
-    throw error;
-  }
-
-  return data ?? [];
+function obtenerRangoPeriodo(dias = 1) {
+  const hasta = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Santiago" });
+  const [anio, mes, dia] = hasta.split("-").map(Number);
+  const desde = new Date(Date.UTC(anio, mes - 1, dia - dias + 1)).toISOString().slice(0, 10);
+  return { desde, hasta };
 }
 
 function Pagos() {
-  const [pagos, setPagos] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("TODOS");
-  const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
+  // Filtros, consulta y paginación se manejan en esta vista.
+  const [filtros, setFiltros] = useState(() => ({
+    ...obtenerRangoPeriodo(), busqueda: "", estado: "", especifico: "",
+  }));
+  const [pagina, setPagina] = useState(1);
+  const [recarga, setRecarga] = useState(0);
+  const [datos, setDatos] = useState(null);
+  const [catalogos, setCatalogos] = useState({});
   const [cargando, setCargando] = useState(true);
-  const [actualizando, setActualizando] = useState(false);
   const [error, setError] = useState("");
-
-  const cargarPagos = useCallback(async (termino = "") => {
-    setCargando(true);
-    setError("");
-
-    try {
-      const resultado = await listarPagosAdmin(termino);
-
-      // La RPC debe devolver los pagos con folio.
-      // Se excluyen únicamente registros sin folio válido.
-      const pagosConFolio = resultado.filter(
-        (pago) =>
-          typeof pago.folio_pago === "string" &&
-          pago.folio_pago.trim() !== ""
-      );
-
-
-      setPagos(pagosConFolio);
-    } catch (err) {
-      console.error("[Pagos] Error al cargar:", { codigo: err?.code, estado: err?.status });
-
-      setError(
-        err?.message ||
-          "No fue posible cargar los pagos desde Supabase."
-      );
-    } finally {
-      setCargando(false);
-      setActualizando(false);
-    }
-  }, []);
+  const rangoValido = Boolean(filtros.desde && filtros.hasta && filtros.desde <= filtros.hasta);
+  const pagos = datos?.filas ?? [];
+  const resumen = datos?.resumen ?? { cantidad: 0, autorizados: 0, montoAutorizado: 0 };
+  const [pagoSeleccionado, setPagoSeleccionado] = useState(null);
 
   useEffect(() => {
-    cargarPagos();
-  }, [cargarPagos]);
+    let vigente = true;
+    const controlador = new AbortController();
+    setDatos(null);
+    setError("");
+    if (!rangoValido) {
+      setCargando(false);
+      return undefined;
+    }
+    setCargando(true);
 
-  const pagosFiltrados = useMemo(() => {
-    if (filtroEstado === "TODOS") {
-      return pagos;
+    async function cargarPagos() {
+      try {
+        const { data, error: errorConsulta } = await supabase.rpc(
+          "admin_listar_pagos",
+          {
+            p_desde: filtros.desde,
+            p_hasta: filtros.hasta,
+            p_busqueda: filtros.busqueda.trim() || null,
+            p_estado: filtros.estado === "" ? null : filtros.estado,
+            p_metodo_pago: filtros.especifico === "" ? null : Number(filtros.especifico),
+            p_pagina: pagina,
+            p_limite: 25,
+          },
+        ).abortSignal(controlador.signal);
+        if (errorConsulta) throw errorConsulta;
+        if (!data || !Array.isArray(data.filas) || !Number.isFinite(data.total)
+          || !Number.isInteger(data.pagina) || !Number.isInteger(data.paginas)) {
+          throw new Error("La consulta devolvió una respuesta incompleta.");
+        }
+        if (!vigente) return;
+        setDatos(data);
+        setCatalogos(data.catalogos ?? {});
+      } catch (errorConsulta) {
+        if (!vigente) return;
+        setError(errorConsulta.code === "PGRST202" || errorConsulta.code === "42883"
+          ? "Falta actualizar admin_listar_pagos en Supabase con los parámetros de filtros."
+          : errorConsulta.message || "No fue posible consultar los pagos.");
+      } finally {
+        if (vigente) setCargando(false);
+      }
     }
 
-    return pagos.filter(
-      (pago) =>
-        normalizarEstado(pago.estado_codigo) === filtroEstado
-    );
-  }, [pagos, filtroEstado]);
-
-  const resumen = useMemo(() => {
-    const autorizados = pagos.filter(
-      (pago) =>
-        normalizarEstado(pago.estado_codigo) === "AUTORIZADO"
-    );
-
-    return {
-      cantidad: pagos.length,
-      autorizados: autorizados.length,
-      montoAutorizado: autorizados.reduce(
-        (total, pago) => total + Number(pago.monto || 0),
-        0
-      ),
+    const espera = setTimeout(cargarPagos, filtros.busqueda.trim() ? 300 : 0);
+    return () => {
+      vigente = false;
+      clearTimeout(espera);
+      controlador.abort();
     };
-  }, [pagos]);
+  }, [filtros, pagina, recarga, rangoValido]);
 
-  const buscar = (event) => {
-    event.preventDefault();
-    cargarPagos(busqueda.trim());
-  };
+  function cambiarFiltros(cambios) {
+    setFiltros(actuales => ({ ...actuales, ...cambios }));
+    setPagina(1);
+  }
 
-  const actualizar = () => {
-    setActualizando(true);
-    cargarPagos(busqueda.trim());
-  };
+  function actualizar() {
+    setRecarga(valor => valor + 1);
+  }
 
   const abrirDetalle = (pago) => {
     setPagoSeleccionado(pago);
@@ -214,72 +203,58 @@ function Pagos() {
         descripcion="Consulta los pagos asociados a los pedidos realizados en la plataforma."
       />
 
-      <section className="admin-section pagos-contenido">
+      <section className="admin-section pagos-contenido" aria-busy={cargando}>
+        <section className="pagos-consulta-filtros" aria-label="Filtros de pagos">
+          <div className="pagos-consulta-periodos" role="group" aria-label="Período de consulta">
+            {[[1, "Hoy"], [7, "Últimos 7 días"], [30, "Últimos 30 días"]].map(([dias, texto]) => {
+              const rango = obtenerRangoPeriodo(dias);
+              return <button key={dias} type="button" aria-pressed={filtros.desde === rango.desde && filtros.hasta === rango.hasta}
+                onClick={() => cambiarFiltros(rango)}>{texto}</button>;
+            })}
+          </div>
+          <div className="pagos-consulta-campos">
+            <label className="pagos-consulta-busqueda">
+              <span>Folio, referencia, cliente o RUT</span>
+              <div><FiSearch aria-hidden="true" /><input type="search" placeholder="Buscar pago…"
+                value={filtros.busqueda} maxLength={100}
+                onChange={evento => cambiarFiltros({ busqueda: evento.target.value })} /></div>
+            </label>
+            <label><span>Desde</span><input type="date" value={filtros.desde} max={filtros.hasta || undefined}
+              onChange={evento => cambiarFiltros({ desde: evento.target.value })} /></label>
+            <label><span>Hasta</span><input type="date" value={filtros.hasta} min={filtros.desde || undefined}
+              onChange={evento => cambiarFiltros({ hasta: evento.target.value })} /></label>
+            <label><span>Estado del pago</span>
+              <select value={filtros.estado} onChange={evento => cambiarFiltros({ estado: evento.target.value })}>
+                <option value="">Todos los estados</option>
+                {(catalogos.estados ?? []).map(opcion => <option key={opcion.id} value={opcion.id}>{opcion.nombre}</option>)}
+              </select>
+            </label>
+            <label><span>Método de pago</span>
+              <select value={filtros.especifico} onChange={evento => cambiarFiltros({ especifico: evento.target.value })}>
+                <option value="">Todos los métodos</option>
+                {(catalogos.metodos_pago ?? []).map(opcion => <option key={opcion.id} value={opcion.id}>{opcion.nombre}</option>)}
+              </select>
+            </label>
+            <BotonActualizarAdmin alActualizar={actualizar} cargando={cargando} deshabilitado={!rangoValido} />
+          </div>
+          <p className="pagos-consulta-nota">La búsqueda respeta el período seleccionado. Fecha de pago; si aún no existe, se usa la de creación. Fechas de Chile.</p>
+          {!rangoValido && <p className="pagos-consulta-error" role="alert">Selecciona un rango válido: Desde no puede ser posterior a Hasta.</p>}
+        </section>
         <div className="pagos-resumen">
           <article className="pagos-resumen-card">
             <span>Pagos con folio</span>
-            <strong>{resumen.cantidad}</strong>
+            <strong>{datos ? resumen.cantidad : "—"}</strong>
           </article>
 
           <article className="pagos-resumen-card">
             <span>Pagos autorizados</span>
-            <strong>{resumen.autorizados}</strong>
+            <strong>{datos ? resumen.autorizados : "—"}</strong>
           </article>
 
           <article className="pagos-resumen-card">
             <span>Monto autorizado</span>
-            <strong>{formatoCLP(resumen.montoAutorizado)}</strong>
+            <strong>{datos ? formatoCLP(resumen.montoAutorizado) : "—"}</strong>
           </article>
-        </div>
-
-        <form className="pagos-buscador" onSubmit={buscar}>
-          <div className="pagos-campo-busqueda">
-            <label htmlFor="buscar-pago">
-              Buscar por folio o referencia
-            </label>
-
-            <input
-              id="buscar-pago"
-              type="search"
-              placeholder="Ej.: PAG-20261015-0004"
-              value={busqueda}
-              onChange={(event) => setBusqueda(event.target.value)}
-            />
-          </div>
-
-          <button type="submit" disabled={cargando}>
-            Buscar
-          </button>
-
-          <BotonActualizarAdmin
-            alActualizar={actualizar}
-            cargando={actualizando}
-            deshabilitado={cargando}
-          />
-        </form>
-
-        <div className="pagos-filtros">
-          <label htmlFor="filtro-estado">Estado del pago</label>
-
-          <select
-            id="filtro-estado"
-            value={filtroEstado}
-            onChange={(event) => setFiltroEstado(event.target.value)}
-          >
-            <option value="TODOS">Todos los estados</option>
-            <option value="AUTORIZADO">Autorizados</option>
-            <option value="CREADO">Creados</option>
-            <option value="INICIALIZADO">Inicializados</option>
-            <option value="RECHAZADO">Rechazados</option>
-            <option value="ABORTADO">Abortados</option>
-            <option value="EXPIRADO">Expirados</option>
-            <option value="ERROR_CONFIRMACION">Error de confirmación</option>
-            <option value="REVERSADO">Reversados</option>
-            <option value="ANULADO">Anulados</option>
-            <option value="PARCIALMENTE_ANULADO">
-              Parcialmente anulados
-            </option>
-          </select>
         </div>
 
         {error && (
@@ -318,15 +293,15 @@ function Pagos() {
                     No se pudieron cargar los pagos.
                   </td>
                 </tr>
-              ) : pagosFiltrados.length === 0 ? (
+              ) : pagos.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="pagos-tabla-vacio">
                     No se encontraron pagos para esta búsqueda.
                   </td>
                 </tr>
               ) : (
-                pagosFiltrados.map((pago) => (
-                  <tr key={pago.folio_pago}>
+                pagos.map((pago) => (
+                  <tr key={pago.id_pago}>
                     <td>
                       <strong className="pagos-folio">
                         {pago.folio_pago}
@@ -372,9 +347,17 @@ function Pagos() {
           </table>
         </div>
 
-        <p className="pagos-nota">
-          Se muestran únicamente pagos que tienen un folio asignado.
-        </p>
+        {datos && !cargando && rangoValido && (
+          <nav className="pagos-consulta-paginacion" aria-label="Páginas de pagos">
+            <span role="status">{datos.total ? (datos.pagina - 1) * datos.limite + 1 : 0}–{datos.total ? (datos.pagina - 1) * datos.limite + datos.filas.length : 0} de {datos.total} resultados · más recientes primero</span>
+            <div>
+              <button type="button" disabled={datos.pagina <= 1} onClick={() => setPagina(datos.pagina - 1)}>Anterior</button>
+              <span>Página {datos.pagina} de {datos.paginas}</span>
+              <button type="button" disabled={datos.pagina >= datos.paginas} onClick={() => setPagina(datos.pagina + 1)}>Siguiente</button>
+            </div>
+          </nav>
+        )}
+        
       </section>
 
       {pagoSeleccionado && (

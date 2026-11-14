@@ -53,9 +53,9 @@ const enlaces = [
     ruta: "/admin/reportes",
   },
   {
-    texto: "Auditoría",
-    icono: "auditoria",
-    ruta: "/admin/auditoria",
+    texto: "RRSS",
+    icono: "redes_sociales",
+    ruta: "/admin/redes-sociales",
   },
   {
     texto: "Configuración",

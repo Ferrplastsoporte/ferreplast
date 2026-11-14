@@ -42,6 +42,6 @@ export const Cotizaciones = lazy(() =>
   import("./SeccionAdministrador").then((seccion) => ({ default: seccion.Cotizaciones }))
 );
 
-export const Auditoria = lazy(() =>
-  import("./SeccionAdministrador").then((seccion) => ({ default: seccion.Auditoria }))
+export const RedesSociales = lazy(() =>
+  import("./SeccionAdministrador").then((seccion) => ({ default: seccion.RedesSociales }))
 );

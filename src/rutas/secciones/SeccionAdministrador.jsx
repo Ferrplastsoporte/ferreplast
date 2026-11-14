@@ -8,4 +8,4 @@ export { default as Configuracion } from "../../pages/admin/Configuracion";
 export { default as Aprobaciones } from "../../pages/admin/Aprobaciones";
 export { default as Pagos } from "../../pages/admin/Pagos";
 export { default as Cotizaciones } from "../../pages/admin/Cotizaciones";
-export { default as Auditoria } from "../../pages/admin/Auditoria";
+export { default as RedesSociales } from "../../pages/admin/RedesSociales";

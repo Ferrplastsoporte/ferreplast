@@ -352,3 +352,29 @@
     width: 100%;
   }
 }
+
+/* Consultas rápidas: controles de esta vista. */
+.admin-page .pedidos-consulta-filtros { display:flex; flex-direction:column; gap:14px; padding:18px; margin-bottom:20px; border:1px solid #dbe3ec; border-radius:15px; background:#fff; }
+.pedidos-consulta-periodos { display:flex; flex-wrap:wrap; gap:8px; }
+.pedidos-consulta-periodos button { padding:7px 13px; border:1px solid #cbd5e1; border-radius:999px; background:#f8fafc; color:#475569; font:inherit; font-size:.82rem; cursor:pointer; }
+.pedidos-consulta-periodos button[aria-pressed="true"] { background:#eff6ff; border-color:#93b4dd; color:#0647b9; font-weight:700; }
+.pedidos-consulta-periodos button:hover { border-color:#93b4dd; }
+.pedidos-consulta-campos { display:grid; grid-template-columns:minmax(190px,1.7fr) repeat(2,minmax(125px,1fr)) repeat(2,minmax(140px,1.1fr)) auto; align-items:end; gap:12px; }
+.pedidos-consulta-campos > label { display:flex; flex-direction:column; min-width:0; gap:6px; }
+.pedidos-consulta-campos label > span { color:#475569; font-size:.78rem; font-weight:800; }
+.pedidos-consulta-campos input,.pedidos-consulta-campos select { width:100%; min-width:0; min-height:44px; box-sizing:border-box; padding:0 12px; border:1px solid #cbd5e1; border-radius:10px; color:#334155; background:#fff; font:inherit; font-size:.88rem; }
+.pedidos-consulta-busqueda > div { display:flex; align-items:center; gap:8px; min-height:44px; padding:0 12px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:10px; color:#64748b; }
+.pedidos-consulta-busqueda > div svg { flex-shrink:0; }
+.pedidos-consulta-campos .pedidos-consulta-busqueda input { border:0; padding:0; min-height:42px; outline:none; background:transparent; }
+.pedidos-consulta-campos input:focus-visible,.pedidos-consulta-campos select:focus-visible,.pedidos-consulta-busqueda > div:focus-within { outline:2px solid #93b4dd; outline-offset:2px; }
+.pedidos-consulta-campos .pedidos-consulta-busqueda input:focus-visible { outline:none; }
+.admin-page .pedidos-consulta-nota { margin:0; color:#64748b; font-size:.79rem; line-height:1.5; }
+.admin-page .pedidos-consulta-error { margin:0; color:#b91c1c; font-size:.85rem; }
+.pedidos-consulta-paginacion { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:18px; color:#64748b; font-size:.82rem; }
+.pedidos-consulta-paginacion > div { display:flex; align-items:center; gap:12px; }
+.pedidos-consulta-paginacion button { min-height:38px; padding:0 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#27415f; font:inherit; font-weight:700; cursor:pointer; }
+.pedidos-consulta-paginacion button:disabled { opacity:.5; cursor:default; }
+.pedidos-consulta-periodos button:focus-visible,.pedidos-consulta-paginacion button:focus-visible { outline:2px solid #0647b9; outline-offset:3px; }
+@media(max-width:1350px) { .pedidos-consulta-campos { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:700px) { .pedidos-consulta-campos { grid-template-columns:repeat(2,minmax(0,1fr)); } .pedidos-consulta-busqueda { grid-column:1 / -1; } }
+@media(max-width:440px) { .pedidos-consulta-campos { grid-template-columns:minmax(0,1fr); } .pedidos-consulta-paginacion { align-items:flex-start; flex-direction:column; } .pedidos-consulta-paginacion > div { width:100%; justify-content:space-between; gap:8px; } }

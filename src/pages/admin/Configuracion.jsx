@@ -938,6 +938,7 @@ async function guardarCostoDespacho(id, costo, requiereCoordinacion) {
                 <span>Modalidad de cobro</span>
 
                 <select
+                  className="configuracion-modalidad-cobro"
                   value={tipo.requiere_coordinacion ? "coordinar" : "fijo"}
                   disabled={guardandoDespacho === tipo.id_tipo_despacho}
                   onChange={(evento) => {

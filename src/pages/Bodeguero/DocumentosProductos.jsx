@@ -14,6 +14,8 @@ import {
   agregarDocumentoProducto,
 } from "../../services/productoDocumentoService";
 
+import BodegueroHeader from "./components/BodegueroHeader";
+import BotonActualizarBodega from "./components/BotonActualizarBodega";
 import "./css/documentoProducto.css";
 
 const DocumentosProductos = () => {
@@ -59,6 +61,34 @@ const DocumentosProductos = () => {
       );
     } finally {
       setCargandoProductos(false);
+    }
+  };
+
+  const actualizarDocumentos = async () => {
+    setCargandoProductos(true);
+    setCargandoDocumentos(Boolean(productoSeleccionado));
+    setError("");
+
+    try {
+      const [productosActualizados, documentosActualizados] = await Promise.all([
+        obtenerProductosConDocumentos(),
+        productoSeleccionado
+          ? obtenerDocumentosProducto(productoSeleccionado.id_prod)
+          : Promise.resolve([]),
+      ]);
+      setProductos(productosActualizados);
+      if (productoSeleccionado) {
+        const productoActualizado = productosActualizados.find(
+          (producto) => producto.id_prod === productoSeleccionado.id_prod,
+        );
+        setProductoSeleccionado(productoActualizado ?? null);
+        setDocumentos(productoActualizado ? documentosActualizados : []);
+      }
+    } catch (errorActualizacion) {
+      setError(errorActualizacion?.message || "No fue posible actualizar los documentos.");
+    } finally {
+      setCargandoProductos(false);
+      setCargandoDocumentos(false);
     }
   };
 
@@ -274,14 +304,19 @@ const DocumentosProductos = () => {
   };
 
   return (
-    <div className="documentos-productos-page">
-      <div className="documentos-productos-header">
-        <div>
-          <h1>Gestión de documentos</h1>
-
-          <p>Administra los documentos asociados a los productos.</p>
-        </div>
-      </div>
+    <div className="bodeguero-page documentos-productos-page">
+      <BodegueroHeader
+        titulo="Gestión de documentos"
+        descripcion="Administra los documentos asociados a los productos."
+        acciones={
+          <BotonActualizarBodega
+            alActualizar={actualizarDocumentos}
+            cargando={cargandoProductos || cargandoDocumentos}
+            deshabilitado={subiendoDocumento || procesandoDocumento !== null}
+            etiqueta="Actualizar productos y documentos"
+          />
+        }
+      />
 
       {error && (
         <div className="documentos-alert documentos-alert-error">{error}</div>

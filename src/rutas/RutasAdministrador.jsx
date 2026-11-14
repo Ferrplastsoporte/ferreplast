@@ -9,10 +9,10 @@ import {
   Aprobaciones,
   Pagos,
   Cotizaciones,
-  Auditoria,
+  RedesSociales,
 } from "./secciones/PaginasAdministrador";
 import CargaSeccion from "../components/rutas/CargaSeccion";
-import { Route } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import RutaProtegida from "../components/rutas/RutaProtegida";
 
 import { ROLES_USUARIO } from "../utils/auth/autorizacion";
@@ -39,7 +39,8 @@ const rutasAdministrador = (
           <Route element={<CargaSeccion />}>
             <Route path="/admin/Reportes" element={<Reportes />} />
           </Route>
-          <Route path="/admin/auditoria" element={<Auditoria />} />
+          <Route path="/admin/redes-sociales" element={<RedesSociales />} />
+          <Route path="/admin/auditoria" element={<Navigate to="/admin/redes-sociales" replace />} />
           <Route path="/admin/configuracion" element={<Configuracion />} />
         </Route>
       </Route>

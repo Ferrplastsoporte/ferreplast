@@ -12,7 +12,6 @@ import {
   LuPackageCheck,
   LuPhone,
   LuReceipt,
-  LuRotateCcw,
   LuSearch,
   LuStore,
   LuTriangleAlert,
@@ -22,6 +21,7 @@ import {
 } from "react-icons/lu";
 import { supabase } from "../../lib/supabase";
 import BodegueroHeader from "./components/BodegueroHeader";
+import BotonActualizarBodega from "./components/BotonActualizarBodega";
 import {
   ESTADO_PEDIDO,
   ESTADOS_LISTOS,
@@ -500,10 +500,12 @@ function Pedidos() {
         titulo="Pedidos"
         descripcion="Prepara los pedidos pagados y márcalos como listos."
         acciones={
-          <button type="button" className="pb-boton pb-boton--secundario" onClick={cargarPedidos} disabled={cargando}>
-            <LuRotateCcw aria-hidden="true" />
-            Actualizar
-          </button>
+          <BotonActualizarBodega
+            alActualizar={cargarPedidos}
+            cargando={cargando}
+            deshabilitado={procesando}
+            etiqueta="Actualizar pedidos"
+          />
         }
       />
 
