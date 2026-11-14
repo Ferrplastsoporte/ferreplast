@@ -885,3 +885,11 @@
 @media (max-width: 560px) {
   .cotizacion-acciones > .cotizacion-acciones__documento { width: 100%; }
 }
+
+/* Conservación de documentos de cuentas eliminadas. */
+.cotizacion-cuenta-eliminada__aviso {
+  margin-top: 0.75rem;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

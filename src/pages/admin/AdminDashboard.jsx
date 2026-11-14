@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { LuClock, LuPackage, LuPackageCheck, LuRotateCcw, LuTriangleAlert } from "react-icons/lu";
 import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
+import { cargarResponsablesHistoricos, prepararEquipoHistorico } from "../../utils/admin/equipoHistorial";
 import { validarRespuestaComercial } from "../../utils/admin/reportes/reportesComerciales";
 import { segmentosAnillo } from "../../utils/admin/reportes/reportesPresentacion";
 import { ESTADO_PEDIDO, ESTADOS_LISTOS, ESTADOS_PENDIENTES } from "../../utils/Pedidos/estadoPedido";
@@ -546,7 +547,7 @@ async function cargarClientes(ctx) {
     vista: {
       alcance: "Clientes que compraron, cotizaron o se registraron en el período.",
       kpis: [
-        { titulo: "Clientes registrados", valor: registrados, detalle: "Total histórico" },
+        { titulo: "Clientes registrados", valor: registrados, detalle: "Perfiles actuales" },
         { titulo: "Clientes nuevos", valor: clientes ? filas.filter((f) => f.cliente_nuevo).length : null },
         { titulo: "Clientes que compraron", valor: clientes ? compradores.length : null },
         { titulo: "Pidieron cotización", valor: clientes ? filas.filter((f) => numero(f.cotizaciones) > 0).length : null },
@@ -579,6 +580,8 @@ async function cargarEquipo(ctx) {
         return data ?? [];
       }),
     pedidos: consulta.pedidosActuales(ctx),
+    historicos: () => ctx.unaVez(`responsables-historicos:${desde}:${hasta}`, () =>
+      cargarResponsablesHistoricos(supabase, `${desde}T00:00:00Z`, `${sumarDias(hasta, 2)}T00:00:00Z`)),
     // Cambios de catálogo enviados por el equipo (se filtran por fecha abajo)
     cambios: () =>
       ctx.unaVez(`cambios:${desde}`, async () => {
@@ -591,12 +594,15 @@ async function cargarEquipo(ctx) {
         return data ?? [];
       }),
   });
-  const { integrantes, pedidos, cambios } = datos;
+  const { integrantes, pedidos, cambios, historicos } = datos;
 
   const personas = lista(integrantes);
+  const { personasDetalle, operaciones } = prepararEquipoHistorico(personas, lista(pedidos), historicos,
+    (p) => esFinalizado(p) && estaEnRango(p.fecha_pedido, desde, hasta));
+  const entregasCompletas = pedidos != null && historicos != null;
   const activos = personas.filter((p) => p.est_user);
   const esRol = (rol) => (p) => numero(p.rol_user) === rol;
-  const entregados = lista(pedidos).filter((p) => esFinalizado(p) && p.id_bodeguero && estaEnRango(p.fecha_pedido, desde, hasta));
+  const entregados = operaciones.filter((p) => esFinalizado(p) && p.referencia_responsable && estaEnRango(p.fecha_pedido, desde, hasta));
   const enPreparacion = lista(pedidos).filter((p) => Number(p.id_estado) === ESTADO_PEDIDO.PREPARACION && p.id_bodeguero);
   const listos = lista(pedidos).filter((p) => esListo(p) && p.id_bodeguero);
   const cambiosPeriodo = lista(cambios).filter((c) => estaEnRango(c.fecha_cambio, desde, hasta));
@@ -605,22 +611,22 @@ async function cargarEquipo(ctx) {
   // Cuenta por persona: Map id_user → cantidad
   const porPersona = (filas, campo) =>
     filas.reduce((mapa, fila) => mapa.set(fila[campo], (mapa.get(fila[campo]) ?? 0) + 1), new Map());
-  const entregadosPorId = porPersona(entregados, "id_bodeguero");
+  const entregadosPorId = porPersona(entregados, "referencia_responsable");
   const preparandoPorId = porPersona(enPreparacion, "id_bodeguero");
   const listosPorId = porPersona(listos, "id_bodeguero");
   const cambiosPorId = porPersona(cambiosPeriodo, "id_user");
   const sinRevisarPorId = porPersona(sinRevisar, "id_user");
 
-  const nombreDe = (id) => personas.find((p) => p.id_user === id)?.nom_user ?? "Sin nombre";
+  const nombreDe = (id) => personasDetalle.find((p) => p.id_user === id)?.nom_user ?? "Sin nombre";
   const ranking = (mapa) => [...mapa].map(([id, valor]) => ({ etiqueta: nombreDe(id), valor })).sort((a, b) => b.valor - a.valor);
 
   // Una fila por persona: bodegueros primero, luego por pedidos entregados
-  const detalle = personas
+  const detalle = personasDetalle
     .map((p) => ({
       id: p.id_user,
       nombre: p.nom_user || "Sin nombre",
-      rol: esRol(ROL.ADMINISTRADOR)(p) ? "Administrador" : "Bodeguero",
-      estado: p.est_user ? "Activa" : "Inactiva",
+      rol: p.cuenta_eliminada ? "Responsable histórico" : esRol(ROL.ADMINISTRADOR)(p) ? "Administrador" : "Bodeguero",
+      estado: p.cuenta_eliminada ? "Eliminada" : p.est_user ? "Activa" : "Inactiva",
       entregados: entregadosPorId.get(p.id_user) ?? 0,
       preparando: preparandoPorId.get(p.id_user) ?? 0,
       listos: listosPorId.get(p.id_user) ?? 0,
@@ -639,18 +645,18 @@ async function cargarEquipo(ctx) {
             ? `${cantidad(activos.filter(esRol(ROL.ADMINISTRADOR)).length, "administrador", "administradores")} y ${cantidad(activos.filter(esRol(ROL.BODEGUERO)).length, "bodeguero", "bodegueros")}`
             : undefined },
         { titulo: "Cuentas inactivas", valor: integrantes ? personas.length - activos.length : null },
-        { titulo: "Pedidos entregados", valor: pedidos ? entregados.length : null, detalle: "Pedidos del período ya finalizados" },
+        { titulo: "Pedidos entregados", valor: entregasCompletas ? entregados.length : null, detalle: "Pedidos del período ya finalizados" },
                 { titulo: "Cambios sin revisar", tono: "aviso", valor: cambios ? sinRevisar.length : null, detalle: "Enviados en el período" },
         { titulo: "Listos por entregar", tono: "aviso", valor: pedidos ? listos.length : null, detalle: "Preparados, aún sin finalizar" },
         { titulo: "Cambios de catálogo", valor: cambios ? cambiosPeriodo.length : null,
           detalle: cambios ? cantidad(sinRevisar.length, "sin revisar", "sin revisar") : undefined },
       ],
       graficos: [
-        { titulo: "Pedidos entregados por bodeguero", vista: "barras", puntos: pedidos && integrantes ? ranking(entregadosPorId) : null },
+        { titulo: "Pedidos entregados por bodeguero", vista: "barras", puntos: entregasCompletas && integrantes ? ranking(entregadosPorId) : null },
         { titulo: "Cambios de catálogo por persona", nota: "Enviados a revisión", vista: "barras",
           puntos: cambios && integrantes ? ranking(cambiosPorId) : null },
         { titulo: "Detalle por persona", vista: "tabla", ancho: true, vacio: "No hay cuentas del equipo.",
-          puntos: integrantes ? detalle : null,
+          puntos: integrantes && entregasCompletas ? detalle : null,
           columnas: [
             { c: "nombre", t: "Nombre" },
             { c: "rol", t: "Rol" },

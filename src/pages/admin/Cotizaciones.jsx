@@ -724,8 +724,9 @@ function Cotizaciones() {
     documentosPdf[String(cotizacionSeleccionada?.id_cotizacion)] ?? null;
   const puedeDescargarPdf = Boolean(documentoPdf) && !operacionEnCurso;
   const envioPdf = enviosPdf[cotizacionSeleccionada?.id_cotizacion];
-  const consultarEstadoEnvio = !envioPdf || ["error_consulta", "procesando"].includes(envioPdf.estado);
+  const consultarEstadoEnvio = !envioPdf || (!envioPdf.cuentaEliminada && ["error_consulta", "procesando"].includes(envioPdf.estado));
   const textoBotonEnvio = enviandoCorreo ? "Enviando…"
+    : envioPdf?.cuentaEliminada ? "Cuenta eliminada"
     : envioPdf?.estado === "aceptado" ? "Correo enviado"
     : consultarEstadoEnvio ? "Consultar envío"
     : envioPdf.estado === "incierto" ? "Envío por revisar"
@@ -1309,6 +1310,9 @@ function Cotizaciones() {
                     </button>
                   )}
                   </div>
+                  {envioPdf?.cuentaEliminada && (
+                    <p className="cotizacion-cuenta-eliminada__aviso" role="status">{envioPdf.mensaje}</p>
+                  )}
                   {mensajeOperacion && (
                     <p
                       className={`cotizacion-operacion__mensaje cotizacion-operacion__mensaje--${mensajeOperacion.tipo}`}
