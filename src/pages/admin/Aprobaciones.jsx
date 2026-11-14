@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiRefreshCw } from "react-icons/fi";
 import { supabase } from "../../lib/supabase";
 import {
   NOMBRES_ACCIONES,
@@ -10,6 +9,7 @@ import {
 } from "../../utils/solicitudes/solicitudes";
 import { obtenerNombresReferenciasCambios } from "../../services/solicitudesService";
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import "./css/Aprobaciones.css";
 
 const BUCKET_IMAGENES = "imagenes_productos";
@@ -57,6 +57,7 @@ function Aprobaciones() {
               id_cambio,
               id_prod,
               id_user,
+              id_user_historico,
               fecha_cambio,
               tipo_accion,
               campos_modificados,
@@ -66,7 +67,7 @@ function Aprobaciones() {
               usuario (nom_user)
             `,
           )
-          .not("id_user", "is", null)
+          .or("id_user.not.is.null,id_user_historico.not.is.null")
           .eq("revisado", false)
           .order("fecha_cambio", { ascending: false }),
         supabase
@@ -299,16 +300,12 @@ function Aprobaciones() {
         titulo="Aprobaciones"
         descripcion="Revisa y resuelve solicitudes de productos, ajustes de stock y marcas enviadas por bodega."
         acciones={
-          <button
-            type="button"
-            className="aprobaciones-recargar"
-            onClick={() => cargarAprobaciones()}
-            disabled={cargando}
-            aria-label="Actualizar aprobaciones"
-            title="Actualizar aprobaciones"
-          >
-            <FiRefreshCw aria-hidden="true" />
-          </button>
+          <BotonActualizarAdmin
+            compacto
+            alActualizar={() => cargarAprobaciones()}
+            cargando={cargando}
+            etiqueta="Actualizar aprobaciones"
+          />
         }
       />
 
@@ -426,7 +423,7 @@ function Aprobaciones() {
                               </div>
                             </div>
                           </td>
-                          <td><strong className="aprobaciones-usuario">{ultimoCambio?.usuario?.nom_user || "Usuario de bodega"}</strong></td>
+                          <td><strong className="aprobaciones-usuario">{ultimoCambio?.usuario?.nom_user || (ultimoCambio?.id_user_historico && !ultimoCambio?.id_user ? "Personal con cuenta eliminada" : "Usuario de bodega")}</strong></td>
                           <td>
                             <div className="aprobaciones-fecha">
                               <strong>{obtenerNombreAccion(ultimoCambio?.tipo_accion)}</strong>

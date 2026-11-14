@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import TablaUsuarios from "../../components/usuarios/TablaUsuarios";
 import {
   sanitizarNombreUsuario,
@@ -226,6 +227,15 @@ function Usuarios() {
       <AdminHeader
         titulo="Gestión de trabajadores"
         descripcion="Consulta y administra las cuentas internas con acceso al sistema."
+        acciones={
+          <BotonActualizarAdmin
+            compacto
+            etiqueta="Actualizar trabajadores"
+            alActualizar={() => cargarUsuarios()}
+            cargando={cargando}
+            deshabilitado={guardando}
+          />
+        }
       />
 
       {mensaje && (

@@ -12,8 +12,6 @@
 .pa-periodos button { padding: 6px 12px; font-size: 0.8rem; }
 .pa-secciones-nav a:hover, .pa-periodos button:hover { border-color: #cbd5e1; background: #f8fafc; }
 .pa-secciones-nav a.es-activa, .pa-periodos button[aria-pressed="true"] { border-color: #c7d8fb; background: #eaf1ff; color: #0647b9; }
-.pa-periodos .pa-actualizar { display: inline-flex; align-items: center; gap: 6px; }
-.pa-periodos .pa-actualizar:disabled { opacity: 0.6; cursor: default; }
 .pa-secciones-nav a:focus-visible, .pa-periodos button:focus-visible, .pa-enlace:focus-visible, .pa-atencion__item:focus-visible, .pa-boton:focus-visible, .pa-boton-texto:focus-visible { outline: 2px solid #0647b9; outline-offset: 2px; }
 .pa-rango { margin: 0; color: #64748b; font-size: 0.8rem; }
 

@@ -6,7 +6,6 @@ import {
   FiFileText,
   FiMail,
   FiPhone,
-  FiRefreshCw,
   FiSearch,
   FiUser,
 } from "react-icons/fi";
@@ -47,6 +46,7 @@ import {
   sumarDiasFecha,
 } from "../../utils/cotizaciones/cotizaciones";
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import ModalConfirmacion from "./components/ModalConfirmacion";
 import iconoConfirmacionCotizacion from "../../assets/iconos/vista_admin/admin_popups/admin_popups_confirmacion.png";
 import "./css/Cotizaciones.css";
@@ -868,14 +868,11 @@ function Cotizaciones() {
             <option value="antiguas">Más antiguas</option>
           </select>
         </label>
-        <button
-          type="button"
-          className="cotizaciones-actualizar"
-          onClick={() => setRecarga((valor) => valor + 1)}
-          disabled={cargando}
-        >
-          <FiRefreshCw aria-hidden="true" /> Actualizar
-        </button>
+        <BotonActualizarAdmin
+          claseExtra="cotizaciones-actualizar"
+          alActualizar={() => setRecarga((valor) => valor + 1)}
+          cargando={cargando}
+        />
       </section>
 
       {/* Estados generales de carga, lista vacía y contenido disponible. */}

@@ -21,7 +21,7 @@ export async function cargarResponsablesHistoricos(supabase, desde, hastaExclusi
   }
 }
 
-export function prepararEquipoHistorico(integrantes, pedidos, historicos, incluirHistorico) {
+export function prepararEquipoHistorico(integrantes, pedidos, historicos, incluirHistorico, cambios = []) {
   const porPedido = new Map((historicos ?? []).map((p) => [String(p.id_pedido), p.identidad_bodeguero]));
   const personasPorId = new Map((integrantes ?? []).map((p) => [p.id_user, p]));
   const operaciones = (pedidos ?? []).map((p) => {
@@ -40,5 +40,16 @@ export function prepararEquipoHistorico(integrantes, pedidos, historicos, inclui
     }
     return { ...p, referencia_responsable: referencia };
   });
-  return { personasDetalle: [...personasPorId.values()], operaciones };
+  const cambiosConAutor = cambios.map((cambio) => {
+    const referencia = cambio.id_user ?? (uuidValido(cambio.id_user_historico) ? cambio.id_user_historico : null);
+    if (!referencia) return null;
+    if (!personasPorId.has(referencia)) {
+      personasPorId.set(referencia, {
+        id_user: referencia, nom_user: "Personal con cuenta eliminada",
+        rol_user: null, est_user: false, cuenta_eliminada: true,
+      });
+    }
+    return { ...cambio, referencia_autor: referencia };
+  }).filter(Boolean);
+  return { personasDetalle: [...personasPorId.values()], operaciones, cambiosConAutor };
 }

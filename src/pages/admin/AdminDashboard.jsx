@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { LuClock, LuPackage, LuPackageCheck, LuRotateCcw, LuTriangleAlert } from "react-icons/lu";
 import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import { cargarResponsablesHistoricos, prepararEquipoHistorico } from "../../utils/admin/equipoHistorial";
 import { validarRespuestaComercial } from "../../utils/admin/reportes/reportesComerciales";
 import { segmentosAnillo } from "../../utils/admin/reportes/reportesPresentacion";
@@ -268,7 +269,7 @@ const consulta = {
     const [productos, marcas, cambios] = await Promise.all([
       ctx.contar("productos-pendientes", "producto", (q) => q.eq("est_prod", ESTADO_PRODUCTO_PENDIENTE)),
       ctx.contar("marcas-pendientes", "marca_producto", (q) => q.eq("id_estado_marca", ESTADO_MARCA_PENDIENTE)),
-      ctx.contar("cambios-sin-revisar", "producto_cambio", (q) => q.eq("revisado", false).not("id_user", "is", null)),
+      ctx.contar("cambios-sin-revisar", "producto_cambio", (q) => q.eq("revisado", false).or("id_user.not.is.null,id_user_historico.not.is.null")),
     ]);
     return { productos, marcas, cambios };
   },
@@ -587,8 +588,8 @@ async function cargarEquipo(ctx) {
       ctx.unaVez(`cambios:${desde}`, async () => {
         const { data, error } = await supabase
           .from("producto_cambio")
-          .select("id_user, fecha_cambio, revisado")
-          .not("id_user", "is", null)
+          .select("id_user, id_user_historico, fecha_cambio, revisado")
+          .or("id_user.not.is.null,id_user_historico.not.is.null")
           .gte("fecha_cambio", `${sumarDias(desde, -1)}T00:00:00Z`);
         if (error) throw error;
         return data ?? [];
@@ -597,15 +598,15 @@ async function cargarEquipo(ctx) {
   const { integrantes, pedidos, cambios, historicos } = datos;
 
   const personas = lista(integrantes);
-  const { personasDetalle, operaciones } = prepararEquipoHistorico(personas, lista(pedidos), historicos,
-    (p) => esFinalizado(p) && estaEnRango(p.fecha_pedido, desde, hasta));
+  const { personasDetalle, operaciones, cambiosConAutor } = prepararEquipoHistorico(personas, lista(pedidos), historicos,
+    (p) => esFinalizado(p) && estaEnRango(p.fecha_pedido, desde, hasta), lista(cambios));
   const entregasCompletas = pedidos != null && historicos != null;
   const activos = personas.filter((p) => p.est_user);
   const esRol = (rol) => (p) => numero(p.rol_user) === rol;
   const entregados = operaciones.filter((p) => esFinalizado(p) && p.referencia_responsable && estaEnRango(p.fecha_pedido, desde, hasta));
   const enPreparacion = lista(pedidos).filter((p) => Number(p.id_estado) === ESTADO_PEDIDO.PREPARACION && p.id_bodeguero);
   const listos = lista(pedidos).filter((p) => esListo(p) && p.id_bodeguero);
-  const cambiosPeriodo = lista(cambios).filter((c) => estaEnRango(c.fecha_cambio, desde, hasta));
+  const cambiosPeriodo = cambiosConAutor.filter((c) => estaEnRango(c.fecha_cambio, desde, hasta));
   const sinRevisar = cambiosPeriodo.filter((c) => !c.revisado);
 
   // Cuenta por persona: Map id_user → cantidad
@@ -614,8 +615,8 @@ async function cargarEquipo(ctx) {
   const entregadosPorId = porPersona(entregados, "referencia_responsable");
   const preparandoPorId = porPersona(enPreparacion, "id_bodeguero");
   const listosPorId = porPersona(listos, "id_bodeguero");
-  const cambiosPorId = porPersona(cambiosPeriodo, "id_user");
-  const sinRevisarPorId = porPersona(sinRevisar, "id_user");
+  const cambiosPorId = porPersona(cambiosPeriodo, "referencia_autor");
+  const sinRevisarPorId = porPersona(sinRevisar, "referencia_autor");
 
   const nombreDe = (id) => personasDetalle.find((p) => p.id_user === id)?.nom_user ?? "Sin nombre";
   const ranking = (mapa) => [...mapa].map(([id, valor]) => ({ etiqueta: nombreDe(id), valor })).sort((a, b) => b.valor - a.valor);
@@ -1196,7 +1197,13 @@ function AdminDashboard() {
 
   return (
     <section className="admin-page panel-admin">
-      <AdminHeader titulo="Panel de administración" descripcion="Indicadores clave del negocio y de cada área de la página." />
+      <AdminHeader
+        titulo="Panel de administración"
+        descripcion="Indicadores clave del negocio y de cada área de la página."
+        acciones={
+          <BotonActualizarAdmin compacto alActualizar={recargar} cargando={cargando} etiqueta="Actualizar datos" />
+        }
+      />
 
       <div className="pa-barra">
         <div className="pa-barra__fila">
@@ -1219,9 +1226,6 @@ function AdminDashboard() {
                 {p.texto}
               </button>
             ))}
-            <button type="button" className="pa-actualizar" onClick={recargar} disabled={cargando} aria-label="Actualizar datos">
-              <LuRotateCcw aria-hidden="true" /> Actualizar
-            </button>
           </div>
         </div>
         <p className="pa-rango">

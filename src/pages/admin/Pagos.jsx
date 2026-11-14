@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import "./Css/Pagos.css";
 
 const formatoCLP = (monto) =>
@@ -250,14 +251,11 @@ function Pagos() {
             Buscar
           </button>
 
-          <button
-            type="button"
-            className="pagos-boton-secundario"
-            onClick={actualizar}
-            disabled={cargando}
-          >
-            {actualizando ? "Actualizando..." : "Actualizar"}
-          </button>
+          <BotonActualizarAdmin
+            alActualizar={actualizar}
+            cargando={actualizando}
+            deshabilitado={cargando}
+          />
         </form>
 
         <div className="pagos-filtros">

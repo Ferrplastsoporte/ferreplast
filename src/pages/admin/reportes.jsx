@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { reporteComercial, validarRespuestaComercial, VISTAS_COTIZACION } from "../../utils/admin/reportes/reportesComerciales";
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import { ayudaReporte } from "../../utils/admin/reportes/ayudaReportes";
 import { segmentosAnillo, tarjetasComerciales } from "../../utils/admin/reportes/reportesPresentacion";
 import "./Css/reportes-diseno.css";
@@ -870,9 +871,6 @@ const ESTILOS = `
   .reportes-filtros__busqueda { flex: 1 1 220px; }
   .reportes-filtros__campos input, .reportes-filtros__campos select { height: 40px; padding: 0 10px; color: #172033; font: inherit; font-weight: 400; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; }
   .reportes-filtros__campos input:focus, .reportes-filtros__campos select:focus { outline: 2px solid #93b4ee; outline-offset: 1px; }
-  .reportes-boton-principal { height: 40px; padding: 0 18px; color: #ffffff; font-weight: 700; background: #0647b9; border: none; border-radius: 8px; cursor: pointer; }
-  .reportes-boton-principal:hover { background: #05399a; }
-  .reportes-boton-principal:disabled { opacity: 0.5; cursor: not-allowed; }
   .reportes-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
   .reportes-pestanas { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #e5e7eb; }
   .reportes-pestanas button { display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; color: #4b5563; font-size: 0.9rem; font-weight: 600; white-space: nowrap; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; }
@@ -916,7 +914,7 @@ const ESTILOS = `
   .reportes-insignia--media { color: #92400e; background: #fffbeb; border-color: #fde68a; }
   .reportes-insignia--baja { color: #334155; background: #f1f5f9; border-color: #e2e8f0; }
   @media (max-width: 1100px) { .reportes-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .reportes-graficos.es-doble { grid-template-columns: minmax(0, 1fr); } }
-  @media (max-width: 600px) { .reportes-kpis { grid-template-columns: 1fr; } .reportes-filtros__campos label, .reportes-boton-principal { flex: 1 1 100%; } .reportes-tabla-acciones { margin-left: 0; } }
+  @media (max-width: 600px) { .reportes-kpis { grid-template-columns: 1fr; } .reportes-filtros__campos label { flex: 1 1 100%; } .reportes-tabla-acciones { margin-left: 0; } }
 `;
 
 // =====================================================================
@@ -1403,6 +1401,12 @@ function Reportes() {
   const [generandoPdf, setGenerandoPdf] = useState(false);
   const [errorPdf, setErrorPdf] = useState("");
 
+  // Aplicar la búsqueda al terminar de escribir, sin consultar por cada tecla.
+  useEffect(() => {
+    const esperaBusqueda = setTimeout(() => setBusquedaAplicada(busqueda.trim()), 300);
+    return () => clearTimeout(esperaBusqueda);
+  }, [busqueda]);
+
   const rangoValido = Boolean(desde && hasta && desde <= hasta);
   const reporte = reporteComercial(tipo, filtros) ?? REPORTES[tipo];
   const esComercial = Boolean(reporte.comercial);
@@ -1629,7 +1633,15 @@ function Reportes() {
       <style>{ESTILOS}</style>
       <AdminHeader
         titulo="Reportes"
-
+        acciones={
+          <BotonActualizarAdmin
+            compacto
+            etiqueta="Actualizar reportes"
+            alActualizar={() => setRecargas((n) => n + 1)}
+            cargando={cargando || (!esComercial && rangoValido && kpis.clave !== claveKpis)}
+            deshabilitado={!rangoValido}
+          />
+        }
       />
 
       {/* PESTAÑAS */}
@@ -1657,14 +1669,7 @@ function Reportes() {
           }}>{nombre}</button>)}
         </nav>}
       {/* FECHAS Y FILTROS */}
-      <form
-        className="reportes-filtros"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setBusquedaAplicada(busqueda.trim());
-          setRecargas((n) => n + 1);
-        }}
-      >
+      <div className="reportes-filtros" role="group" aria-label="Filtros del reporte">
         <div className="reportes-presets">
           {PRESETS_FECHA.map(([clavePreset, etiqueta]) => {
             const [d, h] = rangoPreset(clavePreset);
@@ -1766,11 +1771,8 @@ function Reportes() {
             </label>
           )}
 
-          <button type="submit" className="reportes-boton-principal" disabled={!rangoValido}>
-            {cargando ? "Consultando..." : "Aplicar"}
-          </button>
         </div>
-      </form>
+      </div>
 
       {!rangoValido && (
         <div role="alert" className="reportes-error">

@@ -1,3 +1,4 @@
+.reportes .admin-header__user { gap: 10px; }
 .reportes .admin-header { margin-bottom: 0; padding-bottom: 16px; }
 .reportes .reportes-pestanas { flex-wrap: wrap; overflow: visible; gap: 4px; padding-bottom: 8px; }
 .reportes .reportes-pestanas button { padding: 8px 12px; border: 0; border-radius: 7px; font-size: .84rem; }
@@ -5,13 +6,13 @@
 .reportes .reportes-subvistas { display:flex; gap:4px; flex-wrap:wrap; }
 .reportes .reportes-subvistas button { padding:7px 10px; color:#64748b; background:transparent; border:0; border-radius:6px; font-size:.82rem; }
 .reportes .reportes-subvistas button[aria-pressed="true"] { color:#0647b9; background:#eaf1ff; font-weight:700; }
-.reportes .reportes-filtros { gap:12px; padding:14px 16px; border-radius:10px; }
-.reportes .reportes-presets { gap:6px; }
-.reportes .reportes-presets button { padding:5px 10px; font-size:.78rem; }
-.reportes .reportes-filtros__campos { gap:10px; }
-.reportes .reportes-filtros__campos label { min-width:130px; gap:5px; font-size:.76rem; font-weight:500; }
-.reportes .reportes-filtros__campos input,.reportes .reportes-filtros__campos select { height:37px; max-width:100%; }
-.reportes .reportes-boton-principal { height:37px; padding:0 15px; font-size:.82rem; }
+.reportes .reportes-filtros { flex-direction:row; flex-wrap:wrap; align-items:flex-end; gap:12px; padding:14px 16px; border-radius:10px; }
+.reportes .reportes-presets { flex:0 1 auto; min-width:0; max-width:100%; gap:6px; }
+.reportes .reportes-presets button { min-height:37px; box-sizing:border-box; padding:5px 10px; font-size:.78rem; white-space:nowrap; }
+.reportes .reportes-filtros__campos { display:contents; }
+.reportes .reportes-filtros__campos label { flex:1 1 120px; min-width:min(120px,100%); gap:5px; font-size:.76rem; font-weight:500; }
+.reportes .reportes-filtros__campos .reportes-filtros__busqueda { flex-basis:220px; }
+.reportes .reportes-filtros__campos input,.reportes .reportes-filtros__campos select { width:100%; min-width:0; height:37px; box-sizing:border-box; max-width:100%; }
 .reportes .reportes-kpis { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .reportes .reportes-kpis--cuatro { grid-template-columns:repeat(4,minmax(0,1fr)); }
 .reportes .ind-kpi { padding:14px 16px; gap:5px; border-radius:10px; }

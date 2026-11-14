@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import AdminHeader from "./components/AdminHeader";
+import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
 import "./Css/Pedidos.css";
 function formatearFecha(fecha) {
   if (!fecha) return "—";
@@ -112,13 +113,10 @@ function Pedidos() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={cargarPedidos}
-            disabled={cargando}
-          >
-            {cargando ? "Actualizando..." : "Actualizar"}
-          </button>
+          <BotonActualizarAdmin
+            alActualizar={cargarPedidos}
+            cargando={cargando}
+          />
         </div>
 
         <div className="pedidos-admin-filtros">

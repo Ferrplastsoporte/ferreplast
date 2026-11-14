@@ -52,7 +52,6 @@
   line-height: 1.5;
 }
 
-.pedidos-admin-toolbar button,
 .pedidos-admin-error button {
   display: inline-flex;
   align-items: center;
@@ -71,17 +70,11 @@
     transform 0.2s ease;
 }
 
-.pedidos-admin-toolbar button:hover,
 .pedidos-admin-error button:hover {
   background: #123d83;
   transform: translateY(-1px);
 }
 
-.pedidos-admin-toolbar button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
 
 /* ========================================
    BÚSQUEDA Y FILTROS
