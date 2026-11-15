@@ -7,7 +7,7 @@ import "../css/mision.css";
 import proyecto1 from "../../../assets/proyectos/proyecto1.png";
 import proyecto2 from "../../../assets/proyectos/proyecto2.png";
 import puertoMontt from "../../../assets/Puerto_Montt.jpeg";
-import localFerreplast from "../../../assets/local_ferreplast.JPEG";
+const localFerreplast = "/local_ferreplast.jpeg";
 
 import iconoMision from "../../../assets/iconos/vista_home/home_mision/mision_logo_contacto.png";
 import iconoVision from "../../../assets/iconos/vista_home/home_mision/vision_logo_contacto.png";

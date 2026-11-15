@@ -117,15 +117,14 @@ export const sanitizeRegisterField = (name, value) => {
       return value
         .toUpperCase()
         .replace(/[\u2010-\u2015\u2212\uFE63\uFF0D]/g, "-")
-        .replace(/[.\s]/g, "");
+        .replace(/[^0-9K-]/g, "");
 
     case "email":
       return sanitizarCorreo(value);
 
     case "telefono": {
-      const numero = value.replace(/[\s()-]/g, "");
+      const numero = value.replace(/\D/g, "");
       // Aceptar el número completo pegado o autocompletado.
-      if (numero.startsWith("+569")) return numero.slice(4);
       if (/^569\d{8}$/.test(numero)) return numero.slice(3);
       return numero;
     }

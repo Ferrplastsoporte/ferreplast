@@ -1,4 +1,8 @@
 import { useState } from "react";
+import ayudaCompras from "../../assets/iconos/vista_ayuda/ayuda_compras.png";
+import ayudaPedidos from "../../assets/iconos/vista_ayuda/ayuda_pedidos.png";
+import ayudaCuenta from "../../assets/iconos/vista_ayuda/ayuda_cuenta.png";
+import ayudaContacto from "../../assets/iconos/vista_ayuda/ayuda_icono_ayuda.png";
 import "./css/Ayuda.css";
 
 function Ayuda() {
@@ -76,7 +80,7 @@ function Ayuda() {
         <article className="ayuda-acceso">
 
           <div className="ayuda-acceso__icon">
-            🛒
+            <img src={ayudaCompras} alt="" width="36" height="36" />
           </div>
 
           <div>
@@ -98,7 +102,7 @@ function Ayuda() {
         <article className="ayuda-acceso">
 
           <div className="ayuda-acceso__icon">
-            📦
+            <img src={ayudaPedidos} alt="" width="36" height="36" />
           </div>
 
           <div>
@@ -120,7 +124,7 @@ function Ayuda() {
         <article className="ayuda-acceso">
 
           <div className="ayuda-acceso__icon">
-            👤
+            <img src={ayudaCuenta} alt="" width="36" height="36" />
           </div>
 
           <div>
@@ -222,7 +226,7 @@ function Ayuda() {
       <section className="ayuda-contacto">
 
         <div className="ayuda-contacto__icon">
-          💬
+          <img src={ayudaContacto} alt="" width="40" height="40" />
         </div>
 
         <div className="ayuda-contacto__text">
@@ -246,8 +250,7 @@ function Ayuda() {
           href="mailto:Ferreplast.soporte@outlook.com"
           className="ayuda-contacto__button"
         >
-          Contactarnos
-          <span>→</span>
+          Contáctanos
         </a>
 
       </section>

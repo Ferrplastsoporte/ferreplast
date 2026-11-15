@@ -133,9 +133,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #d8e6f5;
+  border: none;
   border-radius: 15px;
-  background: #edf5ff;
+  background: transparent;
   color: #0052a4;
   font-size: 24px;
   transition:
@@ -143,8 +143,15 @@
     background 0.2s ease;
 }
 
+.ayuda-acceso__icon img,
+.ayuda-contacto__icon img {
+  display: block;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+}
+
 .ayuda-acceso:hover .ayuda-acceso__icon {
-  background: #e5f0ff;
   transform: scale(1.04);
 }
 
@@ -350,11 +357,10 @@
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: #0052a4;
-  border: 1px solid #0052a4;
+  background: transparent;
+  border: none;
   color: #ffffff;
   font-size: 26px;
-  box-shadow: 0 8px 18px rgba(0, 82, 164, 0.18);
 }
 
 .ayuda-contacto__text {
@@ -411,19 +417,10 @@
     box-shadow 0.2s ease;
 }
 
-.ayuda-contacto__button span {
-  font-size: 18px;
-  transition: transform 0.2s ease;
-}
-
 .ayuda-contacto__button:hover {
   background: #003b78;
   transform: translateY(-2px);
   box-shadow: 0 12px 25px rgba(0, 82, 164, 0.25);
-}
-
-.ayuda-contacto__button:hover span {
-  transform: translateX(4px);
 }
 
 /* =========================================================

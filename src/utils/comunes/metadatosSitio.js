@@ -1,6 +1,7 @@
 // Fuente única para el HTML de compilación y la navegación en React.
 export const URL_SITIO = "https://ferreplastspa.cl";
-export const IMAGEN_SITIO = `${URL_SITIO}/favicon-ferreplast.png`;
+export const IMAGEN_SITIO = `${URL_SITIO}/local_ferreplast.jpeg`;
+const DESCRIPCION_IMAGEN = "Fachada del local de Ferreplast Spa en Puerto Montt";
 
 export const PAGINAS_PUBLICAS = {
   "/": {
@@ -66,12 +67,12 @@ export function etiquetasMetadatos(datos) {
     ["og-descripcion", "property", "og:description", datos.descripcion],
     ["og-url", "property", "og:url", datos.url],
     ["og-imagen", "property", "og:image", datos.imagen],
-    ["og-imagen-alt", "property", "og:image:alt", datos.titulo],
-    ["twitter-tarjeta", "name", "twitter:card", "summary"],
+    ["og-imagen-alt", "property", "og:image:alt", DESCRIPCION_IMAGEN],
+    ["twitter-tarjeta", "name", "twitter:card", "summary_large_image"],
     ["twitter-titulo", "name", "twitter:title", datos.titulo],
     ["twitter-descripcion", "name", "twitter:description", datos.descripcion],
     ["twitter-imagen", "name", "twitter:image", datos.imagen],
-    ["twitter-imagen-alt", "name", "twitter:image:alt", datos.titulo],
+    ["twitter-imagen-alt", "name", "twitter:image:alt", DESCRIPCION_IMAGEN],
   ];
   return metas.filter(([id]) => datos.compartir || id === "descripcion" || id === "robots")
     .map(([id, atributo, nombre, contenido]) => ({

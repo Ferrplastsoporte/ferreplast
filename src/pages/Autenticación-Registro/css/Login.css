@@ -20,7 +20,7 @@
   min-height: 100vh;
 
   box-sizing: border-box;
-  padding: 70px 20px;
+  padding: 40px 20px;
 
   overflow: hidden;
 
@@ -94,7 +94,7 @@
 
   box-sizing: border-box;
 
-  padding: 42px 38px;
+  padding: 30px 32px;
 
   overflow: hidden;
 
@@ -157,7 +157,7 @@
 
   z-index: 2;
 
-  margin-bottom: 25px;
+  margin-bottom: 16px;
 
   text-align: center;
 }
@@ -191,11 +191,11 @@
 }
 
 .login-header h1 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 
   color: #171717;
 
-  font-size: clamp(2rem, 5vw, 2.5rem);
+  font-size: clamp(1.8rem, 5vw, 2.15rem);
 
   font-weight: 850;
 
@@ -228,7 +228,7 @@
 
   flex-direction: column;
 
-  gap: 21px;
+  gap: 16px;
 }
 
 
@@ -262,7 +262,7 @@
 .login-control {
   width: 100%;
 
-  min-height: 50px;
+  min-height: 48px;
 
   box-sizing: border-box;
 
@@ -460,7 +460,7 @@
 
   width: 100%;
 
-  min-height: 52px;
+  min-height: 48px;
 
   margin-top: 3px;
 
@@ -549,7 +549,7 @@
 ========================================================= */
 
 .login-register {
-  margin: 21px 0 0;
+  margin: 6px 0 0;
 
   color: #68717c;
 
@@ -1162,23 +1162,23 @@
   .login-container {
     align-items: center;
 
-    padding: 35px 14px;
+    padding: 24px 14px;
   }
 
   .login-card {
     max-width: 100%;
 
-    padding: 34px 22px;
+    padding: 26px 22px;
 
     border-radius: 20px;
   }
 
   .login-header {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
 
   .login-header h1 {
-    font-size: 2rem;
+    font-size: 1.9rem;
   }
 
   .login-header p {
@@ -1190,15 +1190,15 @@
   }
 
   .login-form {
-    gap: 19px;
+    gap: 14px;
   }
 
   .login-control {
-    min-height: 49px;
+    min-height: 48px;
   }
 
   .login-submit {
-    min-height: 51px;
+    min-height: 48px;
   }
 
   .login-modal {
@@ -1213,11 +1213,11 @@
 
 @media (max-width: 380px) {
   .login-container {
-    padding: 25px 10px;
+    padding: 20px 10px;
   }
 
   .login-card {
-    padding: 28px 17px;
+    padding: 24px 17px;
   }
 
   .login-header h1 {
