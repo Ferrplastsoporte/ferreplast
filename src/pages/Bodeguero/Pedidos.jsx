@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   LuCalendar,
   LuCircleCheck,
@@ -43,6 +43,7 @@ import "./css/pedidos-bodeguero.css";
 const ESTADO_LISTO_DESPACHO = ESTADO_PEDIDO.LISTO_DESPACHO;
 const ESTADO_LISTO_RETIRO = ESTADO_PEDIDO.LISTO_RETIRO;
 const ESTADO_FINALIZADO = ESTADO_PEDIDO.FINALIZADO;
+const ESTADO_CANCELADO = ESTADO_PEDIDO.CANCELADO;
 const HORAS_ATRASO = 24;
 
 const BUCKET_IMAGENES = "imagenes_productos";
@@ -55,6 +56,7 @@ const VISTAS = {
   despacho: "Despacho",
   listos: "Listos",
   finalizados: "Finalizados",
+  cancelados: "Cancelados",
 };
 
 const ORDEN_PREDETERMINADO = "recientes";
@@ -152,6 +154,8 @@ function obtenerUnidades(pedido) {
 
 function obtenerEstadoVisual(pedido) {
   switch (pedido.id_estado) {
+    case ESTADO_CANCELADO:
+      return { texto: "Cancelado", clase: "pb-estado--cancelado" };
     case ESTADO_FINALIZADO:
       return { texto: "Finalizado", clase: "pb-estado--finalizado" };
     case ESTADO_LISTO_RETIRO:
@@ -192,6 +196,10 @@ function Pedidos() {
   const [confirmando, setConfirmando] = useState(false);
   const [procesando, setProcesando] = useState(false);
   const [errorAccion, setErrorAccion] = useState("");
+  const [confirmandoCancelacion, setConfirmandoCancelacion] = useState(false);
+  const [observacionCancelacion, setObservacionCancelacion] = useState("");
+  const [contactoConfirmado, setContactoConfirmado] = useState(false);
+  const cancelacionEnCurso = useRef(false);
 
   // ========================================================
   // CARGA
@@ -247,11 +255,19 @@ function Pedidos() {
             )
           )
         `)
-        .in("id_estado", [...ESTADOS_PENDIENTES, ...ESTADOS_LISTOS, ESTADO_FINALIZADO])
+        .in("id_estado", [...ESTADOS_PENDIENTES, ...ESTADOS_LISTOS, ESTADO_FINALIZADO, ESTADO_CANCELADO])
         .order("fecha_predido", { ascending: false });
 
       if (errorPedidos) throw errorPedidos;
-      setPedidos(data || []);
+      // La lectura principal sigue funcionando aunque el SQL de observación aún no se haya instalado.
+      let observaciones = [];
+      if ((data ?? []).some(pedido => Number(pedido.id_estado) === ESTADO_CANCELADO)) {
+        const { data: notas } = await supabase.from("pedido")
+          .select("id_pedido, observacion").eq("id_estado", ESTADO_CANCELADO);
+        observaciones = notas ?? [];
+      }
+      const notasPorPedido = new Map(observaciones.map(nota => [nota.id_pedido, nota.observacion]));
+      setPedidos((data ?? []).map(pedido => ({ ...pedido, observacion: notasPorPedido.get(pedido.id_pedido) ?? null })));
     } catch (errorCarga) {
       console.error("Error al cargar pedidos:", { codigo: errorCarga?.code, estado: errorCarga?.status });
       setError(errorCarga.message || "No fue posible cargar los pedidos.");
@@ -272,6 +288,7 @@ function Pedidos() {
       despacho: pendientes.filter((pedido) => !esRetiro(pedido)).length,
       listos: pedidos.filter((pedido) => ESTADOS_LISTOS.includes(pedido.id_estado)).length,
       finalizados: pedidos.filter(esPedidoFinalizado).length,
+      cancelados: pedidos.filter(pedido => Number(pedido.id_estado) === ESTADO_CANCELADO).length,
     };
   }, [pedidos]);
 
@@ -295,6 +312,7 @@ function Pedidos() {
 
     return pedidos
       .filter((pedido) => {
+        if (vista === "cancelados") return Number(pedido.id_estado) === ESTADO_CANCELADO;
         if (vista === "listos") return ESTADOS_LISTOS.includes(pedido.id_estado);
         if (vista === "finalizados") return esPedidoFinalizado(pedido);
         if (!esPendiente(pedido)) return false;
@@ -372,6 +390,9 @@ function Pedidos() {
   // ========================================================
   function abrirDetalle(pedido) {
     setPedidoSeleccionado(pedido);
+    setConfirmandoCancelacion(false);
+    setObservacionCancelacion("");
+    setContactoConfirmado(false);
     setConfirmando(false);
     setErrorAccion("");
   }
@@ -482,6 +503,47 @@ function Pedidos() {
     }
   }
 
+  async function cancelarPedido() {
+    if (!pedidoSeleccionado || procesando || cancelacionEnCurso.current) return;
+    const motivo = observacionCancelacion.trim();
+    if (!contactoConfirmado || !motivo || motivo.length > 1000) {
+      setErrorAccion("Confirma que contactaste al cliente e indica el motivo de cancelación.");
+      return;
+    }
+    cancelacionEnCurso.current = true;
+    setProcesando(true);
+    setErrorAccion("");
+    try {
+      const { data: nuevoEstado, error: errorRpc } = await supabase.rpc(
+        "cancelar_pedido_bodeguero",
+        {
+          p_id_pedido: pedidoSeleccionado.id_pedido,
+          p_observacion: motivo,
+          p_contacto_confirmado: contactoConfirmado,
+          p_estado_esperado: Number(pedidoSeleccionado.id_estado),
+        },
+      );
+      if (errorRpc) throw errorRpc;
+      if (Number(nuevoEstado) !== ESTADO_CANCELADO) throw new Error("No se pudo confirmar la cancelación del pedido.");
+      const idPedido = pedidoSeleccionado.id_pedido;
+      setPedidos(actuales => actuales.map(pedido => pedido.id_pedido === idPedido
+        ? { ...pedido, id_estado: ESTADO_CANCELADO, observacion: [pedido.observacion, `Cancelación: ${motivo}`].filter(Boolean).join("\n") }
+        : pedido));
+      setAviso(`Pedido ${obtenerFolio(pedidoSeleccionado)} cancelado. El stock y el pago se mantienen sin cambios.`);
+      setPedidoSeleccionado(null);
+      setConfirmandoCancelacion(false);
+      setConfirmando(false);
+    } catch (errorCancelacion) {
+      setErrorAccion(errorCancelacion.code === "PGRST202" || errorCancelacion.code === "42883"
+        ? "Falta instalar la función de cancelación en Supabase."
+        : errorCancelacion.message || "No fue posible cancelar el pedido.");
+      await cargarPedidos();
+    } finally {
+      cancelacionEnCurso.current = false;
+      setProcesando(false);
+    }
+  }
+
   // ========================================================
   // RENDER
   // ========================================================
@@ -492,6 +554,7 @@ function Pedidos() {
     { clave: "despacho", valor: indicadores.despacho, etiqueta: "Despacho", detalle: "Pendientes de envío", Icono: LuTruck, tono: "neutro" },
     { clave: "listos", valor: indicadores.listos, etiqueta: "Listos", detalle: "Esperando retiro o entrega", Icono: LuPackageCheck, tono: "listo" },
     { clave: "finalizados", valor: indicadores.finalizados, etiqueta: "Finalizados", detalle: "Retirados o entregados", Icono: LuCircleCheck, tono: "finalizado" },
+    { clave: "cancelados", valor: indicadores.cancelados, etiqueta: "Cancelados", detalle: "Historial de cancelaciones", Icono: LuX, tono: "cancelado" },
   ];
 
   return (
@@ -719,6 +782,14 @@ function Pedidos() {
       {pedidoSeleccionado && (
         <DetallePedidoModal
           pedido={pedidoSeleccionado}
+          confirmandoCancelacion={confirmandoCancelacion}
+          observacionCancelacion={observacionCancelacion}
+          contactoConfirmado={contactoConfirmado}
+          onPedirCancelacion={() => { setConfirmando(false); setErrorAccion(""); setConfirmandoCancelacion(true); }}
+          onVolverCancelacion={() => { setErrorAccion(""); setConfirmandoCancelacion(false); }}
+          onCambiarObservacion={setObservacionCancelacion}
+          onCambiarContacto={setContactoConfirmado}
+          onConfirmarCancelacion={cancelarPedido}
           confirmando={confirmando}
           procesando={procesando}
           errorAccion={errorAccion}
@@ -737,6 +808,14 @@ function Pedidos() {
 // ==========================================================
 function DetallePedidoModal({
   pedido,
+  confirmandoCancelacion,
+  observacionCancelacion,
+  contactoConfirmado,
+  onPedirCancelacion,
+  onVolverCancelacion,
+  onCambiarObservacion,
+  onCambiarContacto,
+  onConfirmarCancelacion,
   confirmando,
   procesando,
   errorAccion,
@@ -750,6 +829,8 @@ function DetallePedidoModal({
   const pendiente = esPendiente(pedido);
   const listo = esPedidoListo(pedido);
   const finalizado = esPedidoFinalizado(pedido);
+  const cancelado = Number(pedido.id_estado) === ESTADO_CANCELADO;
+  const permiteCancelar = [0, 1, 2, 3, 4].includes(Number(pedido.id_estado));
 
   // Acción disponible según el estado: preparar → listo → finalizado
   const accion = pendiente
@@ -893,7 +974,35 @@ function DetallePedidoModal({
             </p>
           )}
 
-          {finalizado ? (
+          {cancelado ? (
+            <div className="pb-cancelacion-resumen">
+              <p className="pb-nota"><LuX aria-hidden="true" />Pedido cancelado.</p>
+              <p>{pedido.observacion || "Sin observación registrada."}</p>
+            </div>
+          ) : confirmandoCancelacion ? (
+            <form className="pb-cancelacion" aria-labelledby="pb-cancelacion-titulo"
+              onSubmit={evento => { evento.preventDefault(); onConfirmarCancelacion(); }}>
+              <h3 id="pb-cancelacion-titulo">Cancelar pedido {obtenerFolio(pedido)}</h3>
+              <p>Contacta al cliente antes de confirmar la cancelación.</p>
+              <p><strong>{pedido.usuario?.nom_user || "Cliente sin nombre"}</strong>{pedido.usuario?.phone_user ? ` · ${pedido.usuario.phone_user}` : " · Sin teléfono registrado"}</p>
+              <label htmlFor="pb-cancelacion-motivo">Motivo de cancelación</label>
+              <textarea id="pb-cancelacion-motivo" value={observacionCancelacion} maxLength={1000} autoFocus
+                placeholder="Ej.: el producto no tiene stock disponible." required disabled={procesando}
+                onChange={evento => onCambiarObservacion(evento.target.value)} />
+              <label className="pb-cancelacion-contacto">
+                <input type="checkbox" checked={contactoConfirmado} required disabled={procesando}
+                  onChange={evento => onCambiarContacto(evento.target.checked)} />
+                Ya contacté al cliente y le informé la cancelación.
+              </label>
+              <p className="pb-cancelacion-aviso">Esta acción cancela el pedido. El reingreso de stock y cualquier gestión del pago se realizan manualmente.</p>
+              <div className="pb-confirmacion__botones">
+                <button type="button" className="pb-boton pb-boton--secundario" disabled={procesando} onClick={onVolverCancelacion}>Volver al pedido</button>
+                <button type="submit" className="pb-boton pb-boton--cancelar" disabled={procesando || !contactoConfirmado || !observacionCancelacion.trim()}>
+                  {procesando ? "Cancelando…" : "Confirmar cancelación"}
+                </button>
+              </div>
+            </form>
+          ) : finalizado ? (
             <p className="pb-nota">
               <LuCircleCheck aria-hidden="true" />
               Pedido finalizado. El cliente ve: “{obtenerMensajePedidoFinalizado(pedido)}”
@@ -924,7 +1033,10 @@ function DetallePedidoModal({
               <button type="button" className="pb-boton pb-boton--secundario" onClick={onCerrar}>
                 Cerrar
               </button>
-              <button type="button" className="pb-boton pb-boton--primario" onClick={onPedirConfirmacion}>
+              {permiteCancelar && <button type="button" className="pb-boton pb-boton--cancelar" disabled={procesando} onClick={onPedirCancelacion}>
+                <LuX aria-hidden="true" />Cancelar pedido
+              </button>}
+              <button type="button" className="pb-boton pb-boton--primario" onClick={onPedirConfirmacion} disabled={procesando}>
                 <accion.Icono aria-hidden="true" />
                 {accion.boton}
               </button>

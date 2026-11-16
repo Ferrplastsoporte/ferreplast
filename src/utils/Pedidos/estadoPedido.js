@@ -43,11 +43,12 @@ export const ESTADOS_FINALIZADOS = [ESTADO_PEDIDO.FINALIZADO];
 
 // Lo que el cliente ve en "Mis pedidos".
 // Quedan fuera: pagos no completados (0), cancelados (7),
-// expirados (8) y otros estados internos.
+// expirados (8) y otros estados internos. Los cancelados conservan su historial.
 export const ESTADOS_VISIBLES_CLIENTE = [
   ...ESTADOS_PENDIENTES,
   ...ESTADOS_LISTOS,
   ESTADO_PEDIDO.FINALIZADO,
+  ESTADO_PEDIDO.CANCELADO,
 ];
 
 export const MENSAJES_PEDIDO_LISTO = {
@@ -140,9 +141,9 @@ export function obtenerMensajePedidoFinalizado(pedido) {
     : MENSAJES_PEDIDO_FINALIZADO.despacho;
 }
 
-// Aviso para la vista del cliente: solo si el pedido ya está
-// listo o finalizado.
+// Aviso para la vista del cliente: pedidos listos, finalizados o cancelados.
 export function obtenerAvisoCliente(pedido) {
+  if (Number(pedido?.id_estado) === ESTADO_PEDIDO.CANCELADO) return "Pedido cancelado. Contacta a Ferreplast para consultar los detalles.";
   if (esPedidoFinalizado(pedido)) return obtenerMensajePedidoFinalizado(pedido);
   if (esPedidoListo(pedido)) return obtenerMensajePedidoListo(pedido);
   return null;

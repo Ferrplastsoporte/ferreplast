@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAutenticacion } from "../../hooks/useAutenticacion";
 import { FaArrowLeft } from "react-icons/fa";
+import { FiAlertTriangle as IconoPeligrosidad } from "react-icons/fi";
 
 import BotonAgregarCarrito from "../carrito/BotonAgregarCarrito";
 import BotonAgregarCotizacion from "../cotizacion/BotonAgregarCotizacion";
@@ -42,6 +43,8 @@ function DetalleProducto({ producto }) {
   const documentos = Array.isArray(producto.documentos)
     ? producto.documentos
     : [];
+
+  const peligrosidades = Array.isArray(producto.peligrosidades) ? producto.peligrosidades : [];
 
   function formatearPrecio(valor) {
     return new Intl.NumberFormat("es-CL", {
@@ -110,6 +113,16 @@ function DetalleProducto({ producto }) {
 
           {producto.desc_prod && (
             <p className="product-detail__description">{producto.desc_prod}</p>
+          )}
+
+          {(peligrosidades.length > 0 || producto.errorPeligrosidades) && (
+            <section className="detalle-producto__peligrosidades" aria-label="Peligrosidad del producto">
+              <p className="detalle-producto__peligrosidades-titulo"><IconoPeligrosidad aria-hidden="true" />Peligrosidad</p>
+              {peligrosidades.length > 0 && <ul>
+                {peligrosidades.map(tipo => <li className="detalle-producto__etiqueta-peligrosidad" key={tipo.id_peligrosidad}>{tipo.nom_peligrosidad}</li>)}
+              </ul>}
+              {producto.errorPeligrosidades && <p className="detalle-producto__aviso-peligrosidad">No fue posible cargar toda la información de peligrosidad. Consulta la hoja de seguridad del producto.</p>}
+            </section>
           )}
 
           <div className="product-detail__price">

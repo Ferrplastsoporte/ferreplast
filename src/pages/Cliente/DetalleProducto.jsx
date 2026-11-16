@@ -13,10 +13,12 @@ function DetalleProducto() {
   const [errorCarga, setErrorCarga] = useState("");
 
   useEffect(() => {
-    cargarProducto();
+    let vigente = true;
+    cargarProducto(() => vigente);
+    return () => { vigente = false; };
   }, [id]);
 
-  async function cargarProducto() {
+  async function cargarProducto(estaVigente) {
     setCargando(true);
     setErrorCarga("");
     setProducto(null);
@@ -84,6 +86,8 @@ function DetalleProducto() {
       .eq("est_prod", 2)
       .maybeSingle();
 
+    if (!estaVigente()) return;
+
     if (error) {
       console.error("Error al cargar el detalle del producto:", { codigo: error?.code, estado: error?.status });
 
@@ -121,10 +125,40 @@ function DetalleProducto() {
         };
       });
 
+    // Las etiquetas se leen del catálogo real asociado a este producto.
+    // Un error de permisos no debe presentarse como ausencia de peligrosidad.
+    let peligrosidades = [];
+    let errorPeligrosidades = false;
+    try {
+      const { data: relaciones, error: errorEtiquetas } = await supabase
+        .from("producto_peligrosidad")
+        .select("id_peligrosidad, tipo_peligrosidad(id_peligrosidad, nom_peligrosidad)")
+        .eq("id_prod", idProducto);
+      if (errorEtiquetas) throw errorEtiquetas;
+      const etiquetasPorId = new Map();
+      for (const relacion of relaciones ?? []) {
+        const tipos = Array.isArray(relacion.tipo_peligrosidad)
+          ? relacion.tipo_peligrosidad : [relacion.tipo_peligrosidad];
+        if (!tipos.some(tipo => tipo?.nom_peligrosidad?.trim())) errorPeligrosidades = true;
+        for (const tipo of tipos) {
+          if (tipo?.nom_peligrosidad?.trim()) {
+            const idPeligrosidad = tipo.id_peligrosidad ?? relacion.id_peligrosidad;
+            etiquetasPorId.set(idPeligrosidad, { id_peligrosidad: idPeligrosidad, nom_peligrosidad: tipo.nom_peligrosidad.trim() });
+          }
+        }
+      }
+      peligrosidades = [...etiquetasPorId.values()].sort((a, b) => Number(a.id_peligrosidad) - Number(b.id_peligrosidad));
+    } catch {
+      errorPeligrosidades = true;
+    }
+    if (!estaVigente()) return;
+
     setProducto({
       ...data,
       imagen_url: imagenPublica,
       documentos,
+      peligrosidades,
+      errorPeligrosidades,
     });
 
     setCargando(false);
