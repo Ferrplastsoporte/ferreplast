@@ -258,7 +258,7 @@ function DetallePedido() {
           className="detalle-pedido-back"
           onClick={() => navigate("/pedidos")}
         >
-          ← Volver a mis pedidos
+          Volver a mis pedidos
         </button>
 
         {/* ================= ENCABEZADO ================= */}
@@ -273,7 +273,7 @@ function DetallePedido() {
             <p>{formatearFecha(pedido.fecha_predido)}</p>
           </div>
 
-          <div className="detalle-pedido-estado">
+          <div className="detalle-pedido-estado" data-estado={pedido.id_estado}>
             {obtenerEstadoPedido()}
           </div>
 

@@ -31,7 +31,7 @@ function TarjetaPedido({
           </h2>
         </div>
 
-        <div className="pedido-card__estado">
+        <div className="pedido-card__estado" data-estado={pedido.id_estado}>
           {estado}
         </div>
 
@@ -90,9 +90,6 @@ function TarjetaPedido({
         >
           Ver pedido
 
-          <span aria-hidden="true">
-            →
-          </span>
         </button>
 
       </div>

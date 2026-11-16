@@ -4,7 +4,7 @@
 
 .detalle-pedido-page {
   min-height: 100vh;
-  padding: 120px 6% 60px;
+  padding: 32px 6% 60px;
   background: #f4f6fa;
 }
 
@@ -352,7 +352,7 @@
 
 @media (max-width: 600px) {
   .detalle-pedido-page {
-    padding: 100px 16px 40px;
+    padding: 24px 16px 40px;
   }
 
   .detalle-pedido-header {
@@ -397,4 +397,17 @@
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.5;
+}
+.detalle-pedido-estado[data-estado="7"] {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.detalle-pedido-estado[data-estado="2"] {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.detalle-pedido-estado[data-estado="3"],
+.detalle-pedido-estado[data-estado="4"] {
+  background: #fef3c7;
+  color: #92400e;
 }
