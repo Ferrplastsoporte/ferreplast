@@ -1004,7 +1004,8 @@
 .mascot-seal__flipper--right {
   right: 19px;
 
-  transform: rotate(-28deg);
+  /* Reflejar la forma para que ambas aletas sean simétricas. */
+  transform: rotate(-28deg) scaleX(-1);
 }
 
 
@@ -1025,7 +1026,8 @@
   transform:
     translateY(-38px)
     translateX(-18px)
-    rotate(-18deg);
+    rotate(-18deg)
+    scaleX(-1);
 }
 
 .login-form:has(#password:focus)
