@@ -874,3 +874,5 @@
   font-size: 0.9rem;
   line-height: 1.5;
 }
+
+.modal-confirmacion { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; }

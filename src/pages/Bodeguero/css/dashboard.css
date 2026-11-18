@@ -643,3 +643,13 @@
         transition: none !important;
     }
 }
+@media (max-width: 700px) {
+    .dbb, .dbb-toolbar, .dbb-toolbar__grupo,
+    .dbb-panel__header, .dbb-panel__controles, .dbb-panel__filtros { min-width: 0; max-width: 100%; }
+    .dbb-toolbar { align-items: stretch; flex-direction: column; }
+    .dbb-toolbar__grupo { width: 100%; }
+    .dbb-chip, .dbb-select { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+    .dbb-panel__header h2 { min-width: 0; overflow-wrap: anywhere; }
+    .dbb-panel__header h2 svg { flex-shrink: 0; }
+    .dbb-pop--kpi { min-width: 0; }
+}

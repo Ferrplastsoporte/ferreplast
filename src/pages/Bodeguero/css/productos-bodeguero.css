@@ -987,6 +987,10 @@
 }
 
 .productos-modal {
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   width: 100%;
   max-width: 500px;
 

@@ -85,8 +85,10 @@ function AdminSidebar() {
   function mostrarEtiqueta(evento, texto, permitirMovil = false) {
     if (!window.matchMedia("(min-width: 701px)").matches) {
       if (!permitirMovil) return;
-      const barra = evento.currentTarget.closest("aside").getBoundingClientRect();
-      setEtiqueta({ texto, izquierda: 12, arriba: barra.bottom + 8 });
+      const boton = evento.currentTarget.getBoundingClientRect();
+      const derecha = Math.max(12, window.innerWidth - boton.right);
+      setEtiqueta({ texto, derecha, arriba: boton.bottom + 8,
+        anchoMaximo: Math.min(300, window.innerWidth - derecha - 12) });
       return;
     }
     const posicion = evento.currentTarget.getBoundingClientRect();
@@ -201,7 +203,7 @@ function AdminSidebar() {
           id={idEtiqueta}
           role="tooltip"
           className="barra-lateral-admin-etiqueta-flotante"
-          style={{ left: etiqueta.izquierda, top: etiqueta.arriba }}
+          style={{ left: etiqueta.izquierda, right: etiqueta.derecha, top: etiqueta.arriba, maxWidth: etiqueta.anchoMaximo }}
         >
           {etiqueta.texto}
         </div>,

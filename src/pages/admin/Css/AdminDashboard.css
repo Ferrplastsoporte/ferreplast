@@ -3,7 +3,7 @@
    Todas las clases usan el prefijo pa- para no chocar con otras páginas.
    ===================================================================== */
 
-.panel-admin { display: flex; flex-direction: column; gap: 16px; }
+.panel-admin { min-width: 0; max-width: 100%; display: flex; flex-direction: column; gap: 16px; }
 
 .pa-barra { position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; gap: 6px; margin: 0 -8px; padding: 10px 8px; background: #f4f6f8; border-bottom: 1px solid #e2e8f0; }
 .pa-barra__fila { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -148,7 +148,14 @@
 @media (max-width: 600px) {
   .pa-kpis, .pa-kpis--seis, .pa-atencion { grid-template-columns: minmax(0, 1fr); }
   .pa-barra__fila { flex-direction: column; align-items: stretch; }
-  .pa-secciones-nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .pa-secciones-nav { flex-wrap: wrap; min-width: 0; max-width: 100%; padding-bottom: 4px; }
   .pa-secciones-nav a { flex: none; }
   .pa-seccion { scroll-margin-top: 170px; }
+}
+@media (max-width: 700px) {
+  .pa-barra { position: static; min-width: 0; margin-inline: 0; padding-inline: 0; }
+  .pa-barra__fila { min-width: 0; flex-direction: column; align-items: stretch; }
+  .pa-secciones-nav, .pa-periodos { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+  .pa-secciones-nav a, .pa-periodos button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  .pa-rango { overflow-wrap: anywhere; }
 }

@@ -14,7 +14,7 @@ import {
   sanitizarTerminoBusqueda,
 } from "../../utils/comunes/busqueda";
 
-import "./Css/Usuarios.css";
+import "./css/Usuarios.css";
 
 function sanitizarCelularTrabajador(valor = "") {
   const texto = String(valor).replace(/[\s()-]/g, "");

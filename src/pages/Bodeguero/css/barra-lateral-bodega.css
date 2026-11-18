@@ -6,7 +6,7 @@
 
 .barra-lateral-bodega-etiqueta-flotante {
   position: fixed;
-  z-index: 3000;
+  z-index: 200;
   width: max-content;
   max-width: min(300px, calc(100vw - 100px));
   box-sizing: border-box;
@@ -51,7 +51,7 @@
     --espacio-opciones: clamp(2px, 0.6dvh, 6px);
     position: sticky;
     top: 0;
-    z-index: 1100;
+    z-index: 100;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -230,7 +230,7 @@
   .barra-lateral-bodega.bodeguero-barra-lateral {
     position: sticky;
     top: 0;
-    z-index: 1100;
+    z-index: 100;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px 12px;
