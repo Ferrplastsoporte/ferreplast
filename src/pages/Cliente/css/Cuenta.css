@@ -1,6 +1,6 @@
 .cuenta-page {
   min-height: 100vh;
-  padding: 100px max(24px, 6vw) 90px;
+  padding: 32px max(24px, 6vw) 90px;
   color: #17202a;
   background: #f4f6f8;
 }
@@ -369,7 +369,7 @@
 
 @media (max-width: 850px) {
   .cuenta-page {
-    padding: 88px 24px 70px;
+    padding: 32px 24px 70px;
   }
 
   .cuenta-grid {
@@ -379,7 +379,7 @@
 
 @media (max-width: 620px) {
   .cuenta-page {
-    padding: 78px 16px 55px;
+    padding: 32px 16px 55px;
   }
 
   .cuenta-header,
@@ -421,4 +421,14 @@
     transition: none;
     animation: none;
   }
+}
+
+/* Celular con prefijo fijo, exclusivo de esta vista. */
+.cuenta-field .cuenta-celular { display: flex; align-items: stretch; min-width: 0; }
+.cuenta-field .cuenta-celular > span { display: flex; align-items: center; flex-shrink: 0; padding: 0 14px; border: 1px solid #cbd5e1; border-right: 0; border-radius: 10px 0 0 10px; background: #f1f5f9; color: #475569; font-weight: 600; }
+.cuenta-field .cuenta-celular > input { flex: 1; width: 0; min-width: 0; border-radius: 0 10px 10px 0; }
+
+/* Separación superior uniforme de las vistas del cliente en pantallas pequeñas. */
+@media (max-width: 700px) {
+  .cuenta-page { padding-top: 24px; }
 }

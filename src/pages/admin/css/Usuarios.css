@@ -184,3 +184,8 @@
   .usuarios-formulario__acciones button { width: 100%; }
   .usuarios-confirmacion__acciones { flex-direction: column-reverse; }
 }
+
+/* Celular con prefijo fijo, exclusivo de esta vista. */
+.usuarios-formulario .usuarios-celular { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: stretch; min-width: 0; }
+.usuarios-formulario .usuarios-celular > span { display: flex; align-items: center; flex-shrink: 0; padding: 0 14px; border: 1px solid #cbd5e1; border-right: 0; border-radius: 10px 0 0 10px; background: #f1f5f9; color: #475569; font-weight: 600; }
+.usuarios-formulario .usuarios-celular > input { box-sizing: border-box; width: 100%; min-width: 0; border-radius: 0 10px 10px 0; }

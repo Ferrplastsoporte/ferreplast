@@ -1,7 +1,7 @@
 import { useState } from "react"
 import useCarrito from "../../hooks/useCarrito"
 import ModalCantidad from "../ui/ModalCantidad"
-import "../css/BotonAgregarCarrito.css"
+import "./css/BotonAgregarCarrito.css"
 
 function BotonAgregarCarrito({
   producto,

@@ -340,7 +340,7 @@
 
 @media (max-width: 560px) {
   .pedidos-page {
-    padding: 24px 16px 32px;
+    padding: 32px 16px 32px;
   }
 
   .pedido-card__meta {
@@ -458,3 +458,8 @@
   .pedidos-summary { flex-wrap: wrap; gap: 8px; }
 }
 
+
+/* Separación superior uniforme de las vistas del cliente en pantallas pequeñas. */
+@media (max-width: 700px) {
+  .pedidos-page { padding-top: 24px; }
+}

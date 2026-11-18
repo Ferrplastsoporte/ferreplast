@@ -8,7 +8,7 @@ import { supabase } from "../../lib/supabase";
 import {
   LONGITUD_MAXIMA_BUSQUEDA, normalizarTerminoBusqueda, sanitizarTerminoBusqueda,
 } from "../../utils/comunes/busqueda";
-import "../css/navbar.css";
+import "./css/navbar.css";
 import BuscadorInteligente from "./BuscadorInteligente";
 import logo from "../../assets/logo.png";
 

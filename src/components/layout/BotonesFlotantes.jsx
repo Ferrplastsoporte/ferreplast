@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FaArrowUp, FaDollarSign, FaWhatsapp } from "react-icons/fa";
 
 import { useAutenticacion } from "../../hooks/useAutenticacion";
-import "../css/BotonesFlotantes.css";
+import "./css/BotonesFlotantes.css";
 
 function BotonesFlotantes() {
   const [showTop, setShowTop] = useState(false);

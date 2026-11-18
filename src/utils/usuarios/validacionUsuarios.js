@@ -34,9 +34,8 @@ export function normalizarRutUsuario(valor = "") {
     : rut;
 }
 
-// Solo la invitación muestra +569 fuera del campo editable.
-// Los otros formularios mantienen su sanitizador de teléfono completo.
-export function sanitizarCelularInvitacion(valor = "") {
+// Para formularios con el prefijo +569 fijo fuera del campo editable.
+export function sanitizarCelularUsuario(valor = "") {
   const texto = String(valor).replace(/[\s()-]/g, "");
   const numero = texto.startsWith("+569")
     ? texto.slice(4)

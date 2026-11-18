@@ -5,9 +5,9 @@
 .pago-resultado {
   min-height: calc(100vh - 220px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 48px 16px;
+  padding: 32px 16px 48px;
   background: #f5f7fb;
 }
 
@@ -193,4 +193,8 @@
     height: 80px;
     font-size: 2.3rem;
   }
+}
+/* Separación superior uniforme de las vistas del cliente en pantallas pequeñas. */
+@media (max-width: 700px) {
+  .pago-resultado { padding-top: 24px; }
 }

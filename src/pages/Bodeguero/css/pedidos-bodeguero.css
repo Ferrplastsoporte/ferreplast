@@ -982,8 +982,8 @@
 .pb-cancelacion h3,.pb-cancelacion p { margin:0; }
 .pb-cancelacion h3 { color:#991b1b; font-size:1rem; }
 .pb-cancelacion > label { font-size:.88rem; font-weight:600; }
-.pb-cancelacion textarea { width:100%; min-height:90px; padding:10px 12px; box-sizing:border-box; resize:vertical; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#172033; font:inherit; }
-.pb-cancelacion textarea:focus-visible { outline:2px solid #0753bd; outline-offset:2px; }
+.pb-cancelacion .pb-cancelacion__motivo { width:100%; min-height:44px; padding:10px 12px; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#172033; font:inherit; }
+.pb-cancelacion .pb-cancelacion__motivo:focus-visible { outline:2px solid #0753bd; outline-offset:2px; }
 .pb-cancelacion .pb-cancelacion-contacto { display:flex; align-items:flex-start; gap:10px; line-height:1.5; }
 .pb-cancelacion-contacto input { flex-shrink:0; width:18px; height:18px; margin:2px 0 0; accent-color:#b91c1c; }
 .pb-cancelacion .pb-cancelacion-aviso { color:#64748b; font-size:.82rem; line-height:1.5; }

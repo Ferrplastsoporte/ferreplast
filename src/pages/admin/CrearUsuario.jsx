@@ -2,16 +2,24 @@ import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 import AdminHeader from "./components/AdminHeader";
+import ConfirmacionSeguridadAdmin from "./components/ConfirmacionSeguridadAdmin";
 import UsuarioInvitacionForm from "./components/UsuarioInvitacionForm";
 
 import "./css/CrearUsuario.css";
 
 function CrearUsuario() {
   const [cargando, setCargando] = useState(false);
+  const [invitacionPendiente, setInvitacionPendiente] = useState(null);
+  const [versionFormulario, setVersionFormulario] = useState(0);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
 
-  async function handleCrearUsuario(datos) {
+  function solicitarInvitacion(datos) {
+    if (!cargando && !invitacionPendiente) setInvitacionPendiente({ ...datos });
+    return false; // Conservar el formulario hasta completar la verificación y el envío.
+  }
+
+  async function handleCrearUsuario(datos, verificacion) {
     if (cargando) {
       return false;
     }
@@ -24,7 +32,7 @@ function CrearUsuario() {
       const { data, error } = await supabase.functions.invoke(
         "invitar-usuario",
         {
-          body: datos,
+          body: { ...datos, verificacion_id: verificacion },
         }
       );
 
@@ -113,8 +121,8 @@ function CrearUsuario() {
           )}
 
           <UsuarioInvitacionForm
-            onEnviar={handleCrearUsuario}
-            cargando={cargando}
+            key={versionFormulario} onEnviar={solicitarInvitacion}
+            cargando={cargando || Boolean(invitacionPendiente)}
           />
         </div>
 
@@ -142,8 +150,8 @@ function CrearUsuario() {
             <li>
               <span aria-hidden="true">2</span>
               <div>
-                <strong>Enviamos la invitación</strong>
-                <p>La persona recibirá un enlace en su correo electrónico.</p>
+                <strong>Confirma y envía la invitación</strong>
+                <p>Confirma el código enviado a tu correo. Después, el trabajador recibirá su invitación.</p>
               </div>
             </li>
             <li>
@@ -161,6 +169,15 @@ function CrearUsuario() {
           </div>
         </aside>
       </div>
+      {invitacionPendiente && (
+        <ConfirmacionSeguridadAdmin operacion="invitar_usuario" datos={invitacionPendiente}
+          alCancelar={() => setInvitacionPendiente(null)}
+          alConfirmar={async (id) => {
+            const correcto = await handleCrearUsuario(invitacionPendiente, id);
+            if (correcto) { setInvitacionPendiente(null); setVersionFormulario((valor) => valor + 1); }
+            return correcto;
+          }} />
+      )}
     </section>
   );
 }

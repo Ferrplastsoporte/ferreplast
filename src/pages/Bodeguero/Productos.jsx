@@ -5,7 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 import BodegueroHeader from "./components/BodegueroHeader";
 import ProductoFormBodeguero from "./components/ProductoFormBodeguero";
-import TablaProductos from "../../components/productos/TablaProductos";
+import TablaProductos from "./components/TablaProductos";
 import {
   LONGITUD_MAXIMA_BUSQUEDA,
   sanitizarTerminoBusqueda,

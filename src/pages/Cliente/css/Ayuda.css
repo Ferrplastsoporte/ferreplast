@@ -5,7 +5,7 @@
 
 .ayuda-page {
   min-height: 100vh;
-  padding: 120px 6% 110px;
+  padding: 32px 6% 110px;
   color: #171717;
   background:
     radial-gradient(
@@ -429,7 +429,7 @@
 
 @media (max-width: 950px) {
   .ayuda-page {
-    padding: 100px 30px 80px;
+    padding: 32px 30px 80px;
   }
 
   .ayuda-accesos {
@@ -456,7 +456,7 @@
 
 @media (max-width: 600px) {
   .ayuda-page {
-    padding: 80px 18px 60px;
+    padding: 32px 18px 60px;
   }
 
   .ayuda-header {
@@ -572,7 +572,7 @@
 
 @media (max-width: 380px) {
   .ayuda-page {
-    padding: 75px 14px 50px;
+    padding: 32px 14px 50px;
   }
 
   .ayuda-header h1 {
@@ -596,4 +596,9 @@
   .ayuda-pregunta__respuesta {
     padding: 0 18px 19px;
   }
+}
+
+/* Separación superior uniforme de las vistas del cliente en pantallas pequeñas. */
+@media (max-width: 700px) {
+  .ayuda-page { padding-top: 24px; }
 }

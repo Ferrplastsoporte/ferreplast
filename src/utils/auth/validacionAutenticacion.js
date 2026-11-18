@@ -259,7 +259,7 @@ export const validateRegisterField = (name, value, form) => {
         return "Debes seleccionar un rol.";
       }
 
-      if (!["bodeguero", "vendedor", "admin"].includes(val)) {
+      if (!["bodeguero", "admin"].includes(val)) {
         return "El rol seleccionado no es válido.";
       }
 

@@ -1,4 +1,4 @@
-import "../css/ModalAcceso.css";
+import "./css/ModalAcceso.css";
 
 const ModalAcceso = ({
   visible,

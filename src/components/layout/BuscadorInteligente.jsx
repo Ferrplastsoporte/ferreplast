@@ -14,7 +14,7 @@ import { obtenerUrlImagenProducto } from "../../services/productoStorageService"
 import {
   LONGITUD_MAXIMA_BUSQUEDA, normalizarTerminoBusqueda, sanitizarTerminoBusqueda,
 } from "../../utils/comunes/busqueda";
-import "../css/BuscadorInteligente.css";
+import "./css/BuscadorInteligente.css";
 
 const MIN_LETRAS = 3;            // desde cuántas letras se muestran sugerencias
 const ESPERA_MS = 300;           // espera después de la última tecla

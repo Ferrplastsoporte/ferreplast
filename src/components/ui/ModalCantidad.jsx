@@ -1,5 +1,5 @@
 import SelectorCantidad from "./SelectorCantidad";
-import "../css/ModalCantidad.css";
+import "./css/ModalCantidad.css";
 
 function ModalCantidad({
   titulo,

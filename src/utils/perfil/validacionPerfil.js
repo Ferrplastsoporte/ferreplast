@@ -1,10 +1,17 @@
 import {
   sanitizarNombreUsuario,
-  sanitizarTelefonoUsuario,
   validarNombreUsuario,
-  validarTelefonoUsuario,
 } from "../usuarios/validacionUsuarios";
 import { sanitizarCorreo, validarCorreo } from "../comunes/correo";
+
+function sanitizarCelularPerfil(valor = "") {
+  const texto = String(valor).replace(/[\s()-]/g, "");
+  const digitos = texto.replace(/\D/g, "");
+  const nacional = texto.startsWith("+569") ? digitos.slice(3)
+    : /^569\d{8}$/.test(digitos) ? digitos.slice(3) : digitos;
+  const numero = nacional.slice(0, 8);
+  return numero ? "+569" + numero : "";
+}
 
 export const LIMITES_PERFIL = {
   nombre: 80,
@@ -54,7 +61,7 @@ export function sanitizarCampoPerfil(nombre, valor) {
     case "nombre":
       return sanitizarNombreUsuario(valor);
     case "telefono":
-      return sanitizarTelefonoUsuario(valor);
+      return sanitizarCelularPerfil(valor);
     case "direccion":
       return sanitizarDireccionPerfil(valor);
     case "correo":
@@ -72,7 +79,7 @@ export function validarCampoPerfil(nombre, valor) {
     case "nombre":
       return validarNombreUsuario(valor);
     case "telefono":
-      return validarTelefonoUsuario(valor);
+      return /^\+569\d{8}$/.test(String(valor).trim()) ? "" : "Ingresa los 8 dígitos de tu celular después de +569.";
     case "direccion":
       return validarDireccionPerfil(valor);
     case "region":
@@ -89,7 +96,7 @@ export function validarCampoPerfil(nombre, valor) {
 export function normalizarPerfil(valores = {}) {
   return {
     nombre: sanitizarNombreUsuario(valores.nombre).trim(),
-    telefono: sanitizarTelefonoUsuario(valores.telefono).trim(),
+    telefono: sanitizarCelularPerfil(valores.telefono).trim(),
     direccion: sanitizarDireccionPerfil(valores.direccion).trim(),
     idComuna: Number(valores.comuna),
   };

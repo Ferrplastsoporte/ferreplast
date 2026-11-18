@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ModalCantidad from "../ui/ModalCantidad";
-import "../css/BotonAgregarCotizacion.css";
+import "./css/BotonAgregarCotizacion.css";
 import {
   agregarProductoCotizacion,
 } from "../../services/cotizacionService";

@@ -61,6 +61,19 @@ function CampoPerfil({ campo, editando, formulario, errores, onChange, onBlur })
       <span>{etiqueta}</span>
       {!editando || soloLectura ? (
         <strong>{valor || "No registrado"}</strong>
+      ) : nombre === "telefono" ? (
+        <div className="cuenta-celular">
+          <span id="cuentaCelularPrefijo">+569</span>
+          <input name={nombre} type="tel" value={formulario[nombre].replace(/^\+569/, "")}
+            onChange={onChange} onBlur={onBlur} maxLength={8} inputMode="numeric"
+            onPaste={(evento) => {
+              evento.preventDefault();
+              onChange({ target: { name: nombre, value: evento.clipboardData.getData("text") } });
+            }}
+            autoComplete="tel-national" placeholder="12345678"
+            aria-invalid={Boolean(errores[nombre])}
+            aria-describedby={errores[nombre] ? "cuentaCelularPrefijo cuentaCelularError" : "cuentaCelularPrefijo"} />
+        </div>
       ) : opciones ? (
         <select name={nombre} value={formulario[nombre]} onChange={onChange} onBlur={onBlur} aria-invalid={Boolean(errores[nombre])} {...propiedades}>
           <option value="">{placeholder}</option>
@@ -69,7 +82,7 @@ function CampoPerfil({ campo, editando, formulario, errores, onChange, onBlur })
       ) : (
         <input name={nombre} value={formulario[nombre]} onChange={onChange} onBlur={onBlur} aria-invalid={Boolean(errores[nombre])} {...propiedades} />
       )}
-      {editando && !soloLectura && errores[nombre] && <small>{errores[nombre]}</small>}
+      {editando && !soloLectura && errores[nombre] && <small id={nombre === "telefono" ? "cuentaCelularError" : undefined}>{errores[nombre]}</small>}
     </label>
   );
 }
@@ -166,7 +179,7 @@ function Cuenta() {
   const camposPersonales = [
     { nombre: "nombre", etiqueta: "Nombre completo", valor: usuario?.nom_user, ancho: true, maxLength: LIMITES_PERFIL.nombre, autoComplete: "name" },
     { nombre: "rut", etiqueta: "RUT", valor: usuario?.rut_user, soloLectura: true },
-    { nombre: "telefono", etiqueta: "Teléfono", valor: usuario?.phone_user, type: "tel", maxLength: LIMITES_PERFIL.telefono, autoComplete: "tel", placeholder: "+56912345678" },
+    { nombre: "telefono", etiqueta: "Celular", valor: usuario?.phone_user, type: "tel", maxLength: LIMITES_PERFIL.telefono, autoComplete: "tel", placeholder: "+56912345678" },
   ];
   const camposDireccion = [
     { nombre: "direccion", etiqueta: "Dirección", valor: usuario?.direc_user, ancho: true, maxLength: LIMITES_PERFIL.direccion, autoComplete: "street-address" },

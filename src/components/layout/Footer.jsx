@@ -3,7 +3,7 @@ import {
   FaClock, FaEnvelope, FaFacebookF, FaInstagram,
   FaMapMarkerAlt, FaPhoneAlt, FaWhatsapp,
 } from "react-icons/fa";
-import "../css/footer.css";
+import "./css/footer.css";
 import logo from "../../assets/logo.png";
 
 function Footer() {

@@ -1,4 +1,4 @@
-import "../css/SelectorCantidad.css";
+import "./css/SelectorCantidad.css";
 
 function SelectorCantidad({
   cantidad,

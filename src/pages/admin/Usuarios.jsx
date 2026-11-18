@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 import AdminHeader from "./components/AdminHeader";
+import ConfirmacionSeguridadAdmin from "./components/ConfirmacionSeguridadAdmin";
 import BotonActualizarAdmin from "./components/BotonActualizarAdmin";
-import TablaUsuarios from "../../components/usuarios/TablaUsuarios";
+import TablaUsuarios from "./components/TablaUsuarios";
 import {
   sanitizarNombreUsuario,
-  sanitizarTelefonoUsuario,
   validarUsuarioAdministrativo,
 } from "../../utils/usuarios/validacionUsuarios";
 import {
@@ -14,7 +14,20 @@ import {
   sanitizarTerminoBusqueda,
 } from "../../utils/comunes/busqueda";
 
-import "./css/Usuarios.css";
+import "./Css/Usuarios.css";
+
+function sanitizarCelularTrabajador(valor = "") {
+  const texto = String(valor).replace(/[\s()-]/g, "");
+  const digitos = texto.replace(/\D/g, "");
+  const nacional = texto.startsWith("+569") ? digitos.slice(3)
+    : /^569\d{8}$/.test(digitos) ? digitos.slice(3) : digitos;
+  const numero = nacional.slice(0, 8);
+  return numero ? "+569" + numero : "";
+}
+
+function validarCelularTrabajador(valor = "") {
+  return /^\+569\d{8}$/.test(String(valor).trim()) ? "" : "Ingresa los 8 dígitos del celular después de +569.";
+}
 
 const FORMULARIO_INICIAL = {
   nombre: "",
@@ -46,6 +59,7 @@ function Usuarios() {
   const [usuarioCambioEstado, setUsuarioCambioEstado] = useState(null);
   const [formulario, setFormulario] = useState(FORMULARIO_INICIAL);
   const [errores, setErrores] = useState({});
+  const [operacionPendiente, setOperacionPendiente] = useState(null);
 
   useEffect(() => {
     cargarUsuarios();
@@ -157,11 +171,13 @@ function Usuarios() {
       rolesPermitidos: [1, 2],
     });
 
+    const errorCelular = validarCelularTrabajador(formulario.telefono);
+    if (errorCelular) nuevosErrores.telefono = errorCelular;
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   }
 
-  async function actualizarTrabajador(usuario, nuevosDatos) {
+  async function actualizarTrabajador(usuario, nuevosDatos, verificacion) {
     setGuardando(true);
     setMensaje("");
     setTipoMensaje("");
@@ -173,6 +189,7 @@ function Usuarios() {
         p_phone_user: nuevosDatos.telefono.trim(),
         p_rol_user: Number(nuevosDatos.rol),
         p_est_user: nuevosDatos.activo,
+        p_verificacion: verificacion,
       });
 
       if (error) {
@@ -206,7 +223,7 @@ function Usuarios() {
       return;
     }
 
-    await actualizarTrabajador(usuarioEditando, formulario);
+    setOperacionPendiente({ usuario: usuarioEditando, datos: { ...formulario } });
   }
 
   async function confirmarCambioEstado() {
@@ -214,12 +231,12 @@ function Usuarios() {
       return;
     }
 
-    await actualizarTrabajador(usuarioCambioEstado, {
+    setOperacionPendiente({ usuario: usuarioCambioEstado, datos: {
       nombre: usuarioCambioEstado.nom_user,
       telefono: usuarioCambioEstado.phone_user,
       rol: String(obtenerRolId(usuarioCambioEstado)),
       activo: !usuarioCambioEstado.est_user,
-    });
+    } });
   }
 
   return (
@@ -300,7 +317,7 @@ function Usuarios() {
         )}
       </section>
 
-      {usuarioEditando && (
+      {usuarioEditando && !operacionPendiente && (
         <div className="usuarios-modal" role="presentation" onMouseDown={cerrarEdicion}>
           <section className="usuarios-modal__contenido" role="dialog" aria-modal="true" aria-labelledby="editarTrabajadorTitulo" onMouseDown={(evento) => evento.stopPropagation()}>
             <div className="usuarios-modal__encabezado">
@@ -319,9 +336,22 @@ function Usuarios() {
                 {errores.nombre && <small>{errores.nombre}</small>}
               </label>
               <label>
-                <span>Teléfono</span>
-                <input type="tel" value={formulario.telefono} maxLength={12} placeholder="+56912345678" onChange={(evento) => actualizarFormulario("telefono", sanitizarTelefonoUsuario(evento.target.value))} aria-invalid={Boolean(errores.telefono)} disabled={guardando} />
-                {errores.telefono && <small>{errores.telefono}</small>}
+                <span>Celular</span>
+                <div className="usuarios-celular">
+                  <span id="trabajadorCelularPrefijo">+569</span>
+                  <input type="tel" value={formulario.telefono.replace(/^\+569/, "")}
+                    maxLength={8} placeholder="12345678" inputMode="numeric" autoComplete="tel-national"
+                    onChange={(evento) => actualizarFormulario("telefono", sanitizarCelularTrabajador(evento.target.value))}
+                    onPaste={(evento) => {
+                      evento.preventDefault();
+                      actualizarFormulario("telefono", sanitizarCelularTrabajador(evento.clipboardData.getData("text")));
+                    }}
+                    onBlur={() => setErrores((anteriores) => ({ ...anteriores,
+                      telefono: validarCelularTrabajador(formulario.telefono) }))}
+                    aria-invalid={Boolean(errores.telefono)} disabled={guardando}
+                    aria-describedby={errores.telefono ? "trabajadorCelularPrefijo trabajadorCelularError" : "trabajadorCelularPrefijo"} />
+                </div>
+                {errores.telefono && <small id="trabajadorCelularError">{errores.telefono}</small>}
               </label>
               <label>
                 <span>Rol</span>
@@ -330,13 +360,6 @@ function Usuarios() {
                   <option value="2">Bodeguero</option>
                 </select>
                 {errores.rol && <small>{errores.rol}</small>}
-              </label>
-              <label>
-                <span>Estado de la cuenta</span>
-                <select value={formulario.activo ? "activo" : "inactivo"} onChange={(evento) => actualizarFormulario("activo", evento.target.value === "activo")} disabled={guardando}>
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-                </select>
               </label>
               <div className="usuarios-formulario__acciones">
                 <button type="button" onClick={cerrarEdicion} disabled={guardando}>Cancelar</button>
@@ -347,7 +370,7 @@ function Usuarios() {
         </div>
       )}
 
-      {usuarioCambioEstado && (
+      {usuarioCambioEstado && !operacionPendiente && (
         <div className="usuarios-modal" role="presentation">
           <section className="usuarios-confirmacion" role="alertdialog" aria-modal="true" aria-labelledby="cambiarEstadoTitulo">
             <span className="usuarios-confirmacion__icono" aria-hidden="true">{usuarioCambioEstado.est_user ? "!" : "✓"}</span>
@@ -361,6 +384,20 @@ function Usuarios() {
             </div>
           </section>
         </div>
+      )}
+      {operacionPendiente && (
+        <ConfirmacionSeguridadAdmin
+          operacion="actualizar_trabajador"
+          datos={{ id_user: operacionPendiente.usuario.id_user,
+            nombre: operacionPendiente.datos.nombre.trim(), telefono: operacionPendiente.datos.telefono.trim(),
+            rol_user: Number(operacionPendiente.datos.rol), activo: operacionPendiente.datos.activo }}
+          alCancelar={() => setOperacionPendiente(null)}
+          alConfirmar={async (id) => {
+            const correcto = await actualizarTrabajador(operacionPendiente.usuario, operacionPendiente.datos, id);
+            if (correcto) setOperacionPendiente(null);
+            return correcto;
+          }}
+        />
       )}
     </section>
   );

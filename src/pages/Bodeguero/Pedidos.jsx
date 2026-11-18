@@ -46,6 +46,11 @@ const ESTADO_FINALIZADO = ESTADO_PEDIDO.FINALIZADO;
 const ESTADO_CANCELADO = ESTADO_PEDIDO.CANCELADO;
 const HORAS_ATRASO = 24;
 
+const MOTIVOS_CANCELACION = [
+  "Sin stock", "Retracto", "Error de precio", "Demora despacho",
+  "Problemas de entrega", "No retiró a tiempo",
+];
+
 const BUCKET_IMAGENES = "imagenes_productos";
 
 // Vistas que se activan desde los indicadores
@@ -506,7 +511,7 @@ function Pedidos() {
   async function cancelarPedido() {
     if (!pedidoSeleccionado || procesando || cancelacionEnCurso.current) return;
     const motivo = observacionCancelacion.trim();
-    if (!contactoConfirmado || !motivo || motivo.length > 1000) {
+    if (!contactoConfirmado || !MOTIVOS_CANCELACION.includes(motivo)) {
       setErrorAccion("Confirma que contactaste al cliente e indica el motivo de cancelación.");
       return;
     }
@@ -527,7 +532,7 @@ function Pedidos() {
       if (Number(nuevoEstado) !== ESTADO_CANCELADO) throw new Error("No se pudo confirmar la cancelación del pedido.");
       const idPedido = pedidoSeleccionado.id_pedido;
       setPedidos(actuales => actuales.map(pedido => pedido.id_pedido === idPedido
-        ? { ...pedido, id_estado: ESTADO_CANCELADO, observacion: [pedido.observacion, `Cancelación: ${motivo}`].filter(Boolean).join("\n") }
+        ? { ...pedido, id_estado: ESTADO_CANCELADO, observacion: motivo }
         : pedido));
       setAviso(`Pedido ${obtenerFolio(pedidoSeleccionado)} cancelado. El stock y el pago se mantienen sin cambios.`);
       setPedidoSeleccionado(null);
@@ -986,9 +991,11 @@ function DetallePedidoModal({
               <p>Contacta al cliente antes de confirmar la cancelación.</p>
               <p><strong>{pedido.usuario?.nom_user || "Cliente sin nombre"}</strong>{pedido.usuario?.phone_user ? ` · ${pedido.usuario.phone_user}` : " · Sin teléfono registrado"}</p>
               <label htmlFor="pb-cancelacion-motivo">Motivo de cancelación</label>
-              <textarea id="pb-cancelacion-motivo" value={observacionCancelacion} maxLength={1000} autoFocus
-                placeholder="Ej.: el producto no tiene stock disponible." required disabled={procesando}
-                onChange={evento => onCambiarObservacion(evento.target.value)} />
+              <select id="pb-cancelacion-motivo" className="pb-cancelacion__motivo" value={observacionCancelacion}
+                required disabled={procesando} onChange={evento => onCambiarObservacion(evento.target.value)}>
+                <option value="">Selecciona un motivo</option>
+                {MOTIVOS_CANCELACION.map(motivo => <option key={motivo} value={motivo}>{motivo}</option>)}
+              </select>
               <label className="pb-cancelacion-contacto">
                 <input type="checkbox" checked={contactoConfirmado} required disabled={procesando}
                   onChange={evento => onCambiarContacto(evento.target.checked)} />
@@ -997,7 +1004,7 @@ function DetallePedidoModal({
               <p className="pb-cancelacion-aviso">Esta acción cancela el pedido. El reingreso de stock y cualquier gestión del pago se realizan manualmente.</p>
               <div className="pb-confirmacion__botones">
                 <button type="button" className="pb-boton pb-boton--secundario" disabled={procesando} onClick={onVolverCancelacion}>Volver al pedido</button>
-                <button type="submit" className="pb-boton pb-boton--cancelar" disabled={procesando || !contactoConfirmado || !observacionCancelacion.trim()}>
+                <button type="submit" className="pb-boton pb-boton--cancelar" disabled={procesando || !contactoConfirmado || !MOTIVOS_CANCELACION.includes(observacionCancelacion)}>
                   {procesando ? "Cancelando…" : "Confirmar cancelación"}
                 </button>
               </div>

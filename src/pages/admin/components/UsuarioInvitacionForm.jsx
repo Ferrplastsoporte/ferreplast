@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   normalizarUsuarioAdministrativo,
   normalizarRutUsuario,
-  sanitizarCelularInvitacion,
+  sanitizarCelularUsuario,
   sanitizarCorreoUsuario,
   sanitizarNombreUsuario,
   sanitizarRutUsuario,
@@ -29,10 +29,6 @@ const ROLES = [
     value: "2",
     label: "Bodeguero",
   },
-  {
-    value: "3",
-    label: "Vendedor",
-  },
 ];
 
 function UsuarioFormAdmin({ onEnviar, cargando = false }) {
@@ -55,7 +51,7 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
   function validarFormulario() {
     const nuevosErrores = validarUsuarioAdministrativo(valores, {
       modo: "crear",
-      rolesPermitidos: [1, 2, 3],
+      rolesPermitidos: [1, 2],
     });
 
     setErrores(nuevosErrores);
@@ -203,7 +199,7 @@ function UsuarioFormAdmin({ onEnviar, cargando = false }) {
               type="tel"
               value={valores.telefono.replace(/^\+569/, "")}
               onChange={(evento) => actualizarCampo(
-                "telefono", sanitizarCelularInvitacion(evento.target.value),
+                "telefono", sanitizarCelularUsuario(evento.target.value),
               )}
               onBlur={() => setErrores((anteriores) => ({
                 ...anteriores,

@@ -1,8 +1,8 @@
-import iconoEditar from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_editar.png";
-import iconoDesactivar from "../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_desactivar.png";
+import iconoEditar from "../../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_editar.png";
+import iconoDesactivar from "../../../assets/iconos/vista_bodega/bodega_botones/bodega_botones_desactivar.png";
 import "../css/TablaProductosIconos.css";
-import { supabase } from "../../lib/supabase";
-import { formatPrice } from "../../utils/comunes/formateadores";
+import { supabase } from "../../../lib/supabase";
+import { formatPrice } from "../../../utils/comunes/formateadores";
 
 const BUCKET_IMAGENES = "imagenes_productos";
 
