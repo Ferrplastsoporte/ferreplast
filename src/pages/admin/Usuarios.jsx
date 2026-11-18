@@ -47,6 +47,7 @@ function obtenerRolId(usuario) {
 }
 
 function Usuarios() {
+  const [idUsuarioActual, setIdUsuarioActual] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -63,6 +64,15 @@ function Usuarios() {
 
   useEffect(() => {
     cargarUsuarios();
+  }, []);
+
+  useEffect(() => {
+    let vigente = true;
+    // Se lee la sesión existente, sin realizar una consulta adicional al servidor.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evento, sesion) => {
+      if (vigente) setIdUsuarioActual(sesion?.user?.id ?? null);
+    });
+    return () => { vigente = false; subscription.unsubscribe(); };
   }, []);
 
   async function cargarUsuarios(mostrarCarga = true) {
@@ -313,7 +323,7 @@ function Usuarios() {
         {cargando ? (
           <p className="usuarios-cargando">Cargando trabajadores...</p>
         ) : (
-          <TablaUsuarios usuarios={usuariosFiltrados} onEditar={abrirEdicion} onCambiarEstado={setUsuarioCambioEstado} deshabilitado={guardando} />
+          <TablaUsuarios idUsuarioActual={idUsuarioActual} usuarios={usuariosFiltrados} onEditar={abrirEdicion} onCambiarEstado={setUsuarioCambioEstado} deshabilitado={guardando} />
         )}
       </section>
 

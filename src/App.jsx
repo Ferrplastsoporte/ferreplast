@@ -1,4 +1,5 @@
 import { Login, Registro, NuevaContrasena, RecuperarContrasena } from "./rutas/secciones/PaginasAutenticacion";
+import { lazy } from "react";
 import CargaSeccion from "./components/rutas/CargaSeccion";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MetadatosPagina from "./components/layout/MetadatosPagina";
@@ -11,6 +12,8 @@ import rutasBodega from "./rutas/RutasBodega";
 
 import VigilanciaSesion from "./components/auth/VigilanciaSesion";
 
+const Privacidad = lazy(() => import("./pages/Cliente/Privacidad"));
+
 function App() {
   return (
     <BrowserRouter>
@@ -18,6 +21,11 @@ function App() {
       <ScrollToTop />
       <MetadatosPagina />
       <Routes>
+        {/* Documento público accesible desde cualquier rol y sin iniciar sesión. */}
+        <Route element={<CargaSeccion />}>
+          <Route path="/privacidad" element={<Privacidad />} />
+        </Route>
+
         {/* Autenticación */}
         <Route element={<RutaSoloVisitantes />}>
           <Route element={<CargaSeccion />}>

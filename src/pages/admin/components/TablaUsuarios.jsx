@@ -11,6 +11,7 @@ function obtenerNombreRol(usuario) {
 }
 
 function TablaUsuarios({
+  idUsuarioActual,
   usuarios,
   onEditar,
   onCambiarEstado,
@@ -84,7 +85,9 @@ function TablaUsuarios({
                         : "usuarios-tabla__habilitar"
                     }
                     onClick={() => onCambiarEstado?.(usuario)}
-                    disabled={deshabilitado}
+                    disabled={deshabilitado || !idUsuarioActual || (usuario.est_user && usuario.id_user === idUsuarioActual)}
+                    style={usuario.est_user && usuario.id_user === idUsuarioActual ? { cursor: "default" } : undefined}
+                    title={usuario.est_user && usuario.id_user === idUsuarioActual ? "No puedes deshabilitar tu propia cuenta." : undefined}
                   >
                     {usuario.est_user ? "Deshabilitar" : "Habilitar"}
                   </button>

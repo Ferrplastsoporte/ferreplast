@@ -209,16 +209,15 @@ function DetalleProducto({ producto }) {
             }
           />
 
-          {user && (
-            <BotonAgregarCotizacion
-              mostrarCantidad={selectorActivo === "cotizacion"}
-              onMostrarCantidadChange={(abierto) =>
-                setSelectorActivo((actual) => abierto ? "cotizacion" : actual === "cotizacion" ? null : actual)
-              }
-              producto={producto}
-              stockDisponible={Number(producto.stock_prod) || 0}
-            />
-          )}
+          <BotonAgregarCotizacion
+            sesionIniciada={Boolean(user)}
+            mostrarCantidad={selectorActivo === "cotizacion"}
+            onMostrarCantidadChange={(abierto) =>
+              setSelectorActivo((actual) => abierto ? "cotizacion" : actual === "cotizacion" ? null : actual)
+            }
+            producto={producto}
+            stockDisponible={Number(producto.stock_prod) || 0}
+          />
         </div>
       </div>
       {documentos.length > 0 && (

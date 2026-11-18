@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ModalCantidad from "../ui/ModalCantidad";
 import "./css/BotonAgregarCotizacion.css";
 import {
@@ -7,11 +8,13 @@ import {
 
 function BotonAgregarCotizacion({
   producto,
+  sesionIniciada = false,
   stockDisponible = 0,
   onAgregar,
   mostrarCantidad: selectorAbierto,
   onMostrarCantidadChange,
 }) {
+  const navegar = useNavigate();
   const [mostrarCantidadLocal, setMostrarCantidadLocal] =
     useState(false);
 
@@ -28,6 +31,11 @@ function BotonAgregarCotizacion({
   function abrirSelector(evento) {
     evento.stopPropagation();
 
+    if (!sesionIniciada) {
+      navegar("/login");
+      return;
+    }
+
     setCantidad(1);
     setMostrarCantidad(true);
   }
@@ -38,6 +46,12 @@ function BotonAgregarCotizacion({
   }
 
   function agregarACotizacion() {
+    if (!sesionIniciada) {
+      cerrarSelector();
+      navegar("/login");
+      return;
+    }
+
     const cantidadValidada = Number(cantidad);
 
     if (

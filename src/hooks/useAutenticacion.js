@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { VERSION_PRIVACIDAD } from '../utils/comunes/privacidad'
 
 export const useAutenticacion = () => {
   const [loading, setLoading] = useState(false)
@@ -260,6 +261,15 @@ export const useAutenticacion = () => {
       return false
     }
 
+    if (userData.privacidadAceptada !== true) {
+      showModal(
+        'warning',
+        'Autorización de privacidad',
+        'Debes autorizar el tratamiento de tus datos para crear la cuenta.'
+      )
+      return false
+    }
+
     setLoading(true)
 
     try {
@@ -294,7 +304,9 @@ export const useAutenticacion = () => {
             telefono:
               userData.telefono.trim(),
             comuna:
-              Number(userData.comuna)
+              Number(userData.comuna),
+            privacidad_aceptada: true,
+            privacidad_version: VERSION_PRIVACIDAD
           }
         }
       })

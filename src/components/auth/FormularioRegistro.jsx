@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useFormulario } from "../../hooks/useFormulario";
 import { useAutenticacion } from "../../hooks/useAutenticacion";
@@ -33,6 +33,8 @@ const INITIAL_VALUES = {
 const FormularioRegistro = () => {
   const navigate = useNavigate();
   const captcha = useCaptcha();
+  const [privacidadAceptada, setPrivacidadAceptada] = useState(false);
+  const [errorPrivacidad, setErrorPrivacidad] = useState("");
 
   const {
     values,
@@ -160,8 +162,11 @@ const FormularioRegistro = () => {
     }
 
     const formularioValido = validateForm();
+    setErrorPrivacidad(privacidadAceptada
+      ? ""
+      : "Debes autorizar el tratamiento de tus datos para crear la cuenta.");
 
-    if (!formularioValido) {
+    if (!formularioValido || !privacidadAceptada) {
       return;
     }
 
@@ -174,6 +179,7 @@ const FormularioRegistro = () => {
     try {
       resultado = await register({
         ...values,
+        privacidadAceptada,
         rut: normalizarRutRegistro(values.rut),
         telefono: normalizarTelefonoRegistro(values.telefono),
       }, "client", captcha.token);
@@ -183,6 +189,8 @@ const FormularioRegistro = () => {
 
     if (resultado === true) {
       resetForm();
+      setPrivacidadAceptada(false);
+      setErrorPrivacidad("");
 
       setComunas([]);
 
@@ -331,6 +339,36 @@ const FormularioRegistro = () => {
           }
         />
 
+        <div className="registro-privacidad">
+          <label className="registro-privacidad__autorizacion" htmlFor="privacidad-aceptada">
+            <input
+              id="privacidad-aceptada"
+              name="privacidadAceptada"
+              type="checkbox"
+              checked={privacidadAceptada}
+              onChange={(event) => {
+                setPrivacidadAceptada(event.target.checked);
+                if (event.target.checked) setErrorPrivacidad("");
+              }}
+              required
+              aria-invalid={Boolean(errorPrivacidad)}
+              aria-describedby={errorPrivacidad ? "registro-privacidad-error" : undefined}
+            />
+            <span>
+              He leído la{" "}
+              <Link to="/privacidad" target="_blank" rel="noopener noreferrer">
+                Política de privacidad (abre en otra pestaña)
+              </Link>{" "}
+              y autorizo el tratamiento de mis datos para crear y gestionar mi cuenta
+              y atender mis pedidos y cotizaciones, conforme a las finalidades informadas.
+            </span>
+          </label>
+          {errorPrivacidad && (
+            <span id="registro-privacidad-error" className="campo-error" role="alert">
+              {errorPrivacidad}
+            </span>
+          )}
+        </div>
         <Captcha onToken={captcha.setToken} intento={captcha.intento} />
         <Button
           type="submit"

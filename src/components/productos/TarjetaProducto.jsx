@@ -122,16 +122,15 @@ function TarjetaProducto({ producto }) {
             setSelectorActivo((actual) => abierto ? "carrito" : actual === "carrito" ? null : actual)
           }
         />
-        {user && (
-          <BotonAgregarCotizacion
-            producto={producto}
-            stockDisponible={Number(producto.stock_prod) || 0}
-            mostrarCantidad={selectorActivo === "cotizacion"}
-            onMostrarCantidadChange={(abierto) =>
-              setSelectorActivo((actual) => abierto ? "cotizacion" : actual === "cotizacion" ? null : actual)
-            }
-          />
-        )}
+        <BotonAgregarCotizacion
+          sesionIniciada={Boolean(user)}
+          producto={producto}
+          stockDisponible={Number(producto.stock_prod) || 0}
+          mostrarCantidad={selectorActivo === "cotizacion"}
+          onMostrarCantidadChange={(abierto) =>
+            setSelectorActivo((actual) => abierto ? "cotizacion" : actual === "cotizacion" ? null : actual)
+          }
+        />
       </div>
     </article>
   )

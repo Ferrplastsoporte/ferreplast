@@ -12,6 +12,10 @@ export const PAGINAS_PUBLICAS = {
     titulo: "Catálogo de productos | Ferreplast Spa",
     descripcion: "Explora el catálogo de Ferreplast: fibra de vidrio, resinas, herramientas e insumos de ferretería. Filtra productos y consulta sus características.",
   },
+  "/privacidad": {
+    titulo: "Política de privacidad | Ferreplast Spa",
+    descripcion: "Conoce cómo Ferreplast utiliza y protege tus datos personales y cómo contactar para ejercer tus derechos.",
+  },
   "/ayuda": {
     titulo: "Ayuda para compras y pedidos | Ferreplast Spa",
     descripcion: "Resuelve tus dudas sobre compras, pedidos, despacho y tu cuenta en Ferreplast. Encuentra nuestros canales de atención en Puerto Montt.",
@@ -32,7 +36,7 @@ export function normalizarRuta(ruta) {
   return ruta.replace(/\/+$/, "") || "/";
 }
 
-// Solo inicio, catálogo y ayuda reciben una presentación específica para buscadores.
+// Las páginas públicas declaradas reciben una presentación específica para buscadores.
 // Las fichas de producto conservan una presentación genérica, sin impedir su indexación.
 export function obtenerMetadatos(ruta) {
   const path = normalizarRuta(ruta).toLowerCase();

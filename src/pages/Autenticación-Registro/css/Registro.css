@@ -301,3 +301,34 @@ select.form-control {
   flex: 1;
   border-radius: 0 9px 9px 0;
 }
+
+.registro-card .registro-privacidad {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #475467;
+}
+
+.registro-privacidad a { color: #0052a4; text-decoration: underline; }
+.registro-privacidad a:focus-visible { outline: 2px solid #0052a4; outline-offset: 3px; }
+
+.registro-privacidad__autorizacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.registro-privacidad__autorizacion input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: #0052a4;
+  cursor: pointer;
+}
+
+.registro-privacidad__autorizacion input:focus-visible {
+  outline: 2px solid #0052a4;
+  outline-offset: 3px;
+}

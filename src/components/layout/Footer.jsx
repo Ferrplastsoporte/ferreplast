@@ -68,22 +68,19 @@ function Footer() {
           </address>
         </section>
 
-        {/* Horario y medio de pago, agrupados para equilibrar el contenido. */}
+        {/* Horario y acceso permanente a la información legal. */}
         <section className="footer__columna" aria-labelledby="footer-titulo-atencion">
-          <h3 id="footer-titulo-atencion" className="footer__titulo">Atención y pagos</h3>
+          <h3 id="footer-titulo-atencion" className="footer__titulo">Atención e información</h3>
           <div className="footer__dato">
             <FaClock aria-hidden="true" />
             <p><strong>Horario de tienda</strong>Lunes a viernes<br />09:00 a 18:00 hrs</p>
           </div>
-          <div className="footer__pago">
-            <div>
-              <h4 className="footer__titulo-pagos">Medios de pago</h4>
-              <ul className="footer__medios-pago">
-                <li>Transbank</li>
-                <li>Banco de Chile</li>
-              </ul>
-            </div>
-          </div>
+          <nav aria-label="Información legal">
+            <h4 className="footer__titulo-pagos">Información legal</h4>
+            <ul className="footer__enlaces">
+              <li><Link to="/privacidad">Política de privacidad</Link></li>
+            </ul>
+          </nav>
           <Link to="/ayuda" className="footer__ayuda">¿Necesitas ayuda con tu compra?</Link>
         </section>
       </div>
